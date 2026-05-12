@@ -789,7 +789,7 @@ export default function DangKyPage() {
                     </div>
 
                     {/* QR Code and Payment */}
-                    <div className="flex flex-col items-center justify-center bg-surface rounded-xl p-4 md:p-8 border border-outline-variant/30 shadow-sm col-span-1 md:col-span-2">
+                    <div className="flex flex-col items-center justify-center bg-surface rounded-xl p-4 md:p-8 border border-outline-variant/30 shadow-sm">
                       <div className="flex items-center justify-center space-x-3 mb-6">
                          <span className="material-symbols-outlined text-primary">credit_card</span>
                          <h3 className="text-xl font-bold text-on-surface font-title">Thông tin đóng góp</h3>
