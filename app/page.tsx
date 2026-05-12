@@ -1102,41 +1102,34 @@ Chỉ trả về JSON, không gì khác.`;
       </div>
       </main>
 
-      {/* FAB: Contextual CTA */}
-      <button 
-        onClick={() => document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' })}
-        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 bg-primary text-on-primary w-16 h-16 rounded-full shadow-2xl flex items-center justify-center z-50 group hover:w-48 transition-all duration-300 overflow-hidden active:scale-90"
-      >
-        <span className="material-symbols-outlined text-3xl">edit_note</span>
-        <span className="whitespace-nowrap font-bold ml-2 opacity-0 group-hover:opacity-100 transition-opacity">Đăng ký ngay</span>
-      </button>
 
       {/* BottomNavBar */}
-      <nav className="md:hidden bg-surface-container-lowest/90 backdrop-blur-lg border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(0,53,127,0.1)] bottom-0 rounded-t-xl z-50 fixed w-full">
-        <div className="flex justify-around items-center w-full py-3 px-4 pb-safe">
+      <nav className="md:hidden bg-surface/95 backdrop-blur-lg border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(0,53,127,0.1)] bottom-0 rounded-t-xl z-50 fixed w-full">
+        <div className="flex justify-around items-center w-full py-2 px-4 pb-safe">
           <button 
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center justify-center rounded-full px-4 py-1 transition-all ${activeTab === 'home' ? 'bg-secondary-container text-on-secondary-container scale-110' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'home' ? 'bg-primary-container text-primary font-bold' : 'text-on-surface-variant'}`}
           >
-            <span className="material-symbols-outlined">home</span>
-            <span className="text-[10px] font-bold">Home</span>
+            <span className="material-symbols-outlined text-[22px]">mail</span>
+            <span className="text-[11px] font-bold">Thư ngỏ</span>
           </button>
           <button 
             onClick={() => setActiveTab('plan')}
-            className={`flex flex-col items-center justify-center rounded-full px-4 py-1 transition-all ${activeTab === 'plan' ? 'bg-secondary-container text-on-secondary-container scale-110' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'plan' ? 'bg-primary-container text-primary font-bold' : 'text-on-surface-variant'}`}
           >
-            <span className="material-symbols-outlined">route</span>
-            <span className="text-[10px] font-bold">Journey</span>
+            <span className="material-symbols-outlined text-[22px]">map</span>
+            <span className="text-[11px] font-bold">Kế hoạch</span>
           </button>
           <button 
             onClick={() => setActiveTab('finance')}
-            className={`flex flex-col items-center justify-center rounded-full px-4 py-1 transition-all ${activeTab === 'finance' ? 'bg-secondary-container text-on-secondary-container scale-110' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'finance' ? 'bg-primary-container text-primary font-bold' : 'text-on-surface-variant'}`}
           >
-            <span className="material-symbols-outlined">auto_stories</span>
-            <span className="text-[10px] font-bold">Memories</span>
+            <span className="material-symbols-outlined text-[22px]">account_balance_wallet</span>
+            <span className="text-[11px] font-bold">Tài chính</span>
           </button>
         </div>
       </nav>
+
 
       {/* Footer */}
       <footer className="bg-surface-container-high border-t border-outline-variant mt-20 pb-20 md:pb-0">
