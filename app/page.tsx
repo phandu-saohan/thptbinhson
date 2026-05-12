@@ -417,42 +417,50 @@ Chỉ trả về JSON, không gì khác.`;
         const nameToUse = updatedName || formData.name;
         const phoneToUse = updatedPhone || formData.phone;
 
-        if (nameToUse && phoneToUse) {
-          // Tìm registration đã tồn tại theo tên + số điện thoại
+        const now = new Date();
+        const dateStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}, ${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}`;
+
+        if (phoneToUse) {
+          // 1. Tìm registration theo số điện thoại
           const { data: existingReg } = await supabase
             .from('registrations')
             .select('id, amount')
             .eq('phone', phoneToUse)
-            .single();
+            .maybeSingle();
 
           if (existingReg) {
-            // Đã có registration → cập nhật cột amount
-            await supabase
+            // Đã có → cập nhật amount
+            const { error: updateErr } = await supabase
               .from('registrations')
               .update({ amount: parsedAmount })
               .eq('id', existingReg.id);
 
-            // Cũng upsert transaction record
-            const now = new Date();
-            const dateStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}, ${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}`;
-            await supabase.from('transactions').upsert([{
-              date: dateStr,
-              name: nameToUse,
-              phone: phoneToUse,
-              amount: parsedAmount,
-              type: 'IN',
-              status: 'AI_VERIFYING',
-              note: `Đóng góp quỹ hội — AI đọc biên lai tự động (${parsedAmount.toLocaleString('vi-VN')}đ)`,
-            }], { onConflict: 'phone' });
+            if (updateErr) {
+              console.error('Update registration error:', updateErr);
+              // RLS có thể chặn update → thử cách khác: ghi note vào aiError
+              setAiError(`⚠️ AI đọc được ${parsedAmount.toLocaleString('vi-VN')}đ nhưng chưa lưu tự động. Nhấn "Đăng ký" để xác nhận.`);
+            } else {
+              // 2. Insert transaction record mới
+              await supabase.from('transactions').insert([{
+                date: dateStr,
+                name: nameToUse || existingReg.id,
+                phone: phoneToUse,
+                amount: parsedAmount,
+                type: 'IN',
+                status: 'AI_VERIFYING',
+                note: `Đóng góp quỹ hội — AI đọc biên lai (${parsedAmount.toLocaleString('vi-VN')}đ)`,
+              }]);
 
-            // Đánh dấu đã lưu thành công
-            setAiResult(prev => prev ? { ...prev, saved: true } : prev);
-            setAiError(null);
+              setAiResult(prev => prev ? { ...prev, saved: true } : prev);
+              setAiError(null);
+            }
+          } else {
+            // Chưa có registration → số tiền lưu khi nhấn "Đăng ký"
+            // Không set saved = true
           }
-
-          // Nếu chưa có registration, số tiền sẽ được lưu khi người dùng nhấn "Đăng ký"
         }
       }
+
 
     } catch (err: any) {
       console.error('AI scan error:', err);
