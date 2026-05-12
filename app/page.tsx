@@ -417,21 +417,12 @@ export default function DangKyPage() {
       const parsed = json.data;
       setAiResult(parsed);
 
-
-      // Auto-fill form fields if AI found data
-      const updatedName = parsed.name && !formData.name ? parsed.name : formData.name;
-      const updatedPhone = parsed.phone && !formData.phone ? parsed.phone : formData.phone;
-      setFormData(prev => ({
-        ...prev,
-        name: updatedName,
-        phone: updatedPhone,
-      }));
-
       // === TỰ ĐỘNG CẬP NHẬT SỐ TIỀN VÀO DB ===
+
       const parsedAmount = parseInt((parsed.amount || '').replace(/\D/g, '') || '0');
       if (parsedAmount > 0) {
-        const nameToUse = updatedName || formData.name;
-        const phoneToUse = updatedPhone || formData.phone;
+        const nameToUse = formData.name;
+        const phoneToUse = formData.phone;
 
         const now = new Date();
         const dateStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}, ${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}`;
@@ -453,10 +444,8 @@ export default function DangKyPage() {
 
             if (updateErr) {
               console.error('Update registration error:', updateErr);
-              // RLS có thể chặn update → thử cách khác: ghi note vào aiError
               setAiError(`⚠️ AI đọc được ${parsedAmount.toLocaleString('vi-VN')}đ nhưng chưa lưu tự động. Nhấn "Đăng ký" để xác nhận.`);
             } else {
-              // 2. Insert transaction record mới
               await supabase.from('transactions').insert([{
                 date: dateStr,
                 name: nameToUse || existingReg.id,
@@ -466,17 +455,13 @@ export default function DangKyPage() {
                 status: 'AI_VERIFYING',
                 note: `Đóng góp quỹ hội — AI đọc biên lai (${parsedAmount.toLocaleString('vi-VN')}đ)`,
               }]);
-
               setAiResult(prev => prev ? { ...prev, saved: true } : prev);
               setAiError(null);
             }
-          } else {
-            // Chưa có registration → số tiền lưu khi nhấn "Đăng ký"
-            // Không set saved = true
           }
+          // Nếu chưa có registration → số tiền lưu khi nhấn "Đăng ký"
         }
       }
-
 
     } catch (err: any) {
       console.error('AI scan error:', err);
@@ -906,38 +891,25 @@ export default function DangKyPage() {
                               </div>
                             )}
                             {aiResult && (
-                              <div className={`border rounded-xl p-3 space-y-2 transition-all ${aiResult.saved ? 'bg-emerald-50 border-emerald-300' : 'bg-violet-50 border-violet-200'}`}>
-                                <p className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 ${aiResult.saved ? 'text-emerald-700' : 'text-violet-700'}`}>
-                                  <span className="material-symbols-outlined text-[12px]">{aiResult.saved ? 'check_circle' : 'auto_awesome'}</span>
-                                  {aiResult.saved ? '✅ AI đọc & đã lưu vào hệ thống' : 'AI đã đọc được — xác nhận thông tin'}
+                              <div className={`border rounded-xl p-4 text-center transition-all ${aiResult.saved ? 'bg-emerald-50 border-emerald-300' : 'bg-violet-50 border-violet-200'}`}>
+                                <p className={`text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1 mb-3 ${aiResult.saved ? 'text-emerald-700' : 'text-violet-700'}`}>
+                                  <span className="material-symbols-outlined text-[14px]">{aiResult.saved ? 'check_circle' : 'auto_awesome'}</span>
+                                  {aiResult.saved ? 'Đã lưu vào hệ thống' : 'AI đọc được số tiền'}
                                 </p>
-                                <div className="flex flex-wrap gap-2">
-                                  {aiResult.name && (
-                                    <button type="button" onClick={() => setFormData(p => ({...p, name: aiResult!.name || p.name}))}
-                                      className="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition flex items-center gap-1.5">
-                                      <span className="material-symbols-outlined text-[14px]">person</span> {aiResult.name}
-                                    </button>
-                                  )}
-                                  {aiResult.phone && (
-                                    <button type="button" onClick={() => setFormData(p => ({...p, phone: aiResult!.phone || p.phone}))}
-                                      className="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition flex items-center gap-1.5">
-                                      <span className="material-symbols-outlined text-[14px]">phone</span> {aiResult.phone}
-                                    </button>
-                                  )}
-                                  {aiResult.amount && parseInt(aiResult.amount.replace(/\D/g,'')||'0') > 0 && (
-                                    <span className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 shadow-sm ${aiResult.saved ? 'bg-emerald-600 text-white' : 'bg-white border border-emerald-300 text-emerald-800'}`}>
-                                      💰 {parseInt(aiResult.amount.replace(/\D/g,'')||'0').toLocaleString('vi-VN')}đ
-                                      {aiResult.saved && <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded-full font-bold">ĐÃ LƯU</span>}
-                                    </span>
-                                  )}
-                                </div>
-                                {aiResult.saved ? (
-                                  <p className="text-[10px] text-emerald-600 font-semibold">✓ Số tiền đã được cập nhật vào cột đóng góp của bạn.</p>
+                                {aiResult.amount && parseInt(aiResult.amount.replace(/\D/g,'')||'0') > 0 ? (
+                                  <div className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-black text-xl shadow-sm ${aiResult.saved ? 'bg-emerald-600 text-white' : 'bg-white border-2 border-emerald-400 text-emerald-700'}`}>
+                                    💰 {parseInt(aiResult.amount.replace(/\D/g,'')||'0').toLocaleString('vi-VN')}đ
+                                    {aiResult.saved && <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">ĐÃ LƯU</span>}
+                                  </div>
                                 ) : (
-                                  <p className="text-[10px] text-violet-600 italic">Nhấn vào badge tên/SĐT để áp dụng vào form ↑</p>
+                                  <p className="text-slate-400 text-sm">Không đọc được số tiền</p>
                                 )}
+                                <p className={`text-[10px] mt-2 ${aiResult.saved ? 'text-emerald-600 font-semibold' : 'text-violet-500 italic'}`}>
+                                  {aiResult.saved ? '✓ Đóng góp của bạn đã được ghi nhận tự động.' : 'Số tiền sẽ được lưu khi bạn nhấn Đăng ký.'}
+                                </p>
                               </div>
                             )}
+
 
                             {aiError && (
                               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">

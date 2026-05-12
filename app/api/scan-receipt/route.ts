@@ -10,15 +10,16 @@ export async function POST(req: NextRequest) {
     }
 
     const prompt = `Đây là ảnh biên lai/screenshot chuyển khoản ngân hàng Việt Nam.
-Hãy đọc và trích xuất chính xác:
-1. Tên người chuyển khoản (người gửi tiền) — thường ghi "Tên người gửi", "Nguyen Van A", v.v.
-2. Số điện thoại nếu có trong nội dung chuyển khoản
-3. Số tiền đã chuyển — chỉ lấy số, bỏ chữ "VND", "đồng", dấu chấm/phẩy
+Nhiệm vụ: Chỉ đọc và trả về SỐ TIỀN đã chuyển khoản trong ảnh.
 
-Trả về JSON thuần theo đúng định dạng (không markdown, không giải thích thêm):
-{"name": "...", "phone": "...", "amount": "..."}
+Quy tắc:
+- Chỉ lấy con số, bỏ hết chữ "VND", "đồng", dấu chấm, dấu phẩy
+- Ví dụ: "1.000.000" → "1000000", "500,000 VND" → "500000"
+- Nếu không đọc được số tiền thì trả về chuỗi rỗng
 
-Nếu không tìm thấy trường nào thì để chuỗi rỗng "".
+Trả về JSON (không markdown, không giải thích):
+{"amount": "1000000"}
+
 CHỈ trả về JSON, không gì khác.`;
 
     const response = await fetch(
@@ -35,7 +36,7 @@ CHỈ trả về JSON, không gì khác.`;
           }],
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 256,
+            maxOutputTokens: 64,
           }
         })
       }
@@ -55,7 +56,7 @@ CHỈ trả về JSON, không gì khác.`;
 
     // Parse JSON từ response
     const cleaned = text.replace(/```json|```/g, '').trim();
-    let parsed: { name?: string; phone?: string; amount?: string };
+    let parsed: { amount?: string };
     try {
       parsed = JSON.parse(cleaned);
     } catch {
@@ -64,11 +65,17 @@ CHỈ trả về JSON, không gì khác.`;
       if (match) {
         parsed = JSON.parse(match[0]);
       } else {
-        return NextResponse.json({ error: 'AI trả về định dạng không đúng', raw: text }, { status: 422 });
+        // Thử lấy số trực tiếp từ text
+        const numMatch = cleaned.match(/\d[\d.]*/);
+        if (numMatch) {
+          parsed = { amount: numMatch[0].replace(/\./g, '') };
+        } else {
+          return NextResponse.json({ error: 'AI không đọc được số tiền trong ảnh', raw: text }, { status: 422 });
+        }
       }
     }
 
-    return NextResponse.json({ success: true, data: parsed });
+    return NextResponse.json({ success: true, data: { amount: parsed.amount || '' } });
 
   } catch (err: any) {
     console.error('scan-receipt error:', err);
