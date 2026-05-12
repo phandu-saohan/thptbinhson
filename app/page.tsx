@@ -11,8 +11,18 @@ function FinanceStatisticsBlock() {
   const [incomes, setIncomes] = React.useState<{name:string;phone:string;will_attend:string;amount?:number;created_at:string;memory?:string}[]>([]);
   const [expenses, setExpenses] = React.useState<{id:string;date:string;name:string;amount:number;type:string;note:string;created_at:string}[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [activeStatTab, setActiveStatTab] = React.useState<'IN' | 'OUT'>('IN');
+  const [activeStatTab, setActiveStatTab] = React.useState<'IN' | 'OUT' | 'PLAN'>('IN');
   const [searchQuery, setSearchQuery] = React.useState('');
+
+  // Dự kiến chi (kế hoạch)
+  const plannedExpenses = [
+    { name: 'Tiệc kỷ niệm & Buffet', amount: 72000000, note: '~120 người × 600k', icon: 'restaurant' },
+    { name: 'Chụp hình / Quay phim', amount: 27000000, note: 'Ekip chuyên nghiệp', icon: 'videocam' },
+    { name: 'Sân khấu & Âm thanh ánh sáng', amount: 36000000, note: 'Thuê trọn gói', icon: 'music_note' },
+    { name: 'Quà lưu niệm cho thành viên', amount: 18000000, note: '120 phần × 150k', icon: 'card_giftcard' },
+    { name: 'Quỹ dự phòng', amount: 27000000, note: 'Chi phí phát sinh', icon: 'savings' },
+  ];
+  const totalPlanned = plannedExpenses.reduce((s, e) => s + e.amount, 0);
 
   React.useEffect(() => {
     Promise.all([
@@ -25,67 +35,84 @@ function FinanceStatisticsBlock() {
     });
   }, []);
 
-  const filteredIncomes = incomes.filter(t => 
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredIncomes = incomes.filter(t =>
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (t.memory && t.memory.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const filteredExpenses = expenses.filter(t => 
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredExpenses = expenses.filter(t =>
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (t.note && t.note.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const attending = incomes.filter(r => r.will_attend === 'yes').length;
-  const totalAmount = incomes.filter(r => r.amount && r.amount > 0).reduce((s, r) => s + (r.amount || 0), 0);
+  const totalIncome = incomes.reduce((s, r) => s + (r.amount || 0), 0);
+  const totalOutActual = expenses.reduce((s, t) => s + Math.abs(t.amount), 0);
+  const remaining = totalIncome - totalOutActual;
 
   return (
-    <div className="mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="p-6 md:p-8 border-b border-slate-100">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-          <h3 className="font-headline text-3xl text-primary">Thống kê chi tiết</h3>
-          {activeStatTab === 'IN' && (
-            <div className="flex gap-3">
-              <span className="bg-primary-fixed text-on-primary-fixed text-label-sm px-4 py-2 rounded-full font-bold">{attending} sẽ về</span>
-              {totalAmount > 0 && (
-                <span className="bg-secondary-fixed text-on-secondary-fixed text-label-sm px-4 py-2 rounded-full font-bold">
-                  {totalAmount.toLocaleString('vi-VN')}đ đóng góp
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-        
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-          {/* Tabs */}
-          <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto">
-            <button 
-              onClick={() => setActiveStatTab('IN')}
-              className={`flex-1 md:px-6 py-2.5 text-sm font-bold rounded-lg transition-all ${activeStatTab === 'IN' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              Hành khách trên tàu (Thu)
-            </button>
-            <button 
-              onClick={() => setActiveStatTab('OUT')}
-              className={`flex-1 md:px-6 py-2.5 text-sm font-bold rounded-lg transition-all ${activeStatTab === 'OUT' ? 'bg-white text-secondary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              Các khoản chi
-            </button>
-          </div>
+    <div className="mt-6 md:mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
 
-          {/* Search */}
-          <div className="relative w-full md:w-80">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm tên, nội dung..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-            />
-          </div>
+      {/* Summary row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 border-b border-slate-100">
+        <div className="p-4 md:p-6 text-center border-r border-slate-100">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hành khách</p>
+          <p className="text-2xl md:text-3xl font-headline text-primary">{attending}<span className="text-sm text-slate-400 font-body ml-1">sẽ về</span></p>
+        </div>
+        <div className="p-4 md:p-6 text-center border-r border-slate-100">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tổng đóng góp</p>
+          <p className="text-xl md:text-2xl font-headline text-emerald-600">{totalIncome > 0 ? totalIncome.toLocaleString('vi-VN') + 'đ' : '—'}</p>
+        </div>
+        <div className="p-4 md:p-6 text-center border-r border-slate-100">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đã chi thực tế</p>
+          <p className="text-xl md:text-2xl font-headline text-rose-500">{totalOutActual > 0 ? totalOutActual.toLocaleString('vi-VN') + 'đ' : '—'}</p>
+        </div>
+        <div className="p-4 md:p-6 text-center">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Còn lại / thiếu</p>
+          <p className={`text-xl md:text-2xl font-headline ${remaining >= 0 ? 'text-blue-600' : 'text-orange-500'}`}>
+            {remaining !== 0 ? (remaining > 0 ? '+' : '') + remaining.toLocaleString('vi-VN') + 'đ' : '—'}
+          </p>
         </div>
       </div>
 
+      {/* Tabs + Search */}
+      <div className="p-3 md:p-6 border-b border-slate-100 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+        <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto gap-1">
+          <button
+            onClick={() => setActiveStatTab('IN')}
+            className={`flex-1 md:px-5 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${activeStatTab === 'IN' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            ✈️ Hành khách ({incomes.length})
+          </button>
+          <button
+            onClick={() => setActiveStatTab('OUT')}
+            className={`flex-1 md:px-5 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${activeStatTab === 'OUT' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            💸 Đã chi ({expenses.length})
+          </button>
+          <button
+            onClick={() => setActiveStatTab('PLAN')}
+            className={`flex-1 md:px-5 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${activeStatTab === 'PLAN' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            📋 Dự kiến chi
+          </button>
+        </div>
+
+        {activeStatTab !== 'PLAN' && (
+          <div className="relative w-full md:w-72">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center py-12">
@@ -93,48 +120,41 @@ function FinanceStatisticsBlock() {
           </div>
         ) : activeStatTab === 'IN' ? (
           <table className="w-full text-left">
-            <thead className="bg-slate-50/50 text-label-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
+            <thead className="bg-slate-50/80 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
               <tr>
-                <th className="px-6 py-4 whitespace-nowrap">Thành viên</th>
-                <th className="px-6 py-4 text-center whitespace-nowrap">Trạng thái</th>
-                <th className="px-6 py-4 text-right whitespace-nowrap">Đóng góp</th>
-                <th className="px-6 py-4 hidden md:table-cell whitespace-nowrap">Thời gian</th>
+                <th className="px-4 md:px-6 py-3">Thành viên</th>
+                <th className="px-4 md:px-6 py-3 text-center">Tham dự</th>
+                <th className="px-4 md:px-6 py-3 text-right">Đóng góp</th>
+                <th className="px-4 md:px-6 py-3 hidden md:table-cell">Thời gian</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredIncomes.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="text-center py-12">
-                    <div className="flex flex-col items-center justify-center text-slate-400">
-                      <span className="material-symbols-outlined text-4xl mb-2 opacity-50">search_off</span>
-                      <p>Không tìm thấy dữ liệu nào phù hợp.</p>
-                    </div>
-                  </td>
-                </tr>
+                <tr><td colSpan={4} className="text-center py-12 text-slate-400">Chưa có dữ liệu</td></tr>
               ) : (
                 filteredIncomes.map((r, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm shadow-inner shrink-0">
+                    <td className="px-4 md:px-6 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0">
                           {r.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-title text-on-surface font-medium whitespace-nowrap">{r.name}</span>
+                        <span className="font-medium text-slate-800 text-sm">{r.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 md:px-6 py-3 text-center">
                       {r.will_attend === 'yes'
-                        ? <span className="text-label-sm px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-full border border-secondary-fixed-dim/30 font-bold whitespace-nowrap">Sẽ về</span>
-                        : <span className="text-label-sm px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full border border-outline-variant/20 font-bold whitespace-nowrap">Vắng mặt</span>
+                        ? <span className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-bold">Sẽ về</span>
+                        : <span className="text-xs px-2 py-1 bg-slate-100 text-slate-500 rounded-full font-bold">Vắng</span>
                       }
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 md:px-6 py-3 text-right">
                       {r.amount && r.amount > 0
-                        ? <span className="font-bold text-primary whitespace-nowrap">+{r.amount.toLocaleString('vi-VN')}đ</span>
-                        : <span className="text-on-surface-variant/40">—</span>
+                        ? <span className="font-bold text-emerald-600 text-sm">+{r.amount.toLocaleString('vi-VN')}đ</span>
+                        : <span className="text-slate-300 text-sm">—</span>
                       }
                     </td>
-                    <td className="px-5 py-3 hidden md:table-cell text-xs text-slate-400 whitespace-nowrap">
+                    <td className="px-4 md:px-6 py-3 hidden md:table-cell text-xs text-slate-400">
                       {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' })}
                     </td>
                   </tr>
@@ -142,48 +162,68 @@ function FinanceStatisticsBlock() {
               )}
             </tbody>
           </table>
-        ) : (
+
+        ) : activeStatTab === 'OUT' ? (
           <table className="w-full text-left">
-            <thead className="bg-slate-50/50 text-label-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
+            <thead className="bg-slate-50/80 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
               <tr>
-                <th className="px-6 py-4 whitespace-nowrap">Thời gian</th>
-                <th className="px-6 py-4 whitespace-nowrap">Nội dung chi</th>
-                <th className="px-6 py-4 whitespace-nowrap">Ghi chú</th>
-                <th className="px-6 py-4 text-right whitespace-nowrap">Số tiền</th>
+                <th className="px-4 md:px-6 py-3">Thời gian</th>
+                <th className="px-4 md:px-6 py-3">Nội dung chi</th>
+                <th className="px-4 md:px-6 py-3 hidden md:table-cell">Ghi chú</th>
+                <th className="px-4 md:px-6 py-3 text-right">Số tiền</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredExpenses.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="text-center py-12">
-                    <div className="flex flex-col items-center justify-center text-slate-400">
-                      <span className="material-symbols-outlined text-4xl mb-2 opacity-50">search_off</span>
-                      <p>Không tìm thấy dữ liệu nào phù hợp.</p>
-                    </div>
-                  </td>
-                </tr>
+                <tr><td colSpan={4} className="text-center py-12 text-slate-400">Chưa có khoản chi nào được ghi nhận</td></tr>
               ) : (
                 filteredExpenses.map((t, idx) => (
                   <tr key={t.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
-                      {t.date || new Date(t.created_at).toLocaleDateString('vi-VN')}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="font-medium text-slate-900">{t.name}</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
-                      {t.note || '—'}
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold whitespace-nowrap">
-                      <span className="text-secondary">
-                        {Math.abs(t.amount).toLocaleString('vi-VN')}đ
-                      </span>
+                    <td className="px-4 md:px-6 py-3 text-xs text-slate-400 whitespace-nowrap">{t.date || new Date(t.created_at).toLocaleDateString('vi-VN')}</td>
+                    <td className="px-4 md:px-6 py-3 font-medium text-slate-800 text-sm">{t.name}</td>
+                    <td className="px-4 md:px-6 py-3 text-xs text-slate-400 hidden md:table-cell">{t.note || '—'}</td>
+                    <td className="px-4 md:px-6 py-3 text-right font-bold text-rose-500 text-sm whitespace-nowrap">
+                      -{Math.abs(t.amount).toLocaleString('vi-VN')}đ
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
+            {filteredExpenses.length > 0 && (
+              <tfoot className="border-t-2 border-slate-200 bg-slate-50">
+                <tr>
+                  <td colSpan={3} className="px-4 md:px-6 py-3 font-bold text-slate-600 text-sm">Tổng đã chi</td>
+                  <td className="px-4 md:px-6 py-3 text-right font-black text-rose-600">-{totalOutActual.toLocaleString('vi-VN')}đ</td>
+                </tr>
+              </tfoot>
+            )}
           </table>
+
+        ) : (
+          /* PLAN tab */
+          <div className="p-3 md:p-6 space-y-3">
+            <p className="text-xs text-slate-400 font-medium mb-4">Dự toán chi phí tổ chức hội khóa (chưa thực chi)</p>
+            {plannedExpenses.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 md:p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-amber-600 text-lg">{item.icon}</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800 text-sm">{item.name}</p>
+                    <p className="text-xs text-slate-400">{item.note}</p>
+                  </div>
+                </div>
+                <span className="font-black text-amber-700 text-sm whitespace-nowrap ml-4">
+                  {item.amount.toLocaleString('vi-VN')}đ
+                </span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between p-4 bg-slate-800 rounded-xl mt-2">
+              <span className="font-bold text-white">Tổng dự toán</span>
+              <span className="font-black text-amber-400 text-lg">{totalPlanned.toLocaleString('vi-VN')}đ</span>
+            </div>
+          </div>
         )}
       </div>
     </div>
