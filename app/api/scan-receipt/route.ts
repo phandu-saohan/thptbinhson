@@ -54,6 +54,14 @@ CHỈ trả về JSON, không gì khác.`;
     const json = await response.json();
     const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
+    if (!text) {
+      console.error('Gemini returned empty text. Full response:', JSON.stringify(json));
+      return NextResponse.json({ 
+        error: 'AI không nhận diện được văn bản trong ảnh (có thể do lỗi an toàn hoặc ảnh không rõ)', 
+        details: json 
+      }, { status: 422 });
+    }
+
     // Parse JSON từ response
     const cleaned = text.replace(/```json|```/g, '').trim();
     let parsed: { amount?: string };
@@ -65,10 +73,10 @@ CHỈ trả về JSON, không gì khác.`;
       if (match) {
         parsed = JSON.parse(match[0]);
       } else {
-        // Thử lấy số trực tiếp từ text
-        const numMatch = cleaned.match(/\d[\d.]*/);
+        // Thử lấy số trực tiếp từ text (hỗ trợ cả dấu phẩy và chấm)
+        const numMatch = cleaned.match(/\d[\d.,]*/);
         if (numMatch) {
-          parsed = { amount: numMatch[0].replace(/\./g, '') };
+          parsed = { amount: numMatch[0].replace(/[.,]/g, '') };
         } else {
           return NextResponse.json({ error: 'AI không đọc được số tiền trong ảnh', raw: text }, { status: 422 });
         }
