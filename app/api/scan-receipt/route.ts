@@ -33,7 +33,17 @@ Trả về đúng 1 chuỗi JSON duy nhất:
           }],
           generationConfig: {
             temperature: 0.0,
-            maxOutputTokens: 64,
+            maxOutputTokens: 128,
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                amount: {
+                  type: "STRING",
+                  description: "Số tiền bằng số (chỉ bao gồm chữ số), ví dụ: 2000000"
+                }
+              }
+            }
           }
         })
       }
