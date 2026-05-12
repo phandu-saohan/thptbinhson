@@ -559,18 +559,25 @@ export default function DangKyPage() {
             <div className="absolute inset-0 bg-gradient-to-b from-primary/40 to-primary/80"></div>
           </div>
           <div className="relative z-10 max-w-5xl w-full flex flex-col items-center">
-            <div className="flex flex-col items-center mb-6">
+            <div className="flex flex-col items-center mb-4 md:mb-6">
               <Image
                 src="/logo-binhson.jpg"
-                alt="Logo Bình Sơn"
+                alt="Logo Bình Sơn"
                 width={140}
                 height={140}
-                className="object-contain drop-shadow-2xl rounded-full bg-white/10 p-2"
+                className="object-contain drop-shadow-2xl rounded-full bg-white/10 p-2 w-20 h-20 md:w-[140px] md:h-[140px]"
                 unoptimized
               />
             </div>
-            <h2 className="font-display text-4xl md:text-6xl text-white mb-6 drop-shadow-lg text-center">Chuyến tàu thanh xuân<br />Kỷ niệm 20 năm ngày ra trường</h2>
-            <p className="text-primary-fixed text-xl md:text-2xl italic whitespace-nowrap">"Thời gian trôi qua kẽ tay, nhưng kỷ ức còn đọng lại trên sân trường cũ..."</p>
+            <h2 className="font-display text-3xl md:text-6xl text-white mb-2 md:mb-3 drop-shadow-lg text-center leading-tight">
+              Chuyến tàu thanh xuân
+            </h2>
+            <p className="font-display text-lg md:text-3xl text-white/90 mb-4 md:mb-6 drop-shadow text-center font-medium tracking-wide">
+              Kỷ niệm 20 năm ngày ra trường
+            </p>
+            <p className="text-primary-fixed text-sm md:text-xl italic text-center max-w-xs md:max-w-2xl mx-auto leading-relaxed px-2">
+              &ldquo;Thời gian trôi qua kẽ tay, nhưng kỷ ức còn đọng lại trên sân trường cũ...&rdquo;
+            </p>
           </div>
         </section>
 
