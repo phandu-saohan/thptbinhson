@@ -1077,21 +1077,21 @@ export default function DangKyPage() {
         <div className="flex justify-around items-center w-full py-2 px-4 pb-safe">
           <button 
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'home' ? 'bg-primary-container text-primary font-bold' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'home' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
           >
             <span className="material-symbols-outlined text-[22px]">mail</span>
             <span className="text-[11px] font-bold">Thư ngỏ</span>
           </button>
           <button 
             onClick={() => setActiveTab('plan')}
-            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'plan' ? 'bg-primary-container text-primary font-bold' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'plan' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
           >
             <span className="material-symbols-outlined text-[22px]">map</span>
             <span className="text-[11px] font-bold">Kế hoạch</span>
           </button>
           <button 
             onClick={() => setActiveTab('finance')}
-            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'finance' ? 'bg-primary-container text-primary font-bold' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'finance' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
           >
             <span className="material-symbols-outlined text-[22px]">account_balance_wallet</span>
             <span className="text-[11px] font-bold">Tài chính</span>
