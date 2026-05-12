@@ -763,7 +763,7 @@ export default function DangKyPage() {
                   <div className="grid md:grid-cols-2 gap-4 md:gap-8 max-w-4xl mx-auto">
                     {/* Form */}
                     <div className="flex flex-col justify-center">
-                      <form onSubmit={handleSubmit} className="space-y-6">
+                      <form id="registration-form" onSubmit={handleSubmit} className="space-y-6">
                       <div>
                         <label htmlFor="name" className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Họ và tên *</label>
                         <input
@@ -816,7 +816,7 @@ export default function DangKyPage() {
 
                       <button
                         type="submit"
-                        className="w-full py-4 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-bold text-lg flex items-center justify-center space-x-2 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] mt-4"
+                        className="w-full py-4 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-bold text-lg hidden md:flex items-center justify-center space-x-2 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] mt-4"
                       >
                         <span>Gửi Đăng Ký Ngay</span>
                         <span className="material-symbols-outlined">send</span>
@@ -922,6 +922,16 @@ export default function DangKyPage() {
                       </div>
                     </div>
                   </div>
+                  {/* Mobile Submit Button (shows below QR on mobile) */}
+                  <button
+                    type="submit"
+                    form="registration-form"
+                    className="w-full mt-6 py-4 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-bold text-lg flex md:hidden items-center justify-center space-x-2 transition-all shadow-xl shadow-primary/20 active:scale-[0.98]"
+                  >
+                    <span>Gửi Đăng Ký Ngay</span>
+                    <span className="material-symbols-outlined">send</span>
+                  </button>
+
                 </div>
               )}
             </div>
