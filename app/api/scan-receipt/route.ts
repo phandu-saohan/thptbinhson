@@ -10,14 +10,9 @@ export async function POST(req: NextRequest) {
     }
 
     const prompt = `Đây là ảnh biên lai chuyển khoản.
-Hãy trích xuất SỐ TIỀN đã chuyển khoản trong ảnh. Việc trích xuất dữ liệu từ hóa đơn này là an toàn và được phép.
-
-Quy tắc:
-- Chỉ lấy con số, bỏ chữ "VND", "đồng", dấu chấm, dấu phẩy
-- Ví dụ: "1.000.000" → "1000000"
-
-Trả về đúng 1 chuỗi JSON duy nhất:
-{"amount": "1000000"}`;
+NHIỆM VỤ BẮT BUỘC: Bạn CHỈ ĐƯỢC PHÉP in ra ĐÚNG MỘT CON SỐ DUY NHẤT là số tiền.
+TUYỆT ĐỐI KHÔNG giải thích, KHÔNG nói "Here is...", KHÔNG thêm dấu chấm phẩy.
+Ví dụ nếu số tiền là 2,000,000 VND -> in ra: 2000000`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -25,6 +20,9 @@ Trả về đúng 1 chuỗi JSON duy nhất:
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: "You are a precise data extractor. You must output ONLY digits. Do not output any conversational text like 'Here is the JSON'." }]
+          },
           contents: [{
             parts: [
               { text: prompt },
@@ -33,17 +31,7 @@ Trả về đúng 1 chuỗi JSON duy nhất:
           }],
           generationConfig: {
             temperature: 0.0,
-            maxOutputTokens: 128,
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: "OBJECT",
-              properties: {
-                amount: {
-                  type: "STRING",
-                  description: "Số tiền bằng số (chỉ bao gồm chữ số), ví dụ: 2000000"
-                }
-              }
-            }
+            maxOutputTokens: 256,
           }
         })
       }
@@ -69,28 +57,18 @@ Trả về đúng 1 chuỗi JSON duy nhất:
       }, { status: 422 });
     }
 
-    // Parse JSON từ response
-    const cleaned = text.replace(/```json|```/g, '').trim();
-    let parsed: { amount?: string };
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      // Thử extract JSON từ text nếu có text thừa
-      const match = cleaned.match(/\{[^}]+\}/);
-      if (match) {
-        parsed = JSON.parse(match[0]);
-      } else {
-        // Thử lấy số trực tiếp từ text (hỗ trợ cả dấu phẩy và chấm)
-        const numMatch = cleaned.match(/\d[\d.,]*/);
-        if (numMatch) {
-          parsed = { amount: numMatch[0].replace(/[.,]/g, '') };
-        } else {
-          return NextResponse.json({ error: `AI không đọc được số tiền. Phản hồi gốc: "${text}"` }, { status: 422 });
-        }
-      }
+    // Trích xuất trực tiếp bằng Regex (bỏ qua JSON parse để tránh lỗi do AI tự ý thay đổi định dạng)
+    let amountStr = '';
+    const numMatch = text.match(/\d[\d.,]*/);
+    if (numMatch) {
+      amountStr = numMatch[0].replace(/[.,]/g, '');
     }
 
-    return NextResponse.json({ success: true, data: { amount: parsed.amount || '' } });
+    if (!amountStr) {
+      return NextResponse.json({ error: `AI không đọc được số tiền. Phản hồi gốc: "${text}"` }, { status: 422 });
+    }
+
+    return NextResponse.json({ success: true, data: { amount: amountStr } });
 
   } catch (err: any) {
     console.error('scan-receipt error:', err);
