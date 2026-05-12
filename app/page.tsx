@@ -394,7 +394,14 @@ Chỉ trả về JSON, không gì khác.`;
         }
       );
 
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error('Gemini API error response:', errText);
+        throw new Error(`Gemini API ${response.status}: ${errText.slice(0, 200)}`);
+      }
+
       const json = await response.json();
+      console.log('Gemini response:', json);
       const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
       // Parse JSON from Gemini response
@@ -464,7 +471,15 @@ Chỉ trả về JSON, không gì khác.`;
 
     } catch (err: any) {
       console.error('AI scan error:', err);
-      setAiError(err.message?.includes('API Key') ? err.message : 'AI không đọc được ảnh. Vui lòng điền thủ công.');
+      if (err.message?.includes('API Key') || err.message?.includes('API_KEY')) {
+        setAiError('Chưa cấu hình Gemini API Key. Vui lòng điền thủ công.');
+      } else if (err.message?.includes('quota') || err.message?.includes('QUOTA')) {
+        setAiError('API đã hết quota hôm nay. Vui lòng điền thủ công.');
+      } else if (err.message?.includes('fetch') || err.message?.includes('network')) {
+        setAiError('Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại.');
+      } else {
+        setAiError(`AI lỗi: ${err.message || 'Không xác định'}. Vui lòng điền thủ công.`);
+      }
     } finally {
       setAiScanning(false);
     }
