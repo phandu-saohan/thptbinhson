@@ -518,10 +518,14 @@ export default function DangKyPage() {
   return (
     <div className="min-h-screen bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
       {/* TopAppBar */}
-      <header className="bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-md shadow-primary/5 top-0 z-50 sticky">
-        <div className="flex items-center justify-between px-margin-mobile md:px-margin-desktop py-stack-sm w-full max-w-container-max mx-auto">
-          <div className="flex items-center gap-3">
-            <h1 className="font-headline text-2xl md:text-3xl text-primary tracking-tight">THPT BÌNH SƠN (2003-2006)</h1>
+      <header className="bg-surface/90 backdrop-blur-xl border-b border-outline-variant/20 shadow-md shadow-primary/5 top-0 z-50 sticky">
+        <div className="flex items-center justify-between px-3 md:px-margin-desktop py-2 md:py-stack-sm w-full max-w-container-max mx-auto">
+          <div className="flex items-center gap-2">
+            <img src="/logo-binhson.jpg" alt="logo" className="w-8 h-8 rounded-full object-cover md:hidden shrink-0" />
+            <div>
+              <h1 className="font-headline text-base md:text-3xl text-primary tracking-tight leading-tight">THPT BÌNH SƠN</h1>
+              <p className="text-[10px] text-on-surface-variant font-medium md:hidden">Hội khóa 2003–2006</p>
+            </div>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <button 
@@ -539,7 +543,7 @@ export default function DangKyPage() {
           </nav>
           <a 
             href="/login"
-            className="bg-primary text-on-primary px-6 py-2 rounded-lg font-title active:scale-95 transition-transform duration-200 hidden sm:flex items-center justify-center"
+            className="bg-primary text-on-primary px-3 md:px-6 py-1.5 md:py-2 rounded-lg font-title text-sm md:text-base active:scale-95 transition-transform duration-200 flex items-center justify-center"
           >Đăng nhập</a>
         </div>
       </header>
@@ -575,7 +579,7 @@ export default function DangKyPage() {
             <p className="font-display text-lg md:text-3xl text-white/90 mb-4 md:mb-6 drop-shadow text-center font-medium tracking-wide">
               Kỷ niệm 20 năm ngày ra trường
             </p>
-            <p className="text-primary-fixed text-sm md:text-xl italic text-center max-w-xs md:max-w-2xl mx-auto leading-relaxed px-2">
+            <p className="text-primary-fixed text-sm md:text-xl italic text-center md:whitespace-nowrap max-w-xs md:max-w-none mx-auto leading-relaxed px-2">
               &ldquo;Thời gian trôi qua kẽ tay, nhưng kỷ ức còn đọng lại trên sân trường cũ...&rdquo;
             </p>
           </div>
