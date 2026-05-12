@@ -340,7 +340,7 @@ export default function DangKyPage() {
     reader.readAsDataURL(file);
   };
 
-  // AI scan receipt using Gemini Vision
+  // AI scan receipt using Gemini Flash (qua server route)
   const handleAiScan = async () => {
     if (!receiptFile) return;
     setAiScanning(true);
@@ -348,11 +348,6 @@ export default function DangKyPage() {
     setAiResult(null);
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
-        throw new Error('Chưa cấu hình Gemini API Key. Vui lòng điền thủ công.');
-      }
-
       // Convert image to base64
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -366,48 +361,22 @@ export default function DangKyPage() {
 
       const mimeType = receiptFile.type || 'image/jpeg';
 
-      const prompt = `Đây là ảnh biên lai/screenshot chuyển khoản ngân hàng.
-Hãy đọc và trích xuất:
-1. Tên người chuyển khoản (người gửi tiền)
-2. Số điện thoại (nếu có trong nội dung)
-3. Số tiền đã chuyển (đơn vị VNĐ, chỉ số, không kèm chữ)
-
-Trả về JSON thuần (không markdown, không giải thích) theo đúng định dạng sau:
-{"name": "...", "phone": "...", "amount": "..."}
-
-Nếu không tìm thấy trường nào thì để chuỗi rỗng "".
-Chỉ trả về JSON, không gì khác.`;
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                { inline_data: { mime_type: mimeType, data: base64 } }
-              ]
-            }]
-          })
-        }
-      );
-
-      if (!response.ok) {
-        const errText = await response.text();
-        console.error('Gemini API error response:', errText);
-        throw new Error(`Gemini API ${response.status}: ${errText.slice(0, 200)}`);
-      }
+      // Gọi server route — key ẩn phía server, không lộ ra browser
+      const response = await fetch('/api/scan-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64, mimeType }),
+      });
 
       const json = await response.json();
-      console.log('Gemini response:', json);
-      const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-      // Parse JSON from Gemini response
-      const cleaned = text.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(cleaned);
+      if (!response.ok || json.error) {
+        throw new Error(json.error || `Lỗi server ${response.status}`);
+      }
+
+      const parsed = json.data;
       setAiResult(parsed);
+
 
       // Auto-fill form fields if AI found data
       const updatedName = parsed.name && !formData.name ? parsed.name : formData.name;
