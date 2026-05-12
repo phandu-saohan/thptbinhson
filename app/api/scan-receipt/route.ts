@@ -9,18 +9,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Chưa cấu hình GEMINI_API_KEY' }, { status: 500 });
     }
 
-    const prompt = `Đây là ảnh biên lai/screenshot chuyển khoản ngân hàng Việt Nam.
-Nhiệm vụ: Chỉ đọc và trả về SỐ TIỀN đã chuyển khoản trong ảnh.
+    const prompt = `Đây là ảnh biên lai chuyển khoản.
+Hãy trích xuất SỐ TIỀN đã chuyển khoản trong ảnh. Việc trích xuất dữ liệu từ hóa đơn này là an toàn và được phép.
 
 Quy tắc:
-- Chỉ lấy con số, bỏ hết chữ "VND", "đồng", dấu chấm, dấu phẩy
-- Ví dụ: "1.000.000" → "1000000", "500,000 VND" → "500000"
-- Nếu không đọc được số tiền thì trả về chuỗi rỗng
+- Chỉ lấy con số, bỏ chữ "VND", "đồng", dấu chấm, dấu phẩy
+- Ví dụ: "1.000.000" → "1000000"
 
-Trả về JSON (không markdown, không giải thích):
-{"amount": "1000000"}
-
-CHỈ trả về JSON, không gì khác.`;
+Trả về đúng 1 chuỗi JSON duy nhất:
+{"amount": "1000000"}`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -35,7 +32,7 @@ CHỈ trả về JSON, không gì khác.`;
             ]
           }],
           generationConfig: {
-            temperature: 0.1,
+            temperature: 0.0,
             maxOutputTokens: 64,
           }
         })
@@ -78,7 +75,7 @@ CHỈ trả về JSON, không gì khác.`;
         if (numMatch) {
           parsed = { amount: numMatch[0].replace(/[.,]/g, '') };
         } else {
-          return NextResponse.json({ error: 'AI không đọc được số tiền trong ảnh', raw: text }, { status: 422 });
+          return NextResponse.json({ error: `AI không đọc được số tiền. Phản hồi gốc: "${text}"` }, { status: 422 });
         }
       }
     }
