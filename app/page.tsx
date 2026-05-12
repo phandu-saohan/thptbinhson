@@ -504,9 +504,9 @@ export default function DangKyPage() {
         </div>
       </header>
 
-      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg">
+      <main className="max-w-container-max mx-auto px-3 md:px-margin-desktop py-4 md:py-stack-lg">
         {/* Hero Section: The Departure */}
-        <section className="relative mb-stack-lg rounded-xl overflow-hidden min-h-[530px] flex items-center justify-center text-center p-8">
+        <section className="relative mb-4 md:mb-stack-lg rounded-xl overflow-hidden min-h-[420px] md:min-h-[530px] flex items-center justify-center text-center p-4 md:p-8">
           <div className="absolute inset-0 z-0">
             <Image 
               src={heroImage}
@@ -713,7 +713,7 @@ export default function DangKyPage() {
                 </div>
 
               ) : (
-                <div className="bg-surface-container rounded-xl p-6 md:p-10 border border-outline-variant/20 relative">
+                <div className="bg-surface-container rounded-xl p-3 md:p-10 border border-outline-variant/30 shadow-sm">
                   <div className="text-center mb-10">
                     <h2 className="text-2xl md:text-4xl font-headline flex flex-col md:flex-row items-center justify-center text-primary tracking-tight gap-4">
                       <span className="w-14 h-14 bg-primary-fixed text-on-primary-fixed rounded-full flex items-center justify-center shadow-inner">
@@ -724,7 +724,7 @@ export default function DangKyPage() {
                     <p className="text-on-surface-variant mt-4 font-body max-w-3xl md:whitespace-nowrap mx-auto">Vui lòng điền thông tin và đóng góp quỹ hội để BTC chuẩn bị đón tiếp chu đáo nhất</p>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-8 max-w-4xl mx-auto">
                     {/* Form */}
                     <div className="flex flex-col justify-center">
                       <form onSubmit={handleSubmit} className="space-y-6">
@@ -789,7 +789,7 @@ export default function DangKyPage() {
                     </div>
 
                     {/* QR Code and Payment */}
-                    <div className="flex flex-col items-center justify-center bg-surface rounded-xl p-8 border border-outline-variant/30">
+                    <div className="flex flex-col items-center justify-center bg-surface rounded-xl p-4 md:p-8 border border-outline-variant/30 shadow-sm col-span-1 md:col-span-2">
                       <div className="flex items-center justify-center space-x-3 mb-6">
                          <span className="material-symbols-outlined text-primary">credit_card</span>
                          <h3 className="text-xl font-bold text-on-surface font-title">Thông tin đóng góp</h3>
@@ -923,7 +923,7 @@ export default function DangKyPage() {
                   <div className="absolute -left-10 md:-left-14 w-8 h-8 bg-primary-fixed text-on-primary-fixed rounded-full flex items-center justify-center ring-4 ring-white">
                     <span className="material-symbols-outlined text-sm">schedule</span>
                   </div>
-                  <div className="glass-card p-6 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
+                  <div className="glass-card p-3 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                       <h3 className="text-xl font-title text-primary">Đón tiếp & Check-in</h3>
                       <span className="inline-block px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-lg text-sm font-bold mt-2 md:mt-0 tracking-wider w-max">08:00 - 09:00</span>
@@ -940,7 +940,7 @@ export default function DangKyPage() {
                   <div className="absolute -left-10 md:-left-14 w-8 h-8 bg-secondary-fixed text-on-secondary-fixed rounded-full flex items-center justify-center ring-4 ring-white">
                     <span className="material-symbols-outlined text-sm">event</span>
                   </div>
-                  <div className="glass-card p-6 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
+                  <div className="glass-card p-3 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                       <h3 className="text-xl font-title text-primary">Lễ Kỷ Niệm 20 Năm</h3>
                       <span className="inline-block px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-lg text-sm font-bold mt-2 md:mt-0 tracking-wider w-max">09:00 - 11:30</span>
@@ -958,7 +958,7 @@ export default function DangKyPage() {
                   <div className="absolute -left-10 md:-left-14 w-8 h-8 bg-tertiary-fixed text-on-tertiary-fixed rounded-full flex items-center justify-center ring-4 ring-white">
                     <span className="material-symbols-outlined text-sm">restaurant</span>
                   </div>
-                  <div className="glass-card p-6 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
+                  <div className="glass-card p-3 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                       <h3 className="text-xl font-title text-primary">Tiệc Giao Lưu Cùng Nhau</h3>
                       <span className="inline-block px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-lg text-sm font-bold mt-2 md:mt-0 tracking-wider w-max">11:30 - 14:00</span>
@@ -979,14 +979,14 @@ export default function DangKyPage() {
 
         {/* Tab 3: Tài Chính Thu Chi */}
         {activeTab === 'finance' && (
-          <div className="animate-in fade-in duration-700 mb-12 glass-card p-6 md:p-10 rounded-xl">
+          <div className="animate-in fade-in duration-700 mb-6 md:mb-12 glass-card p-3 md:p-10 rounded-xl">
             <div className="text-center mb-12">
               <span className="text-primary font-bold uppercase tracking-widest text-sm mb-3 block">Minh Bạch Dự Án</span>
               <h2 className="text-4xl font-headline text-primary tracking-tight">Kế Hoạch Tài Chính</h2>
               <p className="text-on-surface-variant mt-4 max-w-lg mx-auto">Cập nhật dự toán và tình hình đóng góp từ các thành viên khóa 2003-2006</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="grid md:grid-cols-3 gap-3 md:gap-8 mb-4 md:mb-12">
                <div className="bg-primary-fixed/30 rounded-xl p-6 border border-primary-fixed-dim/50 text-center">
                   <p className="text-label-sm font-bold text-primary uppercase tracking-wider mb-2">Đã đóng góp</p>
                   <p className="text-4xl font-headline text-primary">85<span className="text-lg font-body text-on-surface-variant">Người</span></p>

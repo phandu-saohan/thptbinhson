@@ -64,9 +64,9 @@
   --spacing-margin-desktop: 40px;
   --spacing-gutter: 24px;
   --spacing-unit: 4px;
-  --spacing-stack-sm: 8px;
-  --spacing-margin-mobile: 16px;
-  --spacing-stack-md: 16px;
+  --spacing-stack-sm: 6px;
+  --spacing-margin-mobile: 12px;
+  --spacing-stack-md: 12px;
   --spacing-container-max: 1200px;
 }
 
@@ -82,12 +82,26 @@
   .scrapbook-rotate-right {
     transform: rotate(1.5deg);
   }
-  
+
   .timeline-track {
     background-image: radial-gradient(circle, #b0c6ff 2px, transparent 2px);
     background-size: 24px 24px;
   }
 }
+@media (max-width: 767px) {
+  .glass-card {
+    @apply p-3;
+  }
+
+  /* Reduce section vertical spacing on mobile */
+  .mb-stack-lg { margin-bottom: 20px !important; }
+  .py-stack-lg { padding-top: 20px !important; padding-bottom: 20px !important; }
+  .py-stack-md { padding-top: 10px !important; padding-bottom: 10px !important; }
+  .p-stack-md  { padding: 12px !important; }
+  .gap-stack-md { gap: 10px !important; }
+  .gap-stack-lg { gap: 16px !important; }
+}
+
 
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
