@@ -245,6 +245,7 @@ export default function DangKyPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Appearance State — Media
+  const [logoImage, setLogoImage] = useState('/logo-binhson.jpg');
   const [heroVideo, setHeroVideo] = useState('https://assets.mixkit.co/videos/preview/mixkit-sun-shining-through-the-leaves-of-a-tree-in-the-8238-large.mp4');
   const [heroImage, setHeroImage] = useState('https://lh3.googleusercontent.com/aida-public/AB6AXuDZoPSErlIW76V6LcqZOGcZpJBCnf6FZigCs3HEaMg2weA6-2IxA7FmMkWn8GKmrDp8x4eKykLkKi6pMMYAKte8jiSzDdEyMDQ3_L7ps_23KZSfnM4HRugAjjZ0GQJds-5oliYGXvrrUscfJnw1SQSYNjQmdnduHl9CuC1WYcQILIDNANUuoW2ApyVasYm_Huqdb93Q9mawRd4jS4Bz8ZBFgViVGlsvqlCJ6qXLpF8CyhowDZmAHPaNfRGpU_Dfsd3jG-fxFUfCEOUyo');
   const [photo1, setPhoto1] = useState('https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=800&auto=format&fit=crop');
@@ -279,6 +280,7 @@ export default function DangKyPage() {
         if (data && data.length > 0) {
           const map: Record<string,string> = {};
           data.forEach((row: {key:string;value:string}) => { map[row.key] = row.value; });
+          if (map['logo_image']) setLogoImage(map['logo_image']);
           if (map['hero_image']) setHeroImage(map['hero_image']);
           if (map['hero_video']) setHeroVideo(map['hero_video']);
           if (map['photo1']) setPhoto1(map['photo1']);
@@ -472,6 +474,25 @@ export default function DangKyPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleLogoImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const localUrl = URL.createObjectURL(file);
+    setLogoImage(localUrl);
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      try {
+        await supabase.from('site_settings').upsert({ key: 'logo_image', value: base64 }, { onConflict: 'key' });
+      } catch (err) {
+        console.error('Failed to save logo image:', err);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
 
 
 
@@ -482,7 +503,7 @@ export default function DangKyPage() {
         <div className="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 w-full max-w-7xl mx-auto">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3 md:gap-4 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src="/logo-binhson.jpg" alt="logo" className="w-9 h-9 md:w-11 md:h-11 rounded-full object-cover shrink-0 shadow-sm border border-outline-variant/30 group-hover:scale-105 transition-transform duration-300" />
+            <img src={logoImage} alt="logo" className="w-9 h-9 md:w-11 md:h-11 rounded-full object-cover shrink-0 shadow-sm border border-outline-variant/30 group-hover:scale-105 transition-transform duration-300" />
             <div className="flex flex-col justify-center">
               <h1 className="font-headline text-lg md:text-2xl text-primary tracking-tight leading-none group-hover:text-primary-fixed-dim transition-colors">THPT BÌNH SƠN</h1>
               <p className="text-[10px] md:text-xs text-on-surface-variant font-medium md:tracking-widest md:uppercase mt-0.5 opacity-80">Hội khóa 2003–2006</p>
@@ -549,14 +570,20 @@ export default function DangKyPage() {
 
         <div className="relative z-10 max-w-5xl w-full flex flex-col items-center">
           <div className="flex flex-col items-center mb-4 md:mb-6">
-            <Image
-              src="/logo-binhson.jpg"
-              alt="Logo Bình Sơn"
-              width={140}
-              height={140}
-              className="object-contain drop-shadow-2xl rounded-full bg-white/10 p-2 w-20 h-20 md:w-[140px] md:h-[140px]"
-              unoptimized
-            />
+            <label className="relative group/logo cursor-pointer block">
+              <Image
+                src={logoImage}
+                alt="Logo Bình Sơn"
+                width={140}
+                height={140}
+                className="object-contain drop-shadow-2xl bg-white/10 p-2 w-20 h-20 md:w-[140px] md:h-[140px] transition-all group-hover/logo:opacity-80"
+                unoptimized
+              />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                <span className="material-symbols-outlined text-white text-3xl drop-shadow-md">upload</span>
+              </div>
+              <input type="file" accept="image/*" className="hidden" onChange={handleLogoImageUpload} />
+            </label>
           </div>
           <h2 className="font-display text-3xl md:text-6xl text-white mb-2 md:mb-3 drop-shadow-lg text-center leading-tight">
             Chuyến tàu thanh xuân
