@@ -969,6 +969,17 @@ export default function DangKyPage() {
                         />
                       </div>
                       <div className="w-full text-center space-y-1">
+                         <div className="mt-2 mb-4">
+                            <label className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Số tiền đóng góp (VNĐ)</label>
+                            <input
+                              type="number"
+                              value={donationAmount}
+                              onChange={(e) => setDonationAmount(e.target.value)}
+                              className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-primary font-body text-center font-bold text-lg"
+                              placeholder="Nhập số tiền..."
+                            />
+                            <p className="text-[10px] text-on-surface-variant mt-2 italic">Mã QR sẽ tự động cập nhật theo số tiền bạn nhập</p>
+                         </div>
                          <div className="mt-4 inline-block bg-primary-fixed/30 px-4 py-3 rounded-xl border border-primary-fixed-dim/50 w-full">
                             <p className="text-[10px] font-bold text-primary uppercase mb-1">Nội dung chuyển khoản</p>
                             <p className="text-sm font-mono font-bold text-on-surface tracking-tight">{formData.name && formData.phone ? `${formData.name} - ${formData.phone}` : '[Họ Tên] - [Số điện thoại]'}</p>
