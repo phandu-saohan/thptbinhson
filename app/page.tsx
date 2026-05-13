@@ -1052,17 +1052,13 @@ export default function DangKyPage() {
                               <img src={receiptPreview} alt="Biên lai" className="w-full h-full object-contain" />
                             </div>
                             {aiError && (
-                              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
-                                <span className="material-symbols-outlined text-amber-500 text-lg">error</span>
-                                <p className="text-xs text-amber-700 font-medium">{aiError}</p>
-                              </div>
-                            )}
-
-
-                            {aiError && (
-                              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
-                                <span className="material-symbols-outlined text-amber-500 text-lg">error</span>
-                                <p className="text-xs text-amber-700 font-medium">{aiError}</p>
+                              <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 flex items-start gap-2.5">
+                                <span className="material-symbols-outlined text-rose-500 text-xl mt-0.5 shrink-0">cancel</span>
+                                <div>
+                                  <p className="text-xs font-bold text-rose-700 mb-0.5 uppercase tracking-wide">⚠️ Ảnh chuyển khoản không hợp lệ</p>
+                                  <p className="text-xs text-rose-600">{aiError}</p>
+                                  <p className="text-[10px] text-rose-400 mt-1 italic">Vui lòng bấm ✕ để xóa ảnh và tải lên ảnh biên lai đúng.</p>
+                                </div>
                               </div>
                             )}
                           </div>
