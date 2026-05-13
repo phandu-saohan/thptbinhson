@@ -419,7 +419,13 @@ export default function DangKyPage() {
           const response = await fetch('/api/scan-receipt', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ base64, mimeType }),
+            body: JSON.stringify({ 
+              base64, 
+              mimeType,
+              expectedAmount: donatedAmount,
+              expectedName: formData.name,
+              expectedPhone: formData.phone
+            }),
           });
 
           const json = await response.json();
@@ -436,7 +442,9 @@ export default function DangKyPage() {
           }
         } catch (err: any) {
           console.error('AI scan error:', err);
-          setAiError(`AI không thể đọc biên lai: ${err.message || 'Không xác định'}. Vẫn tiếp tục ghi nhận đăng ký với số tiền mặc định.`);
+          setAiError(err.message || 'Lỗi không xác định khi kiểm duyệt biên lai.');
+          setAiScanning(false);
+          return; // Dừng việc đăng ký ngay lập tức nếu biên lai sai
         }
       }
 
