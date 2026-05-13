@@ -295,7 +295,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Registration DELETE
+  // Registration CRUD
   const handleDeleteRegistration = async (id: string) => {
     const { error } = await supabase.from('registrations').delete().eq('id', id);
     if (!error) {
@@ -304,6 +304,37 @@ export default function DashboardPage() {
     } else {
       addNotification('Xóa thất bại', 'warning');
     }
+  };
+
+  const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
+
+  const handleSaveRegistration = async (reg: Registration) => {
+    const isNew = !reg.id;
+    const reqData = {
+      name: reg.name,
+      phone: reg.phone,
+      will_attend: reg.will_attend,
+      memory: reg.memory || undefined,
+      amount: reg.amount || 0,
+    };
+    if (!isNew) {
+      const { error } = await supabase.from('registrations').update(reqData).eq('id', reg.id);
+      if (!error) {
+        setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, ...reqData } : r));
+        addNotification('Đã cập nhật đăng ký', 'success');
+      } else {
+        addNotification('Cập nhật thất bại: ' + error.message, 'warning');
+      }
+    } else {
+      const { data, error } = await supabase.from('registrations').insert([reqData]).select().single();
+      if (!error && data) {
+        setRegistrations(prev => [data as Registration, ...prev]);
+        addNotification('Đã thêm đăng ký mới', 'success');
+      } else {
+        addNotification('Thêm thất bại: ' + (error?.message || ''), 'warning');
+      }
+    }
+    setEditingRegistration(null);
   };
 
   React.useEffect(() => {
@@ -726,15 +757,24 @@ export default function DashboardPage() {
                       <p className="text-xl font-black text-amber-700">{registrations.filter(r => r.amount && r.amount > 0).reduce((s, r) => s + (r.amount || 0), 0).toLocaleString('vi-VN')}đ</p>
                     </div>
                   </div>
-                  <div className="relative">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      placeholder="Tìm tên, số điện thoại..."
-                      value={regSearch}
-                      onChange={e => setRegSearch(e.target.value)}
-                      className="pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-                    />
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Tìm tên, số điện thoại..."
+                        value={regSearch}
+                        onChange={e => setRegSearch(e.target.value)}
+                        className="pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setEditingRegistration({ id: '', name: '', phone: '', will_attend: 'yes', memory: '', amount: 0, created_at: '' })}
+                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Thêm mới
+                    </button>
                   </div>
                 </div>
               </div>
@@ -793,10 +833,18 @@ export default function DashboardPage() {
                             {new Date(r.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={() => { if (confirm(`Xóa đăng ký của ${r.name}?`)) handleDeleteRegistration(r.id); }}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                            ><Trash2 size={15} /></button>
+                            <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => setEditingRegistration(r)}
+                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                title="Sửa"
+                              ><Edit2 size={15} /></button>
+                              <button
+                                onClick={() => { if (confirm(`Xóa đăng ký của ${r.name}?`)) handleDeleteRegistration(r.id); }}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
+                                title="Xóa"
+                              ><Trash2 size={15} /></button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -809,6 +857,96 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
+
+              {/* Modal Thêm / Sửa đăng ký */}
+              {editingRegistration && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+                    <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                      <h3 className="font-bold text-slate-900 text-lg">
+                        {editingRegistration.id ? 'Chỉnh sửa đăng ký' : 'Thêm đăng ký mới'}
+                      </h3>
+                      <button onClick={() => setEditingRegistration(null)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400"><X size={18} /></button>
+                    </div>
+                    <div className="p-6 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Họ và Tên *</label>
+                          <input
+                            type="text"
+                            value={editingRegistration.name}
+                            onChange={e => setEditingRegistration({ ...editingRegistration, name: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="Nguyễn Văn A"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Số điện thoại *</label>
+                          <input
+                            type="text"
+                            value={editingRegistration.phone}
+                            onChange={e => setEditingRegistration({ ...editingRegistration, phone: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
+                            placeholder="0901234567"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Tham dự</label>
+                          <select
+                            value={editingRegistration.will_attend}
+                            onChange={e => setEditingRegistration({ ...editingRegistration, will_attend: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          >
+                            <option value="yes">Có về ✓</option>
+                            <option value="no">Không về</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Số tiền đóng góp (VNĐ)</label>
+                          <input
+                            type="number"
+                            value={editingRegistration.amount || 0}
+                            onChange={e => setEditingRegistration({ ...editingRegistration, amount: parseInt(e.target.value) || 0 })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="0"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Kỷ niệm chia sẻ</label>
+                        <textarea
+                          value={editingRegistration.memory || ''}
+                          onChange={e => setEditingRegistration({ ...editingRegistration, memory: e.target.value })}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+                          placeholder="Kỷ niệm đáng nhớ..."
+                        />
+                      </div>
+                    </div>
+                    <div className="p-6 pt-0 flex justify-end gap-3">
+                      <button
+                        onClick={() => setEditingRegistration(null)}
+                        className="px-5 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition"
+                      >Hủy</button>
+                      <button
+                        onClick={() => {
+                          if (!editingRegistration.name || !editingRegistration.phone) {
+                            alert('Vui lòng nhập Họ tên và Số điện thoại!');
+                            return;
+                          }
+                          handleSaveRegistration(editingRegistration);
+                        }}
+                        className="px-5 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+                      >
+                        <Save size={15} />
+                        {editingRegistration.id ? 'Lưu thay đổi' : 'Thêm đăng ký'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

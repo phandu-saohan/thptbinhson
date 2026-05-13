@@ -11,23 +11,19 @@ export async function POST(req: NextRequest) {
 
     const expectedFormatted = parseInt(expectedAmount).toLocaleString('vi-VN');
 
-    const prompt = `Bạn là trợ lý kiểm duyệt biên lai chuyển khoản ngân hàng tại Việt Nam.
+    const prompt = `Bạn là trợ lý kiểm duyệt biên lai chuyển khoản.
+Nhiệm vụ: Đọc số tiền đã chuyển trong ảnh biên lai. Kiểm tra xem số tiền đó có khớp với ${expectedAmount} VNĐ không?
+(Cho phép sai lệch ±1000đ do làm tròn).
 
-Số tiền cần xác minh: ${expectedAmount} VNĐ (${expectedFormatted} đồng)
-
-Nhiệm vụ:
-1. Xác định đây có phải ảnh chụp màn hình biên lai "Chuyển tiền thành công" của ứng dụng ngân hàng Việt Nam không? (Nếu là ảnh selfie, phong cảnh, logo, hóa đơn khác → KHÔNG HỢP LỆ)
-2. Đọc số tiền đã chuyển trong biên lai. Kiểm tra xem số tiền đó có bằng đúng ${expectedAmount} VNĐ không? (Cho phép sai lệch ±1000đ do làm tròn)
-
-Trả về ĐÚNG định dạng JSON sau, KHÔNG kèm text khác:
+Trả về JSON:
 {
-  "isValidBankReceipt": true hoặc false,
-  "extractedAmount": "chỉ gồm chữ số, ví dụ 2000000",
-  "isAmountMatch": true hoặc false
+  "isAmountMatch": true hoặc false,
+  "extractedAmount": "số tiền đọc được (chỉ dùng chữ số)",
+  "reason": "giải thích ngắn gọn bằng tiếng Việt nếu không khớp"
 }`;
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,21 +73,16 @@ Trả về ĐÚNG định dạng JSON sau, KHÔNG kèm text khác:
       return NextResponse.json({ error: 'AI xử lý ảnh thất bại. Vui lòng thử lại.' }, { status: 422 });
     }
 
-    // Kiểm tra 1: Ảnh có phải biên lai ngân hàng không?
-    if (!parsedResult.isValidBankReceipt) {
-      return NextResponse.json({ 
-        error: 'Ảnh không phải biên lai chuyển khoản ngân hàng. Vui lòng chụp màn hình ứng dụng ngân hàng sau khi chuyển tiền thành công.' 
-      }, { status: 400 });
-    }
-
-    // Kiểm tra 2: Số tiền có khớp không?
+    // Kiểm tra: Số tiền có khớp không?
     if (!parsedResult.isAmountMatch) {
       const aiAmount = parsedResult.extractedAmount 
         ? parseInt(parsedResult.extractedAmount).toLocaleString('vi-VN') + 'đ'
         : 'không đọc được';
       const expectedFmt = parseInt(expectedAmount).toLocaleString('vi-VN') + 'đ';
+      const reason = parsedResult.reason ? ` (${parsedResult.reason})` : '';
+      
       return NextResponse.json({ 
-        error: `Sai số tiền: Biên lai ghi ${aiAmount} nhưng cần chuyển ${expectedFmt}.` 
+        error: `Số tiền không khớp: Biên lai ghi ${aiAmount} nhưng cần chuyển ${expectedFmt}.${reason}` 
       }, { status: 400 });
     }
 
