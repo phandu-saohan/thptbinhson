@@ -331,6 +331,11 @@ export default function DangKyPage() {
     e.preventDefault();
     if (!formData.name || !formData.phone) return;
 
+    if (!receiptFile) {
+      alert('Vui lòng đính kèm ảnh biên lai chuyển khoản để hoàn tất đăng ký!');
+      return;
+    }
+
     try {
       setAiScanning(true);
       let donatedAmount = parseInt(donationAmount || '0');
@@ -862,7 +867,7 @@ export default function DangKyPage() {
                               <span className="material-symbols-outlined text-primary text-xl">camera_alt</span>
                               Ảnh biên lai chuyển khoản
                             </p>
-                            <p className="text-[10px] text-on-surface-variant mt-0.5">Tùy chọn — AI sẽ tự điền tên & SĐT cho bạn</p>
+                            <p className="text-[10px] text-rose-500 mt-0.5">Bắt buộc — Dùng để đối soát và ghi nhận đóng góp</p>
                           </div>
                           {receiptPreview && (
                             <button
