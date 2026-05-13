@@ -813,25 +813,31 @@ export default function DangKyPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="classC" className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Lớp C</label>
-                          <input
-                            type="text"
+                          <select
                             id="classC"
                             value={formData.classC}
                             onChange={(e) => setFormData({...formData, classC: e.target.value})}
-                            className="w-full px-5 py-4 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-on-surface font-body placeholder-on-surface-variant/40"
-                            placeholder="VD: 9C"
-                          />
+                            className="w-full px-5 py-4 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-on-surface font-body appearance-none cursor-pointer"
+                          >
+                            <option value="">Chọn lớp</option>
+                            {Array.from({ length: 13 }, (_, i) => `C${i + 1}`).map(cls => (
+                              <option key={cls} value={cls}>{cls}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label htmlFor="classB" className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Lớp B</label>
-                          <input
-                            type="text"
+                          <select
                             id="classB"
                             value={formData.classB}
                             onChange={(e) => setFormData({...formData, classB: e.target.value})}
-                            className="w-full px-5 py-4 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-on-surface font-body placeholder-on-surface-variant/40"
-                            placeholder="VD: 12B"
-                          />
+                            className="w-full px-5 py-4 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-on-surface font-body appearance-none cursor-pointer"
+                          >
+                            <option value="">Chọn lớp</option>
+                            {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
+                              <option key={cls} value={cls}>{cls}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                       <div>
