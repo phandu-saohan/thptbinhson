@@ -14,6 +14,8 @@ interface Registration {
   id: string;
   name: string;
   phone: string;
+  class_c?: string;
+  class_b?: string;
   will_attend: string;
   memory?: string;
   amount?: number;
@@ -313,8 +315,10 @@ export default function DashboardPage() {
     const reqData = {
       name: reg.name,
       phone: reg.phone,
+      class_c: reg.class_c || '',
+      class_b: reg.class_b || '',
       will_attend: reg.will_attend,
-      memory: reg.memory || undefined,
+      memory: reg.memory || '',
       amount: reg.amount || 0,
     };
     if (!isNew) {
@@ -769,7 +773,7 @@ export default function DashboardPage() {
                       />
                     </div>
                     <button
-                      onClick={() => setEditingRegistration({ id: '', name: '', phone: '', will_attend: 'yes', memory: '', amount: 0, created_at: '' })}
+                      onClick={() => setEditingRegistration({ id: '', name: '', phone: '', class_c: '', class_b: '', will_attend: 'yes', memory: '', amount: 0, created_at: new Date().toISOString() })}
                       className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition"
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -784,6 +788,7 @@ export default function DashboardPage() {
                     <tr>
                       <th className="px-6 py-4">Họ và tên</th>
                       <th className="px-6 py-4">Số điện thoại</th>
+                      <th className="px-6 py-4">Lớp</th>
                       <th className="px-6 py-4">Tham dự</th>
                       <th className="px-6 py-4 text-right">Đóng góp</th>
                       <th className="px-6 py-4 text-center">Biên lai</th>
@@ -807,6 +812,13 @@ export default function DashboardPage() {
                             </div>
                           </td>
                           <td className="px-6 py-4 font-mono text-sm text-slate-600">{r.phone}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">
+                             <div className="flex flex-col">
+                                {r.class_c && <span className="font-bold text-blue-600">Lớp C: {r.class_c}</span>}
+                                {r.class_b && <span className="text-xs text-slate-500">Lớp B: {r.class_b}</span>}
+                                {!r.class_c && !r.class_b && <span className="italic text-slate-300">—</span>}
+                             </div>
+                          </td>
                           <td className="px-6 py-4">
                             {r.will_attend === 'yes'
                               ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase">Có về ✓</span>
@@ -889,6 +901,34 @@ export default function DashboardPage() {
                             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
                             placeholder="0901234567"
                           />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Lớp C</label>
+                          <select
+                            value={editingRegistration.class_c || ''}
+                            onChange={e => setEditingRegistration({ ...editingRegistration, class_c: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          >
+                            <option value="">Không có</option>
+                            {Array.from({ length: 13 }, (_, i) => `C${i + 1}`).map(cls => (
+                              <option key={cls} value={cls}>{cls}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Lớp B</label>
+                          <select
+                            value={editingRegistration.class_b || ''}
+                            onChange={e => setEditingRegistration({ ...editingRegistration, class_b: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          >
+                            <option value="">Không có</option>
+                            {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
+                              <option key={cls} value={cls}>{cls}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
