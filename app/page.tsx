@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
+
 import { supabase } from '@/lib/supabaseClient';
 
 
@@ -452,22 +452,7 @@ export default function DangKyPage() {
 
 
 
-  const chartData = [
-    { name: 'T1', thu: 15, chi: 0 },
-    { name: 'T2', thu: 25, chi: 5 },
-    { name: 'T3', thu: 40, chi: 10 },
-    { name: 'T4', thu: 80, chi: 35 },
-    { name: 'T5', thu: 120, chi: 60 },
-  ];
-  
-  const expenseData = [
-    { name: 'Tiệc kỷ niệm', value: 40 },
-    { name: 'Chụp hình/Video', value: 15 },
-    { name: 'Sân khấu & Âm thanh', value: 20 },
-    { name: 'Quà lưu niệm', value: 10 },
-    { name: 'Quỹ dự phòng', value: 15 },
-  ];
-  const COLORS = ['#ef4444', '#f97316', '#3b82f6', '#10b981', '#64748b'];
+
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
@@ -959,10 +944,10 @@ export default function DangKyPage() {
                       <h3 className="text-xl font-title text-primary">Tiệc Giao Lưu Cùng Nhau</h3>
                       <span className="inline-block px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-lg text-sm font-bold mt-2 md:mt-0 tracking-wider w-max">11:30 - 14:00</span>
                     </div>
-                    <p className="text-on-surface-variant mb-4">Di chuyển đến nhà hàng dự tiệc mặn. Thưởng thức bữa trưa ấm cúng, nâng ly chúc mừng và tiếp tục hàn huyên chia sẻ.</p>
+                    <p className="text-on-surface-variant mb-4">Cùng nhau dự tiệc mặn ngay tại khuôn viên trường. Thưởng thức bữa trưa ấm cúng, nâng ly chúc mừng và tiếp tục hàn huyên chia sẻ.</p>
                     <div className="flex items-center text-sm font-medium text-on-surface-variant bg-surface-container px-4 py-3 rounded-xl border border-outline-variant/20">
-                      <span className="material-symbols-outlined text-sm mr-2 opacity-50">restaurant_menu</span>
-                      Nhà hàng Biển Đông (Dự kiến)
+                      <span className="material-symbols-outlined text-sm mr-2 opacity-50">location_on</span>
+                      Trường THPT Bình Sơn
                     </div>
                   </div>
                 </div>
@@ -982,75 +967,7 @@ export default function DangKyPage() {
               <p className="text-on-surface-variant mt-4 max-w-lg mx-auto">Cập nhật dự toán và tình hình đóng góp từ các thành viên khóa 2003-2006</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-3 md:gap-8 mb-4 md:mb-12">
-               <div className="bg-primary-fixed/30 rounded-xl p-6 border border-primary-fixed-dim/50 text-center">
-                  <p className="text-label-sm font-bold text-primary uppercase tracking-wider mb-2">Đã đóng góp</p>
-                  <p className="text-4xl font-headline text-primary">85<span className="text-lg font-body text-on-surface-variant">Người</span></p>
-               </div>
-               <div className="bg-secondary-fixed/30 rounded-xl p-6 border border-secondary-fixed-dim/50 text-center">
-                  <p className="text-label-sm font-bold text-secondary uppercase tracking-wider mb-2">Tổng quỹ hiện tại</p>
-                  <p className="text-4xl font-headline text-secondary">120<span className="text-lg font-body text-on-surface-variant">Tr</span></p>
-               </div>
-               <div className="bg-tertiary-fixed/30 rounded-xl p-6 border border-tertiary-fixed-dim/50 text-center">
-                  <p className="text-label-sm font-bold text-tertiary uppercase tracking-wider mb-2">Dự toán tổng chi</p>
-                  <p className="text-4xl font-headline text-tertiary">180<span className="text-lg font-body text-on-surface-variant">Tr</span></p>
-               </div>
-            </div>
 
-            <div className="grid lg:grid-cols-2 gap-12">
-               <div className="space-y-6">
-                 <h3 className="text-xl font-bold text-slate-900 border-b border-slate-200 pb-4">Biểu Đồ Thu Chi Theo Tháng (Triệu VNĐ)</h3>
-                 <div className="h-[300px] w-full">
-                   <ResponsiveContainer width="100%" height="100%">
-                     <BarChart data={chartData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
-                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
-                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                       <RechartsTooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                       <Bar dataKey="thu" name="Tổng thu" fill="var(--color-primary)" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                       <Bar dataKey="chi" name="Tổng chi" fill="var(--color-secondary)" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                     </BarChart>
-                   </ResponsiveContainer>
-                 </div>
-               </div>
-               <div className="space-y-6">
-                 <h3 className="text-xl font-bold text-slate-900 border-b border-slate-200 pb-4">Cơ Cấu Chi Phí Dự Kiến (%)</h3>
-                 <div className="flex items-center space-x-6">
-                   <div className="w-1/2 h-[250px]">
-                     <ResponsiveContainer width="100%" height="100%">
-                        <RechartsPieChart>
-                          <Pie
-                            data={expenseData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={90}
-                            paddingAngle={5}
-                            dataKey="value"
-                            stroke="none"
-                          >
-                            {expenseData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                        </RechartsPieChart>
-                     </ResponsiveContainer>
-                   </div>
-                   <div className="w-1/2 space-y-3">
-                     {expenseData.map((item, index) => (
-                       <div key={index} className="flex items-center justify-between text-sm">
-                         <div className="flex items-center">
-                           <div className="w-3 h-3 rounded-full mr-2 shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                           <span className="text-slate-600 font-medium truncate pr-2">{item.name}</span>
-                         </div>
-                         <span className="font-bold text-slate-900 shrink-0">{item.value}%</span>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               </div>
-            </div>
             
             <div className="mt-12 bg-slate-50 p-6 rounded-2xl border border-slate-200">
                <h4 className="font-bold text-slate-900 mb-2">💡 Ghi chú:</h4>
