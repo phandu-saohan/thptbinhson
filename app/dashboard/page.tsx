@@ -17,6 +17,7 @@ interface Registration {
   will_attend: string;
   memory?: string;
   amount?: number;
+  receipt_url?: string;
   created_at: string;
 }
 
@@ -745,6 +746,7 @@ export default function DashboardPage() {
                       <th className="px-6 py-4">Số điện thoại</th>
                       <th className="px-6 py-4">Tham dự</th>
                       <th className="px-6 py-4 text-right">Đóng góp</th>
+                      <th className="px-6 py-4 text-center">Biên lai</th>
                       <th className="px-6 py-4">Kỷ niệm chia sẻ</th>
                       <th className="px-6 py-4">Ngày đăng ký</th>
                       <th className="px-6 py-4 text-right">Thao tác</th>
@@ -776,6 +778,15 @@ export default function DashboardPage() {
                               ? <span className="text-sm font-black text-emerald-700">+{r.amount.toLocaleString('vi-VN')}đ</span>
                               : <span className="text-xs text-slate-300 italic">—</span>
                             }
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            {r.receipt_url ? (
+                              <a href={r.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors" title="Xem biên lai">
+                                <ReceiptText size={18} />
+                              </a>
+                            ) : (
+                              <span className="text-slate-300 italic">—</span>
+                            )}
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-500 max-w-[250px] truncate">{r.memory || <span className="italic text-slate-300">—</span>}</td>
                           <td className="px-6 py-4 text-xs text-slate-400 whitespace-nowrap">

@@ -440,10 +440,31 @@ export default function DangKyPage() {
         }
       }
 
+      // 1.5. Upload ảnh lên Supabase Storage
+      let uploadedReceiptUrl = '';
+      if (receiptFile) {
+        try {
+          const fileExt = receiptFile.name.split('.').pop();
+          const fileName = `receipt-${Date.now()}-${Math.floor(Math.random()*1000)}.${fileExt}`;
+          const { data: uploadData, error: uploadErr } = await supabase.storage
+            .from('site-assets')
+            .upload(`receipts/${fileName}`, receiptFile);
+            
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabase.storage.from('site-assets').getPublicUrl(`receipts/${fileName}`);
+            uploadedReceiptUrl = publicUrlData.publicUrl;
+          } else {
+             console.error('Lỗi upload ảnh:', uploadErr);
+          }
+        } catch(err) {
+          console.error('Lỗi quá trình upload:', err);
+        }
+      }
+
       // 2. Ghi nhận đăng ký
       const { data: existingReg } = await supabase
         .from('registrations')
-        .select('id, amount')
+        .select('id, amount, receipt_url')
         .eq('phone', formData.phone)
         .maybeSingle();
 
@@ -457,7 +478,8 @@ export default function DangKyPage() {
              class_b: formData.classB,
              will_attend: formData.willAttend,
              memory: formData.memory,
-             amount: donatedAmount > 0 ? donatedAmount : existingReg.amount 
+             amount: donatedAmount > 0 ? donatedAmount : existingReg.amount,
+             receipt_url: uploadedReceiptUrl || existingReg.receipt_url
            })
            .eq('id', existingReg.id);
          if (updateErr) throw updateErr;
@@ -470,7 +492,8 @@ export default function DangKyPage() {
            phone: formData.phone,
            will_attend: formData.willAttend,
            memory: formData.memory,
-           amount: donatedAmount
+           amount: donatedAmount,
+           receipt_url: uploadedReceiptUrl
          }]);
          if (regError) throw regError;
       }
