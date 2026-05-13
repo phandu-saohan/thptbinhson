@@ -2,32 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { base64, mimeType, expectedAmount, expectedName, expectedPhone } = await req.json();
+    const { base64, mimeType, expectedAmount } = await req.json();
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'Chưa cấu hình GEMINI_API_KEY' }, { status: 500 });
     }
 
-    const prompt = `Bạn là một trợ lý kiểm duyệt biên lai chuyển khoản của ngân hàng tại Việt Nam.
-Tôi sẽ cung cấp cho bạn 3 thông tin dự kiến từ người dùng:
-- Số tiền dự kiến: ${expectedAmount} VNĐ
-- Tên người gửi: ${expectedName}
-- Số điện thoại: ${expectedPhone}
+    const expectedFormatted = parseInt(expectedAmount).toLocaleString('vi-VN');
 
-Nhiệm vụ của bạn:
-1. Xác nhận đây có PHẢI là ảnh chụp màn hình biên lai chuyển khoản thành công của ngân hàng tại Việt Nam không?
-2. Trích xuất số tiền đã chuyển. Kiểm tra xem nó có bằng đúng với Số tiền dự kiến không?
-3. Trích xuất nội dung chuyển khoản. Kiểm tra xem nội dung chuyển khoản có chứa Tên người gửi và Số điện thoại dự kiến không? (Bạn có thể bỏ qua sự khác biệt về dấu tiếng Việt, viết hoa viết thường, hoặc thiếu/dư khoảng trắng. Miễn là đọc vào nhận ra được họ tên và SĐT).
+    const prompt = `Bạn là trợ lý kiểm duyệt biên lai chuyển khoản ngân hàng tại Việt Nam.
 
-Bạn PHẢI trả về KẾT QUẢ ĐẦU RA là MỘT ĐỐI TƯỢNG JSON chuẩn, KHÔNG kèm theo bất kỳ văn bản nào khác, KHÔNG dùng markdown \`\`\`json. Định dạng như sau:
+Số tiền cần xác minh: ${expectedAmount} VNĐ (${expectedFormatted} đồng)
+
+Nhiệm vụ:
+1. Xác định đây có phải ảnh chụp màn hình biên lai "Chuyển tiền thành công" của ứng dụng ngân hàng Việt Nam không? (Nếu là ảnh selfie, phong cảnh, logo, hóa đơn khác → KHÔNG HỢP LỆ)
+2. Đọc số tiền đã chuyển trong biên lai. Kiểm tra xem số tiền đó có bằng đúng ${expectedAmount} VNĐ không? (Cho phép sai lệch ±1000đ do làm tròn)
+
+Trả về ĐÚNG định dạng JSON sau, KHÔNG kèm text khác:
 {
-  "isValidBankReceipt": true/false,
-  "extractedAmount": "số tiền trích xuất (chỉ gồm chữ số, vd 2000000)",
-  "isAmountMatch": true/false,
-  "extractedNote": "nội dung chuyển khoản trích xuất",
-  "isNoteMatch": true/false,
-  "reason": "Nếu bất kỳ điều kiện nào (isValidBankReceipt, isAmountMatch, isNoteMatch) là false, hãy ghi rõ lý do ngắn gọn bằng tiếng Việt. Nếu tất cả true, để chuỗi rỗng."
+  "isValidBankReceipt": true hoặc false,
+  "extractedAmount": "chỉ gồm chữ số, ví dụ 2000000",
+  "isAmountMatch": true hoặc false
 }`;
 
     const response = await fetch(
@@ -37,7 +33,7 @@ Bạn PHẢI trả về KẾT QUẢ ĐẦU RA là MỘT ĐỐI TƯỢNG JSON chu
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           systemInstruction: {
-            parts: [{ text: "You are a precise data extractor and validator. You must output ONLY a raw JSON object. Do not output any conversational text or markdown wrappers." }]
+            parts: [{ text: "You are a bank receipt validator. Output ONLY a raw JSON object with no markdown, no explanation, no extra text." }]
           },
           contents: [{
             parts: [
@@ -46,8 +42,8 @@ Bạn PHẢI trả về KẾT QUẢ ĐẦU RA là MỘT ĐỐI TƯỢNG JSON chu
             ]
           }],
           generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 512,
+            temperature: 0.0,
+            maxOutputTokens: 256,
             responseMimeType: "application/json"
           }
         })
@@ -65,15 +61,11 @@ Bạn PHẢI trả về KẾT QUẢ ĐẦU RA là MỘT ĐỐI TƯỢNG JSON chu
 
     const json = await response.json();
     let text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
-    // Clean up possible markdown if AI ignored the instruction
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
     if (!text) {
-      console.error('Gemini returned empty text. Full response:', JSON.stringify(json));
       return NextResponse.json({ 
-        error: 'AI không nhận diện được văn bản trong ảnh (có thể do lỗi an toàn hoặc ảnh không rõ)', 
-        details: json 
+        error: 'AI không nhận diện được nội dung trong ảnh. Vui lòng thử ảnh rõ hơn.' 
       }, { status: 422 });
     }
 
@@ -82,36 +74,28 @@ Bạn PHẢI trả về KẾT QUẢ ĐẦU RA là MỘT ĐỐI TƯỢNG JSON chu
       parsedResult = JSON.parse(text);
     } catch (err) {
       console.error('Lỗi parse JSON từ Gemini:', text);
-      return NextResponse.json({ error: 'AI trả về định dạng không hợp lệ', rawText: text }, { status: 422 });
+      return NextResponse.json({ error: 'AI xử lý ảnh thất bại. Vui lòng thử lại.' }, { status: 422 });
     }
 
-    // Kiểm tra kết quả
+    // Kiểm tra 1: Ảnh có phải biên lai ngân hàng không?
     if (!parsedResult.isValidBankReceipt) {
-      const reason = parsedResult.reason ? ` (${parsedResult.reason})` : '';
       return NextResponse.json({ 
-        error: `Ảnh tải lên không phải là biên lai chuyển khoản ngân hàng hợp lệ.${reason}` 
+        error: 'Ảnh không phải biên lai chuyển khoản ngân hàng. Vui lòng chụp màn hình ứng dụng ngân hàng sau khi chuyển tiền thành công.' 
       }, { status: 400 });
     }
 
+    // Kiểm tra 2: Số tiền có khớp không?
     if (!parsedResult.isAmountMatch) {
       const aiAmount = parsedResult.extractedAmount 
         ? parseInt(parsedResult.extractedAmount).toLocaleString('vi-VN') + 'đ'
         : 'không đọc được';
-      const expectedFormatted = parseInt(expectedAmount).toLocaleString('vi-VN') + 'đ';
-      const reason = parsedResult.reason ? ` — ${parsedResult.reason}` : '';
+      const expectedFmt = parseInt(expectedAmount).toLocaleString('vi-VN') + 'đ';
       return NextResponse.json({ 
-        error: `Sai số tiền: Biên lai ghi ${aiAmount} nhưng bạn cần chuyển ${expectedFormatted}.${reason}` 
+        error: `Sai số tiền: Biên lai ghi ${aiAmount} nhưng cần chuyển ${expectedFmt}.` 
       }, { status: 400 });
     }
 
-    if (!parsedResult.isNoteMatch) {
-      const reason = parsedResult.reason ? ` — ${parsedResult.reason}` : '';
-      return NextResponse.json({ 
-        error: `Sai nội dung chuyển khoản: Không tìm thấy Họ Tên "${expectedName}" và SĐT "${expectedPhone}" trong biên lai.${reason}` 
-      }, { status: 400 });
-    }
-
-    return NextResponse.json({ success: true, data: { amount: parsedResult.extractedAmount, note: parsedResult.extractedNote } });
+    return NextResponse.json({ success: true, data: { amount: parsedResult.extractedAmount } });
 
   } catch (err: any) {
     console.error('scan-receipt error:', err);
