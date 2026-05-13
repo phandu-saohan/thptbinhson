@@ -555,11 +555,6 @@ export default function DangKyPage() {
     reader.readAsDataURL(file);
   };
 
-  };
-
-
-
-
   return (
     <div className="min-h-screen bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
       {/* TopAppBar */}
