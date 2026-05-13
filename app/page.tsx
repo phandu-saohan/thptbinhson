@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 // ── FinanceStatisticsBlock: Block thống kê thu chi (bao gồm Danh sách đăng ký) ──
 function FinanceStatisticsBlock() {
-  const [incomes, setIncomes] = React.useState<{name:string;phone:string;will_attend:string;amount?:number;created_at:string;memory?:string}[]>([]);
+  const [incomes, setIncomes] = React.useState<{name:string;phone:string;will_attend:string;amount?:number;created_at:string;memory?:string;class_c?:string;class_b?:string}[]>([]);
   const [expenses, setExpenses] = React.useState<{id:string;date:string;name:string;amount:number;type:string;note:string;created_at:string}[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [activeStatTab, setActiveStatTab] = React.useState<'IN' | 'OUT' | 'PLAN'>('IN');
@@ -37,9 +37,12 @@ function FinanceStatisticsBlock() {
     });
   }, []);
 
-  const getClasses = (name: string) => {
-    const match = name.match(/\((.*?)\)$/);
-    if (!match) return { cleanName: name, classC: '', classB: '' };
+  const getClasses = (row: any) => {
+    if (row.class_c || row.class_b) {
+      return { cleanName: row.name, classC: row.class_c || '', classB: row.class_b || '' };
+    }
+    const match = row.name.match(/\((.*?)\)$/);
+    if (!match) return { cleanName: row.name, classC: '', classB: '' };
     const classesStr = match[1];
     const parts = classesStr.split(' | ');
     let classC = '';
@@ -48,11 +51,11 @@ function FinanceStatisticsBlock() {
       if (p.startsWith('Lớp C: ')) classC = p.replace('Lớp C: ', '');
       if (p.startsWith('Lớp B: ')) classB = p.replace('Lớp B: ', '');
     });
-    return { cleanName: name.replace(` (${classesStr})`, '').trim(), classC, classB };
+    return { cleanName: row.name.replace(` (${classesStr})`, '').trim(), classC, classB };
   };
 
   const filteredIncomes = incomes.filter(t => {
-    const { cleanName, classC, classB } = getClasses(t.name);
+    const { cleanName, classC, classB } = getClasses(t);
     const matchesSearch = cleanName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (t.memory && t.memory.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesClassC = classCFilter === '' || classC === classCFilter;
@@ -181,7 +184,7 @@ function FinanceStatisticsBlock() {
                 <tr><td colSpan={6} className="text-center py-12 text-slate-400">Chưa có dữ liệu</td></tr>
               ) : (
                 filteredIncomes.map((r, idx) => {
-                  const { cleanName, classC, classB } = getClasses(r.name);
+                  const { cleanName, classC, classB } = getClasses(r);
                   return (
                   <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
                     <td className="px-4 md:px-6 py-3">
@@ -436,11 +439,6 @@ export default function DangKyPage() {
         }
       }
 
-      let finalName = formData.name;
-      if (formData.classC || formData.classB) {
-        finalName = `${formData.name} (${[formData.classC ? `Lớp C: ${formData.classC}` : '', formData.classB ? `Lớp B: ${formData.classB}` : ''].filter(Boolean).join(' | ')})`;
-      }
-
       // 2. Ghi nhận đăng ký
       const { data: existingReg } = await supabase
         .from('registrations')
@@ -453,7 +451,9 @@ export default function DangKyPage() {
          const { error: updateErr } = await supabase
            .from('registrations')
            .update({ 
-             name: finalName,
+             name: formData.name,
+             class_c: formData.classC,
+             class_b: formData.classB,
              will_attend: formData.willAttend,
              memory: formData.memory,
              amount: donatedAmount > 0 ? donatedAmount : existingReg.amount 
@@ -463,7 +463,9 @@ export default function DangKyPage() {
       } else {
          // Thêm mới
          const { error: regError } = await supabase.from('registrations').insert([{
-           name: finalName,
+           name: formData.name,
+           class_c: formData.classC,
+           class_b: formData.classB,
            phone: formData.phone,
            will_attend: formData.willAttend,
            memory: formData.memory,
@@ -482,7 +484,9 @@ export default function DangKyPage() {
 
         await supabase.from('transactions').insert([{
           date: dateStr,
-          name: finalName,
+          name: formData.name,
+          class_c: formData.classC,
+          class_b: formData.classB,
           phone: formData.phone,
           amount: donatedAmount,
           type: 'IN',
