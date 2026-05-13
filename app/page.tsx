@@ -329,42 +329,110 @@ export default function DangKyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.phone) {
-      try {
-        const donatedAmount = aiResult?.amount
-          ? parseInt(aiResult.amount.replace(/\D/g, '') || '0')
-          : 0;
+    if (!formData.name || !formData.phone) return;
 
-        // 1. Insert registration
-        const { error: regError } = await supabase.from('registrations').insert([{
+    try {
+      setAiScanning(true);
+      let donatedAmount = parseInt(donationAmount || '0');
+
+      // 1. AI Scan nếu có biên lai
+      if (receiptFile) {
+        setAiError(null);
+        try {
+          // Convert image to base64
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = reader.result as string;
+              resolve(result.split(',')[1]);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(receiptFile);
+          });
+
+          const mimeType = receiptFile.type || 'image/jpeg';
+
+          // Gọi server route — key ẩn phía server, không lộ ra browser
+          const response = await fetch('/api/scan-receipt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ base64, mimeType }),
+          });
+
+          const json = await response.json();
+
+          if (!response.ok || json.error) {
+            throw new Error(json.error || `Lỗi server ${response.status}`);
+          }
+
+          const parsed = json.data;
+          setAiResult(parsed);
+          const parsedAmount = parseInt((parsed.amount || '').replace(/\D/g, '') || '0');
+          if (parsedAmount > 0) {
+            donatedAmount = parsedAmount;
+          }
+        } catch (err: any) {
+          console.error('AI scan error:', err);
+          setAiError(`AI không thể đọc biên lai: ${err.message || 'Không xác định'}. Vẫn tiếp tục ghi nhận đăng ký với số tiền mặc định.`);
+        }
+      }
+
+      // 2. Ghi nhận đăng ký
+      const { data: existingReg } = await supabase
+        .from('registrations')
+        .select('id, amount')
+        .eq('phone', formData.phone)
+        .maybeSingle();
+
+      if (existingReg) {
+         // Cập nhật
+         const { error: updateErr } = await supabase
+           .from('registrations')
+           .update({ 
+             name: formData.name,
+             will_attend: formData.willAttend,
+             memory: formData.memory,
+             amount: donatedAmount > 0 ? donatedAmount : existingReg.amount 
+           })
+           .eq('id', existingReg.id);
+         if (updateErr) throw updateErr;
+      } else {
+         // Thêm mới
+         const { error: regError } = await supabase.from('registrations').insert([{
+           name: formData.name,
+           phone: formData.phone,
+           will_attend: formData.willAttend,
+           memory: formData.memory,
+           amount: donatedAmount
+         }]);
+         if (regError) throw regError;
+      }
+
+      // 3. Ghi nhận khoản thu
+      if (donatedAmount > 0) {
+        const now = new Date();
+        const dateStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}, ${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}`;
+        const noteMsg = receiptFile 
+          ? `Đóng góp quỹ hội — đăng ký từ trang chủ (AI đọc biên lai ${donatedAmount.toLocaleString('vi-VN')}đ)`
+          : `Đóng góp quỹ hội — đăng ký từ trang chủ`;
+
+        await supabase.from('transactions').insert([{
+          date: dateStr,
           name: formData.name,
           phone: formData.phone,
-          will_attend: formData.willAttend,
-          memory: formData.memory,
-          amount: donatedAmount
+          amount: donatedAmount,
+          type: 'IN',
+          status: receiptFile ? 'AI_VERIFYING' : 'PENDING',
+          note: noteMsg
         }]);
-        if (regError) throw regError;
-
-        // 2. If they donated, auto-create a transaction record
-        if (donatedAmount > 0) {
-          const now = new Date();
-          const dateStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}, ${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}`;
-          await supabase.from('transactions').insert([{
-            date: dateStr,
-            name: formData.name,
-            phone: formData.phone,
-            amount: donatedAmount,
-            type: 'IN',
-            status: 'AI_VERIFYING',
-            note: `Đóng góp quỹ hội — đăng ký từ trang chủ (AI đọc biên lai)`
-          }]);
-        }
-
-        setSubmitted(true);
-      } catch (err) {
-        console.error('Lỗi khi gửi đăng ký:', err);
-        alert('Đã xảy ra lỗi khi gửi đăng ký, vui lòng thử lại!');
       }
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Lỗi khi gửi đăng ký:', err);
+      alert('Đã xảy ra lỗi khi gửi đăng ký, vui lòng thử lại!');
+    } finally {
+      setAiScanning(false);
     }
   };
 
@@ -378,105 +446,6 @@ export default function DangKyPage() {
     const reader = new FileReader();
     reader.onload = (ev) => setReceiptPreview(ev.target?.result as string);
     reader.readAsDataURL(file);
-  };
-
-  // AI scan receipt using Gemini Flash (qua server route)
-  const handleAiScan = async () => {
-    if (!receiptFile) return;
-    setAiScanning(true);
-    setAiError(null);
-    setAiResult(null);
-
-    try {
-      // Convert image to base64
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          resolve(result.split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(receiptFile);
-      });
-
-      const mimeType = receiptFile.type || 'image/jpeg';
-
-      // Gọi server route — key ẩn phía server, không lộ ra browser
-      const response = await fetch('/api/scan-receipt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64, mimeType }),
-      });
-
-      const json = await response.json();
-
-      if (!response.ok || json.error) {
-        throw new Error(json.error || `Lỗi server ${response.status}`);
-      }
-
-      const parsed = json.data;
-      setAiResult(parsed);
-
-      // === TỰ ĐỘNG CẬP NHẬT SỐ TIỀN VÀO DB ===
-
-      const parsedAmount = parseInt((parsed.amount || '').replace(/\D/g, '') || '0');
-      if (parsedAmount > 0) {
-        const nameToUse = formData.name;
-        const phoneToUse = formData.phone;
-
-        const now = new Date();
-        const dateStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}, ${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}`;
-
-        if (phoneToUse) {
-          // 1. Tìm registration theo số điện thoại
-          const { data: existingReg } = await supabase
-            .from('registrations')
-            .select('id, amount')
-            .eq('phone', phoneToUse)
-            .maybeSingle();
-
-          if (existingReg) {
-            // Đã có → cập nhật amount
-            const { error: updateErr } = await supabase
-              .from('registrations')
-              .update({ amount: parsedAmount })
-              .eq('id', existingReg.id);
-
-            if (updateErr) {
-              console.error('Update registration error:', updateErr);
-              setAiError(`⚠️ AI đọc được ${parsedAmount.toLocaleString('vi-VN')}đ nhưng chưa lưu tự động. Nhấn "Đăng ký" để xác nhận.`);
-            } else {
-              await supabase.from('transactions').insert([{
-                date: dateStr,
-                name: nameToUse || existingReg.id,
-                phone: phoneToUse,
-                amount: parsedAmount,
-                type: 'IN',
-                status: 'AI_VERIFYING',
-                note: `Đóng góp quỹ hội — AI đọc biên lai (${parsedAmount.toLocaleString('vi-VN')}đ)`,
-              }]);
-              setAiResult(prev => prev ? { ...prev, saved: true } : prev);
-              setAiError(null);
-            }
-          }
-          // Nếu chưa có registration → số tiền lưu khi nhấn "Đăng ký"
-        }
-      }
-
-    } catch (err: any) {
-      console.error('AI scan error:', err);
-      if (err.message?.includes('API Key') || err.message?.includes('API_KEY')) {
-        setAiError('Chưa cấu hình Gemini API Key. Vui lòng điền thủ công.');
-      } else if (err.message?.includes('quota') || err.message?.includes('QUOTA')) {
-        setAiError('API đã hết quota hôm nay. Vui lòng điền thủ công.');
-      } else if (err.message?.includes('fetch') || err.message?.includes('network')) {
-        setAiError('Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại.');
-      } else {
-        setAiError(`AI lỗi: ${err.message || 'Không xác định'}. Vui lòng điền thủ công.`);
-      }
-    } finally {
-      setAiScanning(false);
-    }
   };
 
 
@@ -816,10 +785,20 @@ export default function DangKyPage() {
 
                       <button
                         type="submit"
-                        className="w-full py-4 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-bold text-lg hidden md:flex items-center justify-center space-x-2 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] mt-4"
+                        disabled={aiScanning}
+                        className={`w-full py-4 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-bold text-lg hidden md:flex items-center justify-center space-x-2 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] mt-4 ${aiScanning ? 'opacity-70 cursor-not-allowed' : ''}`}
                       >
-                        <span>Gửi Đăng Ký Ngay</span>
-                        <span className="material-symbols-outlined">send</span>
+                        {aiScanning ? (
+                          <>
+                            <span>Đang xử lý...</span>
+                            <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Gửi Đăng Ký Ngay</span>
+                            <span className="material-symbols-outlined">send</span>
+                          </>
+                        )}
                       </button>
                     </form>
                     </div>
@@ -877,36 +856,10 @@ export default function DangKyPage() {
                             <div className="relative w-full h-40 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
                               <img src={receiptPreview} alt="Biên lai" className="w-full h-full object-contain" />
                             </div>
-                            {!aiResult && !aiScanning && (
-                              <button type="button" onClick={handleAiScan}
-                                className="w-full py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 transition-all active:scale-[0.98]">
-                                <span className="material-symbols-outlined text-sm">auto_awesome</span>
-                                Nhờ AI đọc biên lai
-                              </button>
-                            )}
-                            {aiScanning && (
-                              <div className="w-full py-2.5 bg-violet-50 border border-violet-200 rounded-xl flex items-center justify-center gap-2 text-violet-700 text-sm font-semibold">
-                                <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                                AI đang phân tích ảnh...
-                              </div>
-                            )}
-                            {aiResult && (
-                              <div className={`border rounded-xl p-4 text-center transition-all ${aiResult.saved ? 'bg-emerald-50 border-emerald-300' : 'bg-violet-50 border-violet-200'}`}>
-                                <p className={`text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1 mb-3 ${aiResult.saved ? 'text-emerald-700' : 'text-violet-700'}`}>
-                                  <span className="material-symbols-outlined text-[14px]">{aiResult.saved ? 'check_circle' : 'auto_awesome'}</span>
-                                  {aiResult.saved ? 'Đã lưu vào hệ thống' : 'AI đọc được số tiền'}
-                                </p>
-                                {aiResult.amount && parseInt(aiResult.amount.replace(/\D/g,'')||'0') > 0 ? (
-                                  <div className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-black text-xl shadow-sm ${aiResult.saved ? 'bg-emerald-600 text-white' : 'bg-white border-2 border-emerald-400 text-emerald-700'}`}>
-                                    💰 {parseInt(aiResult.amount.replace(/\D/g,'')||'0').toLocaleString('vi-VN')}đ
-                                    {aiResult.saved && <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">ĐÃ LƯU</span>}
-                                  </div>
-                                ) : (
-                                  <p className="text-slate-400 text-sm">Không đọc được số tiền</p>
-                                )}
-                                <p className={`text-[10px] mt-2 ${aiResult.saved ? 'text-emerald-600 font-semibold' : 'text-violet-500 italic'}`}>
-                                  {aiResult.saved ? '✓ Đóng góp của bạn đã được ghi nhận tự động.' : 'Số tiền sẽ được lưu khi bạn nhấn Đăng ký.'}
-                                </p>
+                            {aiError && (
+                              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+                                <span className="material-symbols-outlined text-amber-500 text-lg">error</span>
+                                <p className="text-xs text-amber-700 font-medium">{aiError}</p>
                               </div>
                             )}
 
@@ -926,10 +879,20 @@ export default function DangKyPage() {
                   <button
                     type="submit"
                     form="registration-form"
-                    className="w-full mt-6 py-4 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-bold text-lg flex md:hidden items-center justify-center space-x-2 transition-all shadow-xl shadow-primary/20 active:scale-[0.98]"
+                    disabled={aiScanning}
+                    className={`w-full mt-6 py-4 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-bold text-lg flex md:hidden items-center justify-center space-x-2 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] ${aiScanning ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
-                    <span>Gửi Đăng Ký Ngay</span>
-                    <span className="material-symbols-outlined">send</span>
+                    {aiScanning ? (
+                      <>
+                        <span>Đang xử lý...</span>
+                        <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Gửi Đăng Ký Ngay</span>
+                        <span className="material-symbols-outlined">send</span>
+                      </>
+                    )}
                   </button>
 
                 </div>
