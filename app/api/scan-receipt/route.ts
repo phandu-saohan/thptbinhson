@@ -87,15 +87,28 @@ Bạn PHẢI trả về KẾT QUẢ ĐẦU RA là MỘT ĐỐI TƯỢNG JSON chu
 
     // Kiểm tra kết quả
     if (!parsedResult.isValidBankReceipt) {
-      return NextResponse.json({ error: parsedResult.reason || 'Ảnh tải lên không phải là biên lai chuyển khoản hợp lệ.' }, { status: 400 });
+      const reason = parsedResult.reason ? ` (${parsedResult.reason})` : '';
+      return NextResponse.json({ 
+        error: `Ảnh tải lên không phải là biên lai chuyển khoản ngân hàng hợp lệ.${reason}` 
+      }, { status: 400 });
     }
 
     if (!parsedResult.isAmountMatch) {
-      return NextResponse.json({ error: parsedResult.reason || `Số tiền chuyển không khớp với ${expectedAmount}đ.` }, { status: 400 });
+      const aiAmount = parsedResult.extractedAmount 
+        ? parseInt(parsedResult.extractedAmount).toLocaleString('vi-VN') + 'đ'
+        : 'không đọc được';
+      const expectedFormatted = parseInt(expectedAmount).toLocaleString('vi-VN') + 'đ';
+      const reason = parsedResult.reason ? ` — ${parsedResult.reason}` : '';
+      return NextResponse.json({ 
+        error: `Sai số tiền: Biên lai ghi ${aiAmount} nhưng bạn cần chuyển ${expectedFormatted}.${reason}` 
+      }, { status: 400 });
     }
 
     if (!parsedResult.isNoteMatch) {
-      return NextResponse.json({ error: parsedResult.reason || 'Nội dung chuyển khoản không chứa đủ Họ Tên và Số điện thoại của bạn.' }, { status: 400 });
+      const reason = parsedResult.reason ? ` — ${parsedResult.reason}` : '';
+      return NextResponse.json({ 
+        error: `Sai nội dung chuyển khoản: Không tìm thấy Họ Tên "${expectedName}" và SĐT "${expectedPhone}" trong biên lai.${reason}` 
+      }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, data: { amount: parsedResult.extractedAmount, note: parsedResult.extractedNote } });
