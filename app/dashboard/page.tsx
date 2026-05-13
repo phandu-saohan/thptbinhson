@@ -385,6 +385,7 @@ export default function DashboardPage() {
   const [photo1, setPhoto1] = useState('https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=800&auto=format&fit=crop');
   const [photo2, setPhoto2] = useState('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop');
   const [photo3, setPhoto3] = useState('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=800&auto=format&fit=crop');
+  const [seoImage, setSeoImage] = useState('/logo.jpg');
   const [uploadingKey, setUploadingKey] = useState<string|null>(null);
 
   // Appearance Settings State — Trang Chủ Content
@@ -428,6 +429,7 @@ export default function DashboardPage() {
           if (map['photo1']) setPhoto1(map['photo1']);
           if (map['photo2']) setPhoto2(map['photo2']);
           if (map['photo3']) setPhoto3(map['photo3']);
+          if (map['seo_image']) setSeoImage(map['seo_image']);
           if (map['hero_image']) setHeroImage(map['hero_image']);
         } else {
           // Fallback to localStorage
@@ -464,7 +466,7 @@ export default function DashboardPage() {
       ['letter_opening', letterOpening], ['bank_name', bankName], ['bank_account', bankAccount],
       ['bank_holder', bankHolder], ['bank_id_qr', bankId2], ['bank_no_qr', bankNo2],
       ['donation_amount', donationAmount], ['hero_video', heroVideo], ['hero_image', heroImage],
-      ['photo1', photo1], ['photo2', photo2], ['photo3', photo3],
+      ['photo1', photo1], ['photo2', photo2], ['photo3', photo3], ['seo_image', seoImage],
     ];
     try {
       for (const [key, value] of entries) {
@@ -1187,6 +1189,25 @@ export default function DashboardPage() {
                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">URL Video .mp4 (bỏ trống nếu dùng ảnh)</label>
                    <input type="text" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" value={heroVideo} onChange={e => setHeroVideo(e.target.value)} placeholder="https://example.com/video.mp4" />
                    {heroVideo && <div className="mt-2 w-full h-28 bg-black rounded-lg overflow-hidden"><video src={heroVideo} autoPlay loop muted playsInline className="w-full h-full object-cover opacity-80" /></div>}
+                 </div>
+               </div>
+
+               {/* SECTION 7: Hình ảnh Meta SEO */}
+               <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-3 border-b border-slate-200 flex items-center gap-2">
+                   <span className="text-base">🌐</span>
+                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">Hình ảnh Meta SEO (Facebook/Zalo)</h4>
+                 </div>
+                 <div className="p-5 space-y-4">
+                   <ImageUploadField
+                     label="Ảnh đại diện khi chia sẻ link"
+                     hint="Khuyến nghị: 1200×630px (Landscape) để hiển thị đẹp nhất trên Mạng xã hội"
+                     currentUrl={seoImage}
+                     settingKey="seo_image"
+                     uploading={uploadingKey === 'seo_image'}
+                     onFileSelect={(file) => handleImageUpload(file, 'seo_image', setSeoImage)}
+                     onUrlChange={setSeoImage}
+                   />
                  </div>
                </div>
 
