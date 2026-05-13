@@ -231,7 +231,7 @@ function FinanceStatisticsBlock() {
 }
 
 export default function DangKyPage() {
-  const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [submitted, setSubmitted] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -384,6 +384,11 @@ export default function DangKyPage() {
         }
       }
 
+      let finalName = formData.name;
+      if (formData.classC || formData.classB) {
+        finalName = `${formData.name} (${[formData.classC ? `Lớp C: ${formData.classC}` : '', formData.classB ? `Lớp B: ${formData.classB}` : ''].filter(Boolean).join(' | ')})`;
+      }
+
       // 2. Ghi nhận đăng ký
       const { data: existingReg } = await supabase
         .from('registrations')
@@ -396,7 +401,7 @@ export default function DangKyPage() {
          const { error: updateErr } = await supabase
            .from('registrations')
            .update({ 
-             name: formData.name,
+             name: finalName,
              will_attend: formData.willAttend,
              memory: formData.memory,
              amount: donatedAmount > 0 ? donatedAmount : existingReg.amount 
@@ -406,7 +411,7 @@ export default function DangKyPage() {
       } else {
          // Thêm mới
          const { error: regError } = await supabase.from('registrations').insert([{
-           name: formData.name,
+           name: finalName,
            phone: formData.phone,
            will_attend: formData.willAttend,
            memory: formData.memory,
@@ -425,7 +430,7 @@ export default function DangKyPage() {
 
         await supabase.from('transactions').insert([{
           date: dateStr,
-          name: formData.name,
+          name: finalName,
           phone: formData.phone,
           amount: donatedAmount,
           type: 'IN',
@@ -804,6 +809,30 @@ export default function DangKyPage() {
                           className="w-full px-5 py-4 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-on-surface font-body placeholder-on-surface-variant/40"
                           placeholder="VD: Nguyễn Văn A"
                         />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="classC" className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Lớp C</label>
+                          <input
+                            type="text"
+                            id="classC"
+                            value={formData.classC}
+                            onChange={(e) => setFormData({...formData, classC: e.target.value})}
+                            className="w-full px-5 py-4 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-on-surface font-body placeholder-on-surface-variant/40"
+                            placeholder="VD: 9C"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="classB" className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Lớp B</label>
+                          <input
+                            type="text"
+                            id="classB"
+                            value={formData.classB}
+                            onChange={(e) => setFormData({...formData, classB: e.target.value})}
+                            className="w-full px-5 py-4 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-on-surface font-body placeholder-on-surface-variant/40"
+                            placeholder="VD: 12B"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label htmlFor="phone" className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Số điện thoại *</label>
