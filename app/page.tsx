@@ -574,9 +574,9 @@ export default function DangKyPage() {
               <Image
                 src={logoImage}
                 alt="Logo Bình Sơn"
-                width={140}
-                height={140}
-                className="object-contain drop-shadow-2xl bg-white/10 p-2 w-20 h-20 md:w-[140px] md:h-[140px] transition-all group-hover/logo:opacity-80"
+                width={160}
+                height={160}
+                className="object-contain drop-shadow-2xl bg-white/10 p-2 w-28 h-28 md:w-[160px] md:h-[160px] transition-all group-hover/logo:opacity-80"
                 unoptimized
               />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
