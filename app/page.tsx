@@ -57,19 +57,19 @@ function FinanceStatisticsBlock() {
       <div className="grid grid-cols-2 md:grid-cols-4 border-b border-slate-100">
         <div className="p-4 md:p-6 text-center border-r border-slate-100">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hành khách</p>
-          <p className="text-2xl md:text-3xl font-headline text-primary">{attending}<span className="text-sm text-slate-400 font-body ml-1">sẽ về</span></p>
+          <p className="text-2xl md:text-3xl font-bold tracking-tight text-primary">{attending}<span className="text-sm text-slate-400 font-medium ml-1">sẽ về</span></p>
         </div>
         <div className="p-4 md:p-6 text-center border-r border-slate-100">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tổng đóng góp</p>
-          <p className="text-xl md:text-2xl font-headline text-emerald-600">{totalIncome > 0 ? totalIncome.toLocaleString('vi-VN') + 'đ' : '—'}</p>
+          <p className="text-xl md:text-2xl font-bold tracking-tight text-emerald-600">{totalIncome > 0 ? totalIncome.toLocaleString('vi-VN') + 'đ' : '—'}</p>
         </div>
         <div className="p-4 md:p-6 text-center border-r border-slate-100">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đã chi thực tế</p>
-          <p className="text-xl md:text-2xl font-headline text-rose-500">{totalOutActual > 0 ? totalOutActual.toLocaleString('vi-VN') + 'đ' : '—'}</p>
+          <p className="text-xl md:text-2xl font-bold tracking-tight text-rose-500">{totalOutActual > 0 ? totalOutActual.toLocaleString('vi-VN') + 'đ' : '—'}</p>
         </div>
         <div className="p-4 md:p-6 text-center">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Còn lại / thiếu</p>
-          <p className={`text-xl md:text-2xl font-headline ${remaining >= 0 ? 'text-blue-600' : 'text-orange-500'}`}>
+          <p className={`text-xl md:text-2xl font-bold tracking-tight ${remaining >= 0 ? 'text-blue-600' : 'text-orange-500'}`}>
             {remaining !== 0 ? (remaining > 0 ? '+' : '') + remaining.toLocaleString('vi-VN') + 'đ' : '—'}
           </p>
         </div>
@@ -448,8 +448,24 @@ export default function DangKyPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    const localUrl = URL.createObjectURL(file);
+    setHeroImage(localUrl);
 
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      try {
+        await supabase.from('site_settings').upsert({ key: 'hero_image', value: base64 }, { onConflict: 'key' });
+      } catch (err) {
+        console.error('Failed to save hero image:', err);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
 
 
@@ -505,42 +521,51 @@ export default function DangKyPage() {
         </div>
       </header>
 
-      <main className="max-w-container-max mx-auto px-3 md:px-margin-desktop py-4 md:py-stack-lg">
-        {/* Hero Section: The Departure */}
-        <section className="relative mb-4 md:mb-stack-lg rounded-xl overflow-hidden min-h-[420px] md:min-h-[530px] flex items-center justify-center text-center p-4 md:p-8">
-          <div className="absolute inset-0 z-0">
-            <Image 
-              src={heroImage}
-              alt="Nostalgic railway"
-              fill
-              className="object-cover"
-              priority
+      {/* Hero Section: Edge-to-edge */}
+      <section className="relative w-full overflow-hidden min-h-[420px] md:min-h-[530px] flex items-center justify-center text-center p-4 md:p-8 group">
+        <div className="absolute inset-0 z-0">
+          <Image 
+            src={heroImage}
+            alt="Nostalgic railway"
+            fill
+            className="object-cover"
+            priority
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/40 to-primary/80"></div>
+        </div>
+        
+        {/* Upload Button overlay */}
+        <label className="absolute top-4 right-4 md:top-8 md:right-8 z-30 bg-black/40 hover:bg-black/70 text-white px-4 py-2 rounded-full cursor-pointer backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 flex items-center gap-2 text-sm shadow-lg border border-white/20">
+          <span className="material-symbols-outlined text-lg">photo_camera</span>
+          <span className="hidden md:block font-medium">Thay ảnh bìa</span>
+          <input type="file" accept="image/*" className="hidden" onChange={handleHeroImageUpload} />
+        </label>
+
+        <div className="relative z-10 max-w-5xl w-full flex flex-col items-center">
+          <div className="flex flex-col items-center mb-4 md:mb-6">
+            <Image
+              src="/logo-binhson.jpg"
+              alt="Logo Bình Sơn"
+              width={140}
+              height={140}
+              className="object-contain drop-shadow-2xl rounded-full bg-white/10 p-2 w-20 h-20 md:w-[140px] md:h-[140px]"
               unoptimized
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/40 to-primary/80"></div>
           </div>
-          <div className="relative z-10 max-w-5xl w-full flex flex-col items-center">
-            <div className="flex flex-col items-center mb-4 md:mb-6">
-              <Image
-                src="/logo-binhson.jpg"
-                alt="Logo Bình Sơn"
-                width={140}
-                height={140}
-                className="object-contain drop-shadow-2xl rounded-full bg-white/10 p-2 w-20 h-20 md:w-[140px] md:h-[140px]"
-                unoptimized
-              />
-            </div>
-            <h2 className="font-display text-3xl md:text-6xl text-white mb-2 md:mb-3 drop-shadow-lg text-center leading-tight">
-              Chuyến tàu thanh xuân
-            </h2>
-            <p className="font-display text-lg md:text-3xl text-white/90 mb-4 md:mb-6 drop-shadow text-center font-medium tracking-wide">
-              Kỷ niệm 20 năm ngày ra trường
-            </p>
-            <p className="text-primary-fixed text-sm md:text-xl italic text-center md:whitespace-nowrap max-w-xs md:max-w-none mx-auto leading-relaxed px-2">
-              &ldquo;Thời gian trôi qua kẽ tay, nhưng kỷ ức còn đọng lại trên sân trường cũ...&rdquo;
-            </p>
-          </div>
-        </section>
+          <h2 className="font-display text-3xl md:text-6xl text-white mb-2 md:mb-3 drop-shadow-lg text-center leading-tight">
+            Chuyến tàu thanh xuân
+          </h2>
+          <p className="font-display text-lg md:text-3xl text-white/90 mb-4 md:mb-6 drop-shadow text-center font-medium tracking-wide">
+            Kỷ niệm 20 năm ngày ra trường
+          </p>
+          <p className="text-primary-fixed text-sm md:text-xl italic text-center md:whitespace-nowrap max-w-xs md:max-w-none mx-auto leading-relaxed px-2">
+            &ldquo;Thời gian trôi qua kẽ tay, nhưng kỷ ức còn đọng lại trên sân trường cũ...&rdquo;
+          </p>
+        </div>
+      </section>
+
+      <main className="max-w-container-max mx-auto px-3 md:px-margin-desktop py-4 md:py-stack-lg">
 
       {/* Main Content */}
       <div id="content" className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop relative z-30 pb-16 md:pb-8">
