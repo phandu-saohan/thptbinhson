@@ -457,33 +457,51 @@ export default function DangKyPage() {
   return (
     <div className="min-h-screen bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
       {/* TopAppBar */}
-      <header className="bg-surface/90 backdrop-blur-xl border-b border-outline-variant/20 shadow-md shadow-primary/5 top-0 z-50 sticky">
-        <div className="flex items-center justify-between px-3 md:px-margin-desktop py-2 md:py-stack-sm w-full max-w-container-max mx-auto">
-          <div className="flex items-center gap-2">
-            <img src="/logo-binhson.jpg" alt="logo" className="w-8 h-8 rounded-full object-cover md:hidden shrink-0" />
-            <div>
-              <h1 className="font-headline text-base md:text-3xl text-primary tracking-tight leading-tight">THPT BÌNH SƠN</h1>
-              <p className="text-[10px] text-on-surface-variant font-medium md:hidden">Hội khóa 2003–2006</p>
+      <header className="bg-surface/80 backdrop-blur-2xl border-b border-outline-variant/20 shadow-sm top-0 z-50 sticky transition-all duration-300">
+        <div className="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 w-full max-w-7xl mx-auto">
+          {/* Logo & Brand */}
+          <div className="flex items-center gap-3 md:gap-4 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <img src="/logo-binhson.jpg" alt="logo" className="w-9 h-9 md:w-11 md:h-11 rounded-full object-cover shrink-0 shadow-sm border border-outline-variant/30 group-hover:scale-105 transition-transform duration-300" />
+            <div className="flex flex-col justify-center">
+              <h1 className="font-headline text-lg md:text-2xl text-primary tracking-tight leading-none group-hover:text-primary-fixed-dim transition-colors">THPT BÌNH SƠN</h1>
+              <p className="text-[10px] md:text-xs text-on-surface-variant font-medium md:tracking-widest md:uppercase mt-0.5 opacity-80">Hội khóa 2003–2006</p>
             </div>
           </div>
-          <nav className="hidden md:flex items-center gap-8">
+
+          {/* Desktop Navigation (Pill shape) */}
+          <nav className="hidden md:flex items-center gap-1 bg-surface-container-lowest/50 p-1.5 rounded-full border border-outline-variant/30 shadow-inner">
             <button 
               onClick={() => setActiveTab('home')}
-              className={`font-bold transition-all px-2 py-1 ${activeTab === 'home' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:bg-primary-container/10 rounded'}`}
-            >Thư ngỏ</button>
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'home' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">mail</span>
+              Thư ngỏ
+            </button>
             <button 
               onClick={() => setActiveTab('plan')}
-              className={`font-bold transition-all px-2 py-1 ${activeTab === 'plan' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:bg-primary-container/10 rounded'}`}
-            >Kế hoạch</button>
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'plan' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">map</span>
+              Kế hoạch
+            </button>
             <button 
               onClick={() => setActiveTab('finance')}
-              className={`font-bold transition-all px-2 py-1 ${activeTab === 'finance' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:bg-primary-container/10 rounded'}`}
-            >Tài chính</button>
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'finance' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+              Tài chính
+            </button>
           </nav>
+
+          {/* Login Button */}
           <a 
             href="/login"
-            className="bg-primary text-on-primary px-3 md:px-6 py-1.5 md:py-2 rounded-lg font-title text-sm md:text-base active:scale-95 transition-transform duration-200 flex items-center justify-center"
-          >Đăng nhập</a>
+            className="group relative overflow-hidden bg-primary text-on-primary px-5 md:px-7 py-2 md:py-2.5 rounded-full font-title text-sm md:text-base active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/30"
+          >
+            <span className="relative z-10 font-bold tracking-wide">Đăng nhập</span>
+            <span className="material-symbols-outlined text-[18px] relative z-10 group-hover:translate-x-1 transition-transform hidden md:inline-block">login</span>
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out rounded-full" />
+          </a>
         </div>
       </header>
 
