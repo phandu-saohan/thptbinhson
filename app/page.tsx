@@ -651,7 +651,7 @@ export default function DangKyPage() {
             Kỷ niệm 20 năm ngày ra trường
           </p>
           <p className="text-primary-fixed text-sm md:text-xl italic text-center md:whitespace-nowrap max-w-xs md:max-w-none mx-auto leading-relaxed px-2">
-            &ldquo;Thời gian trôi qua kẽ tay, nhưng kỷ ức còn đọng lại trên sân trường cũ...&rdquo;
+            &ldquo;Thời gian trôi qua kẽ tay, nhưng ký ức còn đọng lại trên sân trường cũ...&rdquo;
           </p>
         </div>
       </section>
@@ -753,7 +753,7 @@ export default function DangKyPage() {
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="max-w-xl">
                     <h2 className="font-headline text-3xl text-primary mb-2">Tấm vé quay ngược thời gian</h2>
-                    <p className="text-on-surface-variant">Đừng để những bộn bề lo toan làm lỡ chuyến tàu quan trọng nhất của thanh xuân. Hãy để ngày {eventDate} là ngày chúng ta lại được là những cô cậu học trò vô tư lự.</p>
+                    <p className="text-on-surface-variant">Đừng để những bộn bề lo toan làm lỡ chuyến tàu quan trọng nhất của thanh xuân. Hãy để ngày {eventDate} là ngày chúng ta lại được là những cô cậu học trò vô tư như ngày nào.</p>
                   </div>
                   <div className="flex flex-col gap-4 w-full md:w-auto">
                     <button 
