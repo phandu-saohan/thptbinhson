@@ -958,6 +958,21 @@ export default function DangKyPage() {
                          <span className="material-symbols-outlined text-primary">credit_card</span>
                          <h3 className="text-xl font-bold text-on-surface font-title">Thông tin đóng góp</h3>
                       </div>
+                      <div className="w-full text-center mb-4">
+                        <label className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Số tiền đóng góp (VNĐ)</label>
+                        <input
+                          type="text"
+                          value={donationAmount ? parseInt(donationAmount.replace(/\D/g, '') || '0').toLocaleString('vi-VN') : ''}
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/\D/g, '');
+                            setDonationAmount(rawValue);
+                          }}
+                          className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-primary font-body text-center font-bold text-lg"
+                          placeholder="Nhập số tiền..."
+                        />
+                        <p className="text-[10px] text-on-surface-variant mt-2 italic">Mã QR sẽ tự động cập nhật theo số tiền bạn nhập</p>
+                      </div>
+
                       <div className="bg-white p-5 rounded-2xl shadow-lg border border-outline-variant/20 mb-6 relative group transform hover:scale-[1.02] transition-transform">
                         <Image
                            src={`https://img.vietqr.io/image/${bankId2}-${bankNo2}-compact2.png?amount=${donationAmount}&addInfo=${encodeURIComponent(formData.name && formData.phone ? `${formData.name} - ${formData.phone}` : 'Dong gop quy hoi')}&accountName=${encodeURIComponent(bankHolder)}`}
@@ -969,20 +984,6 @@ export default function DangKyPage() {
                         />
                       </div>
                       <div className="w-full text-center space-y-1">
-                         <div className="mt-2 mb-4">
-                            <label className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Số tiền đóng góp (VNĐ)</label>
-                            <input
-                              type="text"
-                              value={donationAmount ? parseInt(donationAmount.replace(/\D/g, '') || '0').toLocaleString('vi-VN') : ''}
-                              onChange={(e) => {
-                                const rawValue = e.target.value.replace(/\D/g, '');
-                                setDonationAmount(rawValue);
-                              }}
-                              className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-primary font-body text-center font-bold text-lg"
-                              placeholder="Nhập số tiền..."
-                            />
-                            <p className="text-[10px] text-on-surface-variant mt-2 italic">Mã QR sẽ tự động cập nhật theo số tiền bạn nhập</p>
-                         </div>
                          <div className="mt-4 inline-block bg-primary-fixed/30 px-4 py-3 rounded-xl border border-primary-fixed-dim/50 w-full">
                             <p className="text-[10px] font-bold text-primary uppercase mb-1">Nội dung chuyển khoản</p>
                             <p className="text-sm font-mono font-bold text-on-surface tracking-tight">{formData.name && formData.phone ? `${formData.name} - ${formData.phone}` : '[Họ Tên] - [Số điện thoại]'}</p>
