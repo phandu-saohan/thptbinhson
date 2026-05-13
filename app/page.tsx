@@ -213,7 +213,8 @@ function FinanceStatisticsBlock() {
                       {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' })}
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -552,6 +553,27 @@ export default function DangKyPage() {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleSeoImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      alert("Đang tải ảnh SEO lên...");
+      const fileName = `seo-image-${Date.now()}.${file.name.split('.').pop()}`;
+      const { data, error } = await supabase.storage.from('site-assets').upload(fileName, file);
+      if (error) throw error;
+      
+      const { data: publicUrlData } = supabase.storage.from('site-assets').getPublicUrl(fileName);
+      const publicUrl = publicUrlData.publicUrl;
+
+      await supabase.from('site_settings').upsert({ key: 'seo_image', value: publicUrl }, { onConflict: 'key' });
+      alert("Đã cập nhật ảnh SEO thành công!");
+    } catch (err) {
+      console.error('Lỗi tải ảnh SEO:', err);
+      alert("Có lỗi xảy ra khi tải ảnh SEO. Vui lòng đảm bảo bạn đã đăng nhập và bucket site-assets hoạt động.");
+    }
   };
 
 
@@ -1184,9 +1206,16 @@ export default function DangKyPage() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-stack-md px-margin-mobile md:px-margin-desktop py-stack-lg w-full max-w-container-max mx-auto">
           <div className="flex flex-col items-center md:items-start">
             <span className="font-title text-xl text-primary font-bold">Chuyến tàu thanh xuân</span>
-            <p className="font-body text-sm text-on-surface-variant mt-2 text-center md:text-left">2026 Chuyến tàu thanh xuân - Niên khóa 2006-2026</p>
+            <p className="font-body text-sm text-on-surface-variant mt-2 text-center md:text-left flex items-center gap-2">
+              2026 Chuyến tàu thanh xuân - Niên khóa 2006-2026
+              <label className="cursor-pointer text-slate-400 hover:text-primary transition bg-slate-100 px-2 py-1 rounded flex items-center gap-1 ml-2" title="Đổi ảnh đại diện SEO khi chia sẻ Facebook/Zalo">
+                <span className="material-symbols-outlined text-[14px]">image</span>
+                <span className="text-[10px] font-bold">Đổi ảnh SEO</span>
+                <input type="file" accept="image/*" className="hidden" onChange={handleSeoImageUpload} />
+              </label>
+            </p>
           </div>
-          <div className="flex gap-6">
+          <div className="flex gap-6 mt-4 md:mt-0">
             <a className="text-on-surface-variant hover:text-primary underline transition-opacity hover:opacity-80 text-sm" href="#">Ban liên lạc</a>
             <a className="text-on-surface-variant hover:text-primary underline transition-opacity hover:opacity-80 text-sm" href="#">Lịch trình</a>
             <a className="text-on-surface-variant hover:text-primary underline transition-opacity hover:opacity-80 text-sm" href="#">Hỗ trợ</a>
