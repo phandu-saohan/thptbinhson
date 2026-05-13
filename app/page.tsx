@@ -47,7 +47,7 @@ function FinanceStatisticsBlock() {
     const parts = classesStr.split(' | ');
     let classC = '';
     let classB = '';
-    parts.forEach(p => {
+    parts.forEach((p: string) => {
       if (p.startsWith('Lớp C: ')) classC = p.replace('Lớp C: ', '');
       if (p.startsWith('Lớp B: ')) classB = p.replace('Lớp B: ', '');
     });
