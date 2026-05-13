@@ -972,9 +972,12 @@ export default function DangKyPage() {
                          <div className="mt-2 mb-4">
                             <label className="block text-label-sm font-bold text-on-surface mb-2 uppercase tracking-wide">Số tiền đóng góp (VNĐ)</label>
                             <input
-                              type="number"
-                              value={donationAmount}
-                              onChange={(e) => setDonationAmount(e.target.value)}
+                              type="text"
+                              value={donationAmount ? parseInt(donationAmount.replace(/\D/g, '') || '0').toLocaleString('vi-VN') : ''}
+                              onChange={(e) => {
+                                const rawValue = e.target.value.replace(/\D/g, '');
+                                setDonationAmount(rawValue);
+                              }}
                               className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-primary font-body text-center font-bold text-lg"
                               placeholder="Nhập số tiền..."
                             />
