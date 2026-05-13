@@ -398,55 +398,12 @@ export default function DangKyPage() {
       setAiScanning(true);
       let donatedAmount = parseInt(donationAmount || '0');
 
-      // 1. AI Scan nếu có biên lai
+      // 1. Bỏ qua AI Scan (đã được yêu cầu lược bỏ)
+      /* 
       if (receiptFile) {
-        setAiError(null);
-        try {
-          // Convert image to base64
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const result = reader.result as string;
-              resolve(result.split(',')[1]);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(receiptFile);
-          });
-
-          const mimeType = receiptFile.type || 'image/jpeg';
-
-          // Gọi server route — key ẩn phía server, không lộ ra browser
-          const response = await fetch('/api/scan-receipt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              base64, 
-              mimeType,
-              expectedAmount: donatedAmount,
-              expectedName: formData.name,
-              expectedPhone: formData.phone
-            }),
-          });
-
-          const json = await response.json();
-
-          if (!response.ok || json.error) {
-            throw new Error(json.error || `Lỗi server ${response.status}`);
-          }
-
-          const parsed = json.data;
-          setAiResult(parsed);
-          const parsedAmount = parseInt((parsed.amount || '').replace(/\D/g, '') || '0');
-          if (parsedAmount > 0) {
-            donatedAmount = parsedAmount;
-          }
-        } catch (err: any) {
-          console.error('AI scan error:', err);
-          setAiError(err.message || 'Lỗi không xác định khi kiểm duyệt biên lai.');
-          setAiScanning(false);
-          return; // Dừng việc đăng ký ngay lập tức nếu biên lai sai
-        }
+        // ... logic AI đã bị loại bỏ ...
       }
+      */
 
       // 1.5. Upload ảnh lên Supabase Storage
       let uploadedReceiptUrl = '';
@@ -522,7 +479,7 @@ export default function DangKyPage() {
           phone: formData.phone,
           amount: donatedAmount,
           type: 'IN',
-          status: receiptFile ? 'AI_VERIFYING' : 'PENDING',
+          status: 'PENDING',
           note: noteMsg
         }]);
       }
