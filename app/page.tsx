@@ -13,6 +13,8 @@ function FinanceStatisticsBlock() {
   const [loading, setLoading] = React.useState(true);
   const [activeStatTab, setActiveStatTab] = React.useState<'IN' | 'OUT' | 'PLAN'>('IN');
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [classCFilter, setClassCFilter] = React.useState('');
+  const [classBFilter, setClassBFilter] = React.useState('');
 
   // Dự kiến chi (kế hoạch)
   const plannedExpenses = [
@@ -35,10 +37,28 @@ function FinanceStatisticsBlock() {
     });
   }, []);
 
-  const filteredIncomes = incomes.filter(t =>
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (t.memory && t.memory.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const getClasses = (name: string) => {
+    const match = name.match(/\((.*?)\)$/);
+    if (!match) return { cleanName: name, classC: '', classB: '' };
+    const classesStr = match[1];
+    const parts = classesStr.split(' | ');
+    let classC = '';
+    let classB = '';
+    parts.forEach(p => {
+      if (p.startsWith('Lớp C: ')) classC = p.replace('Lớp C: ', '');
+      if (p.startsWith('Lớp B: ')) classB = p.replace('Lớp B: ', '');
+    });
+    return { cleanName: name.replace(` (${classesStr})`, '').trim(), classC, classB };
+  };
+
+  const filteredIncomes = incomes.filter(t => {
+    const { cleanName, classC, classB } = getClasses(t.name);
+    const matchesSearch = cleanName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (t.memory && t.memory.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesClassC = classCFilter === '' || classC === classCFilter;
+    const matchesClassB = classBFilter === '' || classB === classBFilter;
+    return matchesSearch && matchesClassC && matchesClassB;
+  });
 
   const filteredExpenses = expenses.filter(t =>
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,15 +119,41 @@ function FinanceStatisticsBlock() {
         </div>
 
         {activeStatTab !== 'PLAN' && (
-          <div className="relative w-full md:w-72">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-            <input
-              type="text"
-              placeholder="Tìm kiếm..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
-            />
+          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+            <div className="relative w-full md:w-56">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+              <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
+              />
+            </div>
+            {activeStatTab === 'IN' && (
+              <>
+                <select
+                  value={classCFilter}
+                  onChange={(e) => setClassCFilter(e.target.value)}
+                  className="w-full md:w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm appearance-none cursor-pointer"
+                >
+                  <option value="">Lớp C</option>
+                  {Array.from({ length: 13 }, (_, i) => `C${i + 1}`).map(cls => (
+                    <option key={cls} value={cls}>{cls}</option>
+                  ))}
+                </select>
+                <select
+                  value={classBFilter}
+                  onChange={(e) => setClassBFilter(e.target.value)}
+                  className="w-full md:w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm appearance-none cursor-pointer"
+                >
+                  <option value="">Lớp B</option>
+                  {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
+                    <option key={cls} value={cls}>{cls}</option>
+                  ))}
+                </select>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -123,25 +169,31 @@ function FinanceStatisticsBlock() {
             <thead className="bg-slate-50/80 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
               <tr>
                 <th className="px-4 md:px-6 py-3">Thành viên</th>
+                <th className="px-4 md:px-6 py-3 text-center hidden md:table-cell">Lớp C</th>
+                <th className="px-4 md:px-6 py-3 text-center hidden md:table-cell">Lớp B</th>
                 <th className="px-4 md:px-6 py-3 text-center">Tham dự</th>
                 <th className="px-4 md:px-6 py-3 text-right">Đóng góp</th>
-                <th className="px-4 md:px-6 py-3 hidden md:table-cell">Thời gian</th>
+                <th className="px-4 md:px-6 py-3 hidden lg:table-cell">Thời gian</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredIncomes.length === 0 ? (
-                <tr><td colSpan={4} className="text-center py-12 text-slate-400">Chưa có dữ liệu</td></tr>
+                <tr><td colSpan={6} className="text-center py-12 text-slate-400">Chưa có dữ liệu</td></tr>
               ) : (
-                filteredIncomes.map((r, idx) => (
+                filteredIncomes.map((r, idx) => {
+                  const { cleanName, classC, classB } = getClasses(r.name);
+                  return (
                   <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
                     <td className="px-4 md:px-6 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0">
-                          {r.name.charAt(0).toUpperCase()}
+                          {cleanName.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-medium text-slate-800 text-sm">{r.name}</span>
+                        <span className="font-medium text-slate-800 text-sm">{cleanName}</span>
                       </div>
                     </td>
+                    <td className="px-4 md:px-6 py-3 text-center hidden md:table-cell text-sm text-slate-600 font-medium">{classC || '-'}</td>
+                    <td className="px-4 md:px-6 py-3 text-center hidden md:table-cell text-sm text-slate-600 font-medium">{classB || '-'}</td>
                     <td className="px-4 md:px-6 py-3 text-center">
                       {r.will_attend === 'yes'
                         ? <span className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-bold">Sẽ về</span>
@@ -154,7 +206,7 @@ function FinanceStatisticsBlock() {
                         : <span className="text-slate-300 text-sm">—</span>
                       }
                     </td>
-                    <td className="px-4 md:px-6 py-3 hidden md:table-cell text-xs text-slate-400">
+                    <td className="px-4 md:px-6 py-3 hidden lg:table-cell text-xs text-slate-400">
                       {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' })}
                     </td>
                   </tr>
