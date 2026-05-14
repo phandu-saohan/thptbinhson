@@ -530,7 +530,7 @@ export default function DangKyPage() {
               className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'finance' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
             >
               <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
-              Tài chính
+              Danh sách đăng ký
             </button>
             <button 
               onClick={() => setActiveTab('contacts')}
@@ -1153,9 +1153,9 @@ export default function DangKyPage() {
         {activeTab === 'finance' && (
           <div className="animate-in fade-in duration-700 mb-6 md:mb-12 glass-card p-3 md:p-10 rounded-xl">
             <div className="text-center mb-12">
-              <span className="text-primary font-bold uppercase tracking-widest text-sm mb-3 block">Minh Bạch Dự Án</span>
-              <h2 className="text-4xl font-headline text-primary tracking-tight">Kế Hoạch Tài Chính</h2>
-              <p className="text-on-surface-variant mt-4 max-w-lg mx-auto">Cập nhật dự toán và tình hình đóng góp từ các thành viên khóa 2003-2006</p>
+              <span className="text-primary font-bold uppercase tracking-widest text-sm mb-3 block">Hội tụ & Gắn kết</span>
+              <h2 className="text-4xl font-headline text-primary tracking-tight">Danh sách đăng ký</h2>
+              <p className="text-on-surface-variant mt-4 max-w-lg mx-auto">Danh sách thành viên đã xác nhận tham gia Chuyến tàu thanh xuân 2003-2006</p>
             </div>
 
 
@@ -1302,8 +1302,8 @@ export default function DangKyPage() {
             onClick={() => setActiveTab('finance')}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'finance' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
           >
-            <span className="material-symbols-outlined text-[24px]">account_balance_wallet</span>
-            <span className="text-[10px] font-bold">Tài chính</span>
+            <span className="material-symbols-outlined text-[24px]">list_alt</span>
+            <span className="text-[10px] font-bold">Danh sách</span>
           </button>
           <button 
             onClick={() => setActiveTab('contacts')}
