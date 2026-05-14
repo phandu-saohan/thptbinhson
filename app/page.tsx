@@ -986,71 +986,110 @@ export default function DangKyPage() {
 
         {/* Tab 2: Kế Hoạch Chuyến Tàu */}
         {activeTab === 'plan' && (
-          <div className="animate-in fade-in duration-700">
+          <div className="animate-in fade-in duration-700 space-y-12 mb-16">
             <div className="text-center mb-12">
               <span className="text-primary font-bold uppercase tracking-widest text-sm mb-3 block">Lịch trình chi tiết</span>
               <h2 className="text-4xl font-headline text-primary tracking-tight">Hành Trình Hội Ngộ</h2>
+              <p className="text-on-surface-variant mt-4 max-w-lg mx-auto italic">"Trở về để kết nối - Kết nối để sẻ chia"</p>
             </div>
 
-            <div className="max-w-3xl mx-auto">
-              <div className="relative border-l-2 border-slate-100 pl-8 md:pl-12 space-y-8">
-                
-                <div className="relative">
-                  <div className="absolute -left-10 md:-left-14 w-8 h-8 bg-primary-fixed text-on-primary-fixed rounded-full flex items-center justify-center ring-4 ring-white">
-                    <span className="material-symbols-outlined text-sm">schedule</span>
+            {/* Hoạt động bên lề */}
+            <div className="max-w-4xl mx-auto bg-primary/5 rounded-3xl p-8 border border-primary/10">
+              <h3 className="font-title text-xl text-primary mb-6 flex items-center gap-3">
+                <span className="material-symbols-outlined">volunteer_activism</span>
+                Hoạt động bên lề sự kiện
+              </h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-orange-600 text-xl">person_search</span>
                   </div>
-                  <div className="glass-card p-3 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                      <h3 className="text-xl font-title text-primary">Đón tiếp & Check-in</h3>
-                      <span className="inline-block px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-lg text-sm font-bold mt-2 md:mt-0 tracking-wider w-max">08:00 - 09:00</span>
-                    </div>
-                    <p className="text-on-surface-variant mb-4">Tập trung tại cổng trường cũ. Gặp gỡ, trò chuyện và cùng nhau tham quan lại các lớp học, sân trường một thời gắn bó.</p>
-                    <div className="flex items-center text-sm font-medium text-on-surface-variant bg-surface-container px-4 py-3 rounded-xl border border-outline-variant/20">
-                      <span className="material-symbols-outlined text-sm mr-2 opacity-50">location_on</span>
-                      Trường THPT Bình Sơn
-                    </div>
-                  </div>
+                  <p className="text-slate-700 font-medium leading-relaxed">Thăm hỏi các thầy cô giáo cũ, tri ân những người đưa đò thầm lặng.</p>
                 </div>
-
-                <div className="relative">
-                  <div className="absolute -left-10 md:-left-14 w-8 h-8 bg-secondary-fixed text-on-secondary-fixed rounded-full flex items-center justify-center ring-4 ring-white">
-                    <span className="material-symbols-outlined text-sm">event</span>
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-blue-600 text-xl">handshake</span>
                   </div>
-                  <div className="glass-card p-3 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                      <h3 className="text-xl font-title text-primary">Lễ Kỷ Niệm 20 Năm</h3>
-                      <span className="inline-block px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-lg text-sm font-bold mt-2 md:mt-0 tracking-wider w-max">09:00 - 11:30</span>
-                    </div>
-                    <p className="text-slate-600 mb-4">Chương trình mít tinh chính thức ôn lại kỷ niệm. Tri ân thầy cô giáo cũ và chia sẻ những câu chuyện truyền cảm hứng.</p>
-                    <ul className="space-y-2 text-sm text-slate-600">
-                      <li className="flex items-center"><span className="material-symbols-outlined text-sm text-primary mr-2">check_circle</span> Văn nghệ chào mừng từ các lớp</li>
-                      <li className="flex items-center"><span className="material-symbols-outlined text-sm text-primary mr-2">check_circle</span> Phát biểu tri ân thầy cô</li>
-                      <li className="flex items-center"><span className="material-symbols-outlined text-sm text-primary mr-2">check_circle</span> Tặng quà lưu niệm và chụp ảnh tập thể toàn khóa</li>
-                    </ul>
-                  </div>
+                  <p className="text-slate-700 font-medium leading-relaxed">Thăm hỏi và động viên các bạn có hoàn cảnh khó khăn trong niên khóa.</p>
                 </div>
-
-                <div className="relative">
-                  <div className="absolute -left-10 md:-left-14 w-8 h-8 bg-tertiary-fixed text-on-tertiary-fixed rounded-full flex items-center justify-center ring-4 ring-white">
-                    <span className="material-symbols-outlined text-sm">restaurant</span>
-                  </div>
-                  <div className="glass-card p-3 md:p-8 rounded-xl hover:shadow-xl transition-all duration-300">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                      <h3 className="text-xl font-title text-primary">Tiệc Giao Lưu Cùng Nhau</h3>
-                      <span className="inline-block px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-lg text-sm font-bold mt-2 md:mt-0 tracking-wider w-max">11:30 - 14:00</span>
-                    </div>
-                    <p className="text-on-surface-variant mb-4">Cùng nhau dự tiệc mặn ngay tại khuôn viên trường. Thưởng thức bữa trưa ấm cúng, nâng ly chúc mừng và tiếp tục hàn huyên chia sẻ.</p>
-                    <div className="flex items-center text-sm font-medium text-on-surface-variant bg-surface-container px-4 py-3 rounded-xl border border-outline-variant/20">
-                      <span className="material-symbols-outlined text-sm mr-2 opacity-50">location_on</span>
-                      Trường THPT Bình Sơn
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
-            </div>
 
+            <div className="max-w-4xl mx-auto space-y-16">
+              {/* Day 1 */}
+              <div>
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="h-px flex-1 bg-slate-200"></div>
+                  <div className="bg-white border-2 border-primary px-6 py-2 rounded-full shadow-sm">
+                    <span className="text-primary font-black uppercase tracking-widest text-sm">Ngày trước sự kiện: 11/7/2026</span>
+                  </div>
+                  <div className="h-px flex-1 bg-slate-200"></div>
+                </div>
+
+                <div className="relative border-l-2 border-primary/20 pl-8 md:pl-12 ml-4">
+                  <div className="relative">
+                    <div className="absolute -left-[41px] md:-left-[57px] w-4 h-4 bg-primary rounded-full ring-4 ring-white shadow-sm"></div>
+                    <div className="glass-card p-6 md:p-8 rounded-2xl border border-outline-variant/30 hover:shadow-xl transition-all duration-300">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                        <h3 className="text-xl font-bold text-primary">Gặp gỡ tiền sự kiện</h3>
+                        <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-lg text-sm font-black mt-2 md:mt-0 tracking-wider">09:00 - 11:00</span>
+                      </div>
+                      <p className="text-on-surface-variant leading-relaxed">Nhận áo đồng phục, tham quan và cùng nhau trang trí lại lớp học năm xưa – nơi lưu giữ những ký ức thanh xuân.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Day 2 */}
+              <div>
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="h-px flex-1 bg-slate-200"></div>
+                  <div className="bg-primary text-white px-6 py-2 rounded-full shadow-md">
+                    <span className="font-black uppercase tracking-widest text-sm">Ngày sự kiện chính: 12/7/2026</span>
+                  </div>
+                  <div className="h-px flex-1 bg-slate-200"></div>
+                </div>
+
+                <div className="relative border-l-2 border-primary/20 pl-8 md:pl-12 ml-4 space-y-8">
+                  {[
+                    { time: '07:30 - 08:00', title: 'Đón tiếp – “Ký ức vui vẻ”', desc: 'Chào đón quý thầy cô và cựu học sinh, giao lưu thân mật, thưởng thức cà phê sáng tại sân trường.', icon: 'coffee' },
+                    { time: '08:00 - 08:20', title: 'Văn nghệ khai màn', desc: 'Những tiết mục đặc sắc chào mừng ngày hội ngộ.', icon: 'music_note' },
+                    { time: '08:20 - 08:40', title: 'Khai mạc chương trình', desc: 'Tuyên bố lý do, giới thiệu đại biểu và bắt đầu buổi lễ.', icon: 'campaign' },
+                    { time: '08:40 - 08:50', title: 'Tri ân thầy cô', desc: 'Đại diện học sinh phát biểu cảm nghĩ và lòng biết ơn sâu sắc.', icon: 'auto_awesome' },
+                    { time: '08:50 - 09:00', title: 'Hành trình ký ức', desc: 'Trình chiếu video kỷ niệm – những hình ảnh xưa và nay đầy xúc động.', icon: 'movie' },
+                    { time: '09:00 - 09:15', title: 'Lễ tri ân', desc: 'Tặng hoa và giao lưu chia sẻ cùng quý thầy cô giáo.', icon: 'volunteer_activism' },
+                    { time: '09:15 - 09:25', title: 'Quỹ khuyến học', desc: 'Trao Quỹ khuyến học cho nhà trường nhằm hỗ trợ các thế hệ đàn em.', icon: 'school' },
+                    { time: '09:25 - 09:40', title: 'Vinh danh nhà tài trợ', desc: 'Tặng hoa, kỷ niệm chương cho các Nhà tài trợ đồng hành cùng chương trình.', icon: 'workspace_premium' },
+                    { time: '09:40 - 09:50', title: 'Gắn kết tập thể', desc: 'Vinh danh lớp có số lượng thành viên tham dự đông nhất.', icon: 'groups' },
+                    { time: '09:50 - 10:00', title: 'Kết nối truyền thống', desc: 'Trao cờ luân lưu cho khóa tiếp theo (2004-2007).', icon: 'flag' },
+                    { time: '10:00 - 10:10', title: 'Phát biểu của Nhà trường', desc: 'Đại diện Ban Giám hiệu Nhà trường phát biểu chúc mừng.', icon: 'mic' },
+                    { time: '10:10 - 10:50', title: 'Trở về lớp cũ (khối 11)', desc: 'Ngồi lại chỗ xưa, ôn lại những kỷ niệm thân thương cùng bạn bè lớp 11.', icon: 'meeting_room' },
+                    { time: '10:50 - 11:30', title: 'Trở về lớp cũ (khối 12)', desc: 'Tiếp nối hành trình ký ức, gặp lại những gương mặt gắn bó năm cuối cấp.', icon: 'history' },
+                    { time: '11:30 - 14:00', title: 'Tiệc thân mật & Văn nghệ', desc: 'Giao lưu, chia sẻ, thưởng thức bữa trưa ấm cúng và chương trình văn nghệ.', icon: 'restaurant' },
+                    { time: '14:00', title: 'Chụp ảnh lưu niệm – Bế mạc', desc: 'Ghi lại khoảnh khắc hội ngộ cuối cùng và khép lại chương trình.', icon: 'photo_camera' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="relative group">
+                      <div className="absolute -left-[41px] md:-left-[57px] w-4 h-4 bg-white border-2 border-primary rounded-full group-hover:bg-primary transition-colors shadow-sm"></div>
+                      <div className="glass-card p-4 md:p-6 rounded-2xl border border-outline-variant/30 hover:shadow-lg transition-all">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 group-hover:bg-primary/5 transition-colors">
+                              <span className="material-symbols-outlined text-primary text-xl">{item.icon}</span>
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-800 text-lg group-hover:text-primary transition-colors">{item.title}</h4>
+                              <p className="text-on-surface-variant text-sm leading-relaxed mt-1">{item.desc}</p>
+                            </div>
+                          </div>
+                          <span className="text-xs font-black text-slate-400 whitespace-nowrap bg-slate-50 px-3 py-1 rounded-full border border-slate-100 group-hover:text-primary group-hover:border-primary/20 transition-all">{item.time}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Tab 3: Tài Chính Thu Chi */}
