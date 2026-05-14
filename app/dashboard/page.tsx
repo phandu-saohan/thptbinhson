@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
-import { LayoutDashboard, ReceiptText, ListTodo, FileBarChart, Settings, Plus, ArrowUpRight, ArrowDownRight, Edit2, Eye, Check, Download, QrCode, Search, Trash2, Bell, X, AlertCircle, CheckCircle2, Users, Shield, LayoutTemplate, Save, ClipboardList, Phone, Calendar, Upload } from 'lucide-react';
+import { LayoutDashboard, ReceiptText, ListTodo, FileBarChart, Settings, Plus, ArrowUpRight, ArrowDownRight, Edit2, Eye, EyeOff, Check, Download, QrCode, Search, Trash2, Bell, X, AlertCircle, CheckCircle2, Users, Shield, LayoutTemplate, Save, ClipboardList, Phone, Calendar, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from '@/lib/supabaseClient';
