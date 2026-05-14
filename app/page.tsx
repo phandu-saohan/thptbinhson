@@ -286,10 +286,43 @@ function FinanceStatisticsBlock() {
   );
 }
 
+// ── Contact Committee Data ──
+const contactData = [
+  { group: 'Trưởng Ban liên lạc', representatives: ['Hiếu: 0972.612.979', 'Lệ: 0976.976.959'] },
+  { group: '12C1', representatives: ['Nhật: 0918.905.309', 'Cường: 0914.142.252'] },
+  { group: '12C2', representatives: ['Mỹ: 0938.507.988', 'Thư: 0962.222.989'] },
+  { group: '12C3', representatives: ['Thạnh: 0388.233.299'] },
+  { group: '12C4', representatives: ['Hiếu: 0972.612.979'] },
+  { group: '12C5', representatives: ['Tuân: 0935.263.911'] },
+  { group: '12C6', representatives: ['Hải: 0916.768.676'] },
+  { group: '12C7', representatives: ['Phát: 0888.188.928'] },
+  { group: '12C8', representatives: ['Trình: 0974.745.483'] },
+  { group: '12C9', representatives: ['Tùng: 0934.885.537'] },
+  { group: '12C10', representatives: ['Thư: 0988.761.357'] },
+  { group: '12C11', representatives: ['Kiều: 0973.697.736'] },
+  { group: '12C12', representatives: ['Quý: 0974.489.461'] },
+  { group: '12C13', representatives: ['Phước: 0935.478.464'] },
+  { group: '10-11B1', representatives: ['Quyên: 0973.117.337'] },
+  { group: '10-11B2', representatives: ['Du: 0933.413.486'] },
+  { group: '10-11B3', representatives: ['Chương: 0389.834.350'] },
+  { group: '10-11B4', representatives: ['Hải: 0916.768.676', 'Phát: 0888.188.928'] },
+  { group: '10-11B5', representatives: ['Oanh: 0979.529.986'] },
+  { group: '10-11B6', representatives: ['Nhi: 0914.991.683'] },
+  { group: '10-11B7', representatives: ['Cường: 0914.142.252'] },
+  { group: '10-11B8', representatives: ['Viễn: 0368.671.004'] },
+  { group: '10-11B9', representatives: ['Trình: 0974.745.483'] },
+  { group: '10-11B10', representatives: ['Thư: 0988.761.357'] },
+  { group: '10-11B11', representatives: ['Tùng: 0934.885.537'] },
+  { group: '10-11B12', representatives: ['Tuân: 0935.263.911'] },
+  { group: '10-11B13', representatives: ['Kiều: 0973.697.736'] },
+  { group: '10-11B14', representatives: ['Phước: 0935.478.464'] },
+  { group: '10-11B15', representatives: ['Vân: 0888.697.307'] },
+];
+
 export default function DangKyPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [submitted, setSubmitted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'contacts'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Receipt upload & AI scan state
@@ -579,6 +612,13 @@ export default function DangKyPage() {
             >
               <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
               Tài chính
+            </button>
+            <button 
+              onClick={() => setActiveTab('contacts')}
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'contacts' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">people</span>
+              Ban liên lạc
             </button>
           </nav>
 
@@ -1151,6 +1191,57 @@ export default function DangKyPage() {
 
           </div>
         )}
+        
+        {/* Tab 4: Ban liên lạc */}
+        {activeTab === 'contacts' && (
+          <div className="animate-in fade-in duration-700">
+            <div className="text-center mb-12">
+              <span className="text-primary font-bold uppercase tracking-widest text-sm mb-3 block">Kết nối đồng đội</span>
+              <h2 className="text-4xl font-headline text-primary tracking-tight">Ban liên lạc các lớp</h2>
+              <p className="text-on-surface-variant mt-4 max-w-lg mx-auto">Danh sách đại diện các lớp phụ trách kết nối thành viên và hỗ trợ thông tin Hội khóa</p>
+            </div>
+
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl shadow-primary/5 border border-slate-100 overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-primary/5 text-primary">
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-sm border-b border-primary/10">Ban liên lạc / Lớp</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-sm border-b border-primary/10">Đại diện & Số điện thoại</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {contactData.map((item, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className={`font-bold ${item.group === 'Trưởng Ban liên lạc' ? 'text-primary' : 'text-slate-700'}`}>
+                          {item.group}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          {item.representatives.map((rep, rIdx) => (
+                            <div key={rIdx} className="flex items-center gap-2 text-slate-600 font-medium">
+                              <span className="material-symbols-outlined text-sm text-primary/60">phone_in_talk</span>
+                              {rep}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-12 bg-primary/5 p-8 rounded-2xl border border-primary/10 text-center">
+              <h4 className="font-bold text-primary mb-3">Bạn chưa tìm thấy đại diện lớp mình?</h4>
+              <p className="text-slate-600 text-sm max-w-xl mx-auto leading-relaxed">
+                Nếu lớp bạn chưa có đại diện trong danh sách này hoặc bạn muốn tham gia hỗ trợ Ban liên lạc, 
+                vui lòng liên hệ trực tiếp với Trưởng Ban liên lạc để được cập nhật thông tin.
+              </p>
+            </div>
+          </div>
+        )}
 
       </div>
       </main>
@@ -1175,10 +1266,17 @@ export default function DangKyPage() {
           </button>
           <button 
             onClick={() => setActiveTab('finance')}
-            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'finance' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${activeTab === 'finance' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
           >
             <span className="material-symbols-outlined text-[22px]">account_balance_wallet</span>
             <span className="text-[11px] font-bold">Tài chính</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('contacts')}
+            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${activeTab === 'contacts' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
+          >
+            <span className="material-symbols-outlined text-[22px]">people</span>
+            <span className="text-[11px] font-bold">Liên lạc</span>
           </button>
         </div>
       </nav>
