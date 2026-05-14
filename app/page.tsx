@@ -994,7 +994,7 @@ export default function DangKyPage() {
                             <span className="material-symbols-outlined text-3xl text-slate-300 group-hover:text-primary mb-2 transition">photo_camera</span>
                             <span className="text-xs text-slate-400 font-medium">Chụp hoặc chọn ảnh biên lai</span>
                             <span className="text-[10px] text-slate-300 mt-0.5">JPG, PNG, WEBP</span>
-                            <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleReceiptChange} />
+                            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleReceiptChange} />
                           </label>
                         ) : (
                           <div className="space-y-3">
