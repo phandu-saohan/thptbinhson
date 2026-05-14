@@ -23,6 +23,21 @@ interface Registration {
   created_at: string;
 }
 
+interface ScheduleItem {
+  time: string;
+  title: string;
+  desc: string;
+  location: string;
+  icon: string;
+}
+
+interface ExpenseItem {
+  name: string;
+  amount: number;
+  note: string;
+  icon: string;
+}
+
 
 interface Transaction {
   id: string;
@@ -438,6 +453,8 @@ export default function DashboardPage() {
   const [bankId2, setBankId2] = useState('TCB');
   const [bankNo2, setBankNo2] = useState('19023345888012');
   const [donationAmount, setDonationAmount] = useState('1000000');
+  const [eventSchedule, setEventSchedule] = useState<ScheduleItem[]>([]);
+  const [plannedExpenses, setPlannedExpenses] = useState<ExpenseItem[]>([]);
 
 
   useEffect(() => {
@@ -467,6 +484,12 @@ export default function DashboardPage() {
           if (map['photo3']) setPhoto3(map['photo3']);
           if (map['seo_image']) setSeoImage(map['seo_image']);
           if (map['hero_image']) setHeroImage(map['hero_image']);
+          if (map['event_schedule']) {
+            try { setEventSchedule(JSON.parse(map['event_schedule'])); } catch(e) { console.error(e); }
+          }
+          if (map['planned_expenses']) {
+            try { setPlannedExpenses(JSON.parse(map['planned_expenses'])); } catch(e) { console.error(e); }
+          }
         } else {
           // Fallback to localStorage
           const load = (key: string, setter: (v: string) => void) => { const v = localStorage.getItem(key); if (v) setter(v); };
@@ -503,6 +526,8 @@ export default function DashboardPage() {
       ['bank_holder', bankHolder], ['bank_id_qr', bankId2], ['bank_no_qr', bankNo2],
       ['donation_amount', donationAmount], ['hero_video', heroVideo], ['hero_image', heroImage],
       ['photo1', photo1], ['photo2', photo2], ['photo3', photo3], ['seo_image', seoImage],
+      ['event_schedule', JSON.stringify(eventSchedule)],
+      ['planned_expenses', JSON.stringify(plannedExpenses)],
     ];
     try {
       for (const [key, value] of entries) {
@@ -1397,6 +1422,116 @@ export default function DashboardPage() {
                      onFileSelect={(file) => handleImageUpload(file, 'seo_image', setSeoImage)}
                      onUrlChange={setSeoImage}
                    />
+                 </div>
+               </div>
+
+               {/* SECTION 8: Quản lý Lịch trình (Schedule) */}
+               <div className="border border-slate-200 rounded-2xl overflow-hidden mt-6">
+                 <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-5 py-3 border-b border-slate-200 flex items-center gap-2">
+                   <span className="text-base">📅</span>
+                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">Lịch trình sự kiện (Hành trình hội ngộ)</h4>
+                 </div>
+                 <div className="p-5 space-y-4">
+                   {eventSchedule.map((item, index) => (
+                     <div key={index} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3 relative group">
+                       <button onClick={() => setEventSchedule(eventSchedule.filter((_, i) => i !== index))} className="absolute top-2 right-2 p-1 text-slate-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                         <Trash2 className="w-4 h-4" />
+                       </button>
+                       <div className="grid grid-cols-3 gap-3">
+                         <div className="col-span-1">
+                           <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Thời gian</label>
+                           <input type="text" className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" value={item.time} onChange={e => {
+                             const next = [...eventSchedule];
+                             next[index].time = e.target.value;
+                             setEventSchedule(next);
+                           }} placeholder="08:00 - 09:00" />
+                         </div>
+                         <div className="col-span-2">
+                           <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tiêu đề hoạt động</label>
+                           <input type="text" className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" value={item.title} onChange={e => {
+                             const next = [...eventSchedule];
+                             next[index].title = e.target.value;
+                             setEventSchedule(next);
+                           }} placeholder="Đón tiếp & Check-in" />
+                         </div>
+                       </div>
+                       <div>
+                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mô tả chi tiết</label>
+                         <textarea rows={2} className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs resize-none" value={item.desc} onChange={e => {
+                           const next = [...eventSchedule];
+                           next[index].desc = e.target.value;
+                           setEventSchedule(next);
+                         }} placeholder="Mô tả hoạt động..." />
+                       </div>
+                       <div className="grid grid-cols-2 gap-3">
+                         <div>
+                           <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Địa điểm (tùy chọn)</label>
+                           <input type="text" className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" value={item.location} onChange={e => {
+                             const next = [...eventSchedule];
+                             next[index].location = e.target.value;
+                             setEventSchedule(next);
+                           }} placeholder="Trường THPT Bình Sơn" />
+                         </div>
+                         <div>
+                           <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Icon (Google Material)</label>
+                           <input type="text" className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono" value={item.icon} onChange={e => {
+                             const next = [...eventSchedule];
+                             next[index].icon = e.target.value;
+                             setEventSchedule(next);
+                           }} placeholder="schedule" />
+                         </div>
+                       </div>
+                     </div>
+                   ))}
+                   <button onClick={() => setEventSchedule([...eventSchedule, { time: '', title: '', desc: '', location: '', icon: 'event' }])} className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 text-xs font-bold hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition flex items-center justify-center gap-2">
+                     <Plus className="w-4 h-4" />
+                     Thêm hoạt động mới
+                   </button>
+                 </div>
+               </div>
+
+               {/* SECTION 9: Quản lý Dự kiến chi (Planned Expenses) */}
+               <div className="border border-slate-200 rounded-2xl overflow-hidden mt-6">
+                 <div className="bg-gradient-to-r from-orange-50 to-amber-50 px-5 py-3 border-b border-slate-200 flex items-center gap-2">
+                   <span className="text-base">💰</span>
+                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">Dự toán chi phí (Dự kiến chi)</h4>
+                 </div>
+                 <div className="p-5 space-y-4">
+                   {plannedExpenses.map((item, index) => (
+                     <div key={index} className="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-12 gap-3 relative group">
+                       <button onClick={() => setPlannedExpenses(plannedExpenses.filter((_, i) => i !== index))} className="absolute top-2 right-2 p-1 text-slate-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                         <Trash2 className="w-4 h-4" />
+                       </button>
+                       <div className="col-span-5">
+                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tên hạng mục</label>
+                         <input type="text" className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold" value={item.name} onChange={e => {
+                           const next = [...plannedExpenses];
+                           next[index].name = e.target.value;
+                           setPlannedExpenses(next);
+                         }} placeholder="Tiệc kỷ niệm..." />
+                       </div>
+                       <div className="col-span-3">
+                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Số tiền (VNĐ)</label>
+                         <input type="number" className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-emerald-600 font-bold" value={item.amount} onChange={e => {
+                           const next = [...plannedExpenses];
+                           next[index].amount = parseInt(e.target.value || '0');
+                           setPlannedExpenses(next);
+                         }} />
+                       </div>
+                       <div className="col-span-4">
+                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ghi chú</label>
+                         <input type="text" className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" value={item.note} onChange={e => {
+                           const next = [...plannedExpenses];
+                           next[index].note = e.target.value;
+                           setPlannedExpenses(next);
+                         }} placeholder="120 người x 600k" />
+                       </div>
+                     </div>
+                   ))}
+                   <button onClick={() => setPlannedExpenses([...plannedExpenses, { name: '', amount: 0, note: '', icon: 'payments' }])} className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 text-xs font-bold hover:border-orange-300 hover:text-orange-600 hover:bg-orange-50 transition flex items-center justify-center gap-2">
+                     <Plus className="w-4 h-4" />
+                     Thêm hạng mục chi phí mới
+                   </button>
                  </div>
                </div>
 

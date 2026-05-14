@@ -652,109 +652,117 @@ export default function DangKyPage() {
         {/* Tab 1: Thư Ngỏ & Đăng Ký */}
         {activeTab === 'home' && (
           <>
-            <div className="animate-in fade-in duration-700">
-            {/* The Memory Album: Staggered Bento Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-stack-lg">
-              {/* Letter Section 1: The Gateway */}
-              <div className="md:col-span-7 glass-card rounded-xl p-stack-md scrapbook-rotate-left">
-                <div className="mb-stack-md rounded-lg overflow-hidden h-64 relative">
-                  <Image 
-                    src={photo1}
-                    alt="School gates"
-                    fill
-                    className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                    unoptimized
-                  />
+          <div className="animate-in fade-in duration-700">
+              <div className="max-w-4xl mx-auto space-y-12">
+                
+                {/* Letter Header */}
+                <div className="text-center space-y-4">
+                  <span className="material-symbols-outlined text-primary text-5xl mb-2 opacity-50">history_edu</span>
+                  <h3 className="font-headline text-2xl md:text-4xl text-primary italic leading-tight">
+                    "Gửi những người bạn đã đi cùng nhau một đoạn thanh xuân,"
+                  </h3>
                 </div>
-                <h3 className="font-title text-xl text-primary mb-2">Sân trường năm ấy</h3>
-                <p className="text-on-surface-variant leading-relaxed">
-                  Hai mươi năm — một khoảng thời gian đủ dài để một đứa trẻ trưởng thành, để những ước mơ ngây ngô ngày nào giờ đã thành hình hài thực tế. Bạn còn nhớ không, cái nắng của những ngày tháng 5 oi ả nơi cổng trường cũ?
-                </p>
-              </div>
 
-              {/* Visual Highlight: The Desk */}
-              <div className="md:col-span-5 glass-card rounded-xl p-stack-md scrapbook-rotate-right flex flex-col justify-center border-l-4 border-tertiary-fixed-dim">
-                <div className="relative">
-                  <span className="material-symbols-outlined text-tertiary-fixed-dim text-5xl absolute -top-8 -left-4 opacity-50">format_quote</span>
-                  <blockquote className="text-2xl font-headline text-primary italic relative z-10 py-4">
-                    "Những chỗ ngồi trống, những dòng chữ khắc vội trên bàn gỗ... nay chỉ còn là kỷ niệm."
-                  </blockquote>
+                {/* Main Content Sections */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                  <div className="glass-card p-8 rounded-2xl border-l-4 border-primary bg-gradient-to-br from-white to-primary/5 shadow-xl shadow-primary/5 relative overflow-hidden group">
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                    <p className="text-on-surface-variant leading-relaxed text-lg relative z-10">
+                      Đã gần 20 năm kể từ ngày chuyến tàu mang tên <span className="text-primary font-bold">“2003-2006”</span> rời sân ga THPT Bình Sơn năm ấy – nơi có tiếng trống quen thuộc, những buổi sáng vội vàng, những giờ ra chơi ồn ào, và những gương mặt mà chỉ cần nhìn lại là thấy lòng mình ấm lên.
+                    </p>
+                  </div>
+                  <div className="relative h-72 rounded-2xl overflow-hidden shadow-2xl scrapbook-rotate-right transform hover:rotate-0 transition-transform duration-500">
+                    <Image src={photo1} alt="Kỷ niệm" fill className="object-cover" unoptimized />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-6">
+                      <p className="text-white font-title italic text-sm">Sân ga thanh xuân 2003-2006</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Letter Section 2: Classrooms */}
-              <div className="md:col-span-4 glass-card rounded-xl p-stack-md flex flex-col gap-4">
-                <div className="relative h-48 w-full">
-                  <Image 
-                    src={photo2}
-                    alt="Classroom window"
-                    fill
-                    className="object-cover rounded-lg"
-                    unoptimized
-                  />
-                </div>
-                <div className="p-2">
-                  <h3 className="font-title text-lg text-secondary mb-2">Hành lang vắng</h3>
-                  <p className="text-on-surface-variant text-sm">Tiếng cười đùa vang vọng hành lang, những giờ kiểm tra căng thẳng, và cả những rung động đầu đời chưa kịp ngỏ lời.</p>
-                </div>
-              </div>
-
-              {/* Letter Section 3: The Letter Content */}
-              <div className="md:col-span-8 glass-card rounded-xl p-stack-lg border-t-4 border-primary">
-                <div className="flex flex-col gap-stack-md">
-                  <div className="flex items-start gap-4">
-                    <span className="material-symbols-outlined text-primary bg-primary-fixed p-3 rounded-full">history_edu</span>
-                    <div>
-                      <h3 className="font-title text-xl text-primary">Tâm thư gửi bạn bè</h3>
-                      <p className="text-on-surface-variant mt-2 leading-relaxed">
-                        Chúng ta đã đi qua những năm tháng rực rỡ nhất của tuổi trẻ. Có người đã gặt hái được những thành công vang dội, có người đang bình yên với hạnh phúc giản đơn. Nhưng dù bạn là ai, đang ở đâu, chuyến tàu 2006-2026 này vẫn luôn có một chỗ ngồi dành riêng cho bạn.
+                <div className="glass-card p-10 rounded-2xl relative overflow-hidden border border-outline-variant/30">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl -mr-24 -mt-24" />
+                  <div className="relative z-10 space-y-8">
+                    <div className="space-y-4">
+                      <h4 className="font-title text-2xl text-secondary flex items-center gap-3">
+                        <span className="material-symbols-outlined">train</span>
+                        Khóa 2003–2006 của chúng ta đặc biệt lắm.
+                      </h4>
+                      <p className="text-on-surface-variant leading-relaxed text-lg italic border-l-4 border-secondary/30 pl-6 py-2 bg-secondary/5 rounded-r-xl">
+                        Chúng ta từng ngồi chung “toa” suốt năm 10 – 11, nhưng lên 12 lại mỗi đứa mỗi “toa”.<br/>
+                        Có người chuyển lớp, có người chuyển trường, có người đi xa…<br/>
+                        Và rồi thời gian cứ thế cuốn mỗi đứa vào một hành trình khác nhau.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4 pt-4 border-t border-outline-variant/20">
+                      <p className="text-on-surface-variant leading-relaxed text-lg flex items-start gap-4">
+                        <span className="material-symbols-outlined text-primary mt-1">favorite</span>
+                        <span>
+                          Nhưng có những điều, dù đi bao lâu cũng không mất. Những nụ cười năm ấy – Những ánh mắt quen thuộc – Những cảm giác gần gũi Khi gặp lại người bạn cũ!
+                        </span>
                       </p>
                     </div>
                   </div>
-                  <hr className="border-outline-variant/30"/>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-secondary">check_circle</span>
-                      <span className="font-title text-on-surface">20 năm ngày trở về</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-secondary">check_circle</span>
-                      <span className="font-title text-on-surface">Gặp lại thầy cô, bạn cũ</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-secondary">check_circle</span>
-                      <span className="font-title text-on-surface">Ôn lại kỷ niệm xưa</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-secondary">check_circle</span>
-                      <span className="font-title text-on-surface">Viết tiếp chương mới</span>
-                    </div>
-                  </div>
                 </div>
-              </div>
 
-              {/* Letter Section 4: The Golden Ticket */}
-              <div className="md:col-span-12 glass-card rounded-xl p-stack-lg bg-gradient-to-r from-surface-container-lowest to-secondary-fixed/20 relative overflow-hidden">
-                <div className="absolute right-0 top-0 opacity-10">
-                  <span className="material-symbols-outlined text-[200px]">confirmation_number</span>
-                </div>
-                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                  <div className="max-w-xl">
-                    <h2 className="font-headline text-3xl text-primary mb-2">Tấm vé quay ngược thời gian</h2>
-                    <p className="text-on-surface-variant">Đừng để những bộn bề lo toan làm lỡ chuyến tàu quan trọng nhất của thanh xuân. Hãy để ngày {eventDate} là ngày chúng ta lại được là những cô cậu học trò vô tư như ngày nào.</p>
-                  </div>
-                  <div className="flex flex-col gap-4 w-full md:w-auto">
-                    <button 
-                      onClick={() => document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="bg-primary text-on-primary font-bold py-4 px-12 rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
-                    >Xác nhận tham gia ngay</button>
-                    <p className="text-label-sm text-center text-on-surface-variant">Hơn 100+ bạn đã đăng ký</p>
+                {/* Highlight Quote */}
+                <div className="bg-primary text-on-primary p-12 rounded-[2rem] text-center shadow-2xl relative group overflow-hidden border border-white/10">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-secondary opacity-90" />
+                  <div className="relative z-10 space-y-6">
+                    <h3 className="text-2xl md:text-4xl font-headline leading-tight">
+                      Ngày <span className="text-secondary-fixed font-bold underline underline-offset-8 decoration-secondary-fixed/50">12/7</span>, chúng ta sẽ có một cơ hội hiếm hoi – một ngày để trở về, để kết nối, để ghép lại những mảnh ký ức, để sống thêm một lần nữa những điều đẹp nhất của tuổi học trò. Hội khóa 2003–2006 không chỉ là một buổi họp mặt. Đó là ngày đoàn tàu thanh xuân của chúng ta tập hợp lại đầy đủ, để nhắc rằng: <span className="text-secondary-fixed">Chúng ta đã từng là một phần của nhau – và mãi là của nhau.</span>
+                    </h3>
+                    <div className="w-20 h-1 bg-white/30 mx-auto rounded-full" />
+                    <p className="text-xl md:text-2xl opacity-90 font-medium font-title">
+                      Nếu bạn đã từng nghĩ "để khi khác"… Thì đây chính là "khi khác" mà chúng ta đã chờ rất lâu.
+                    </p>
                   </div>
                 </div>
+
+                {/* Closing Sections */}
+                <div className="grid md:grid-cols-2 gap-8">
+                   <div className="glass-card p-8 rounded-2xl flex flex-col gap-6 border-b-4 border-orange-500 bg-orange-50/20">
+                      <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center shadow-sm">
+                        <span className="material-symbols-outlined text-orange-600 text-3xl">favorite</span>
+                      </div>
+                      <div className="space-y-3">
+                        <p className="text-on-surface-variant leading-relaxed font-medium">Hãy dành một ngày cho chính mình - những tháng năm học trò.</p>
+                        <p className="text-on-surface-variant leading-relaxed font-medium">Hãy dành một ngày cho những người bạn từng rất thân - rồi xa nhau lúc nào không hay.</p>
+                      </div>
+                   </div>
+                   <div className="glass-card p-8 rounded-2xl flex flex-col gap-6 border-b-4 border-primary bg-primary/5">
+                      <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm">
+                        <span className="material-symbols-outlined text-primary text-3xl">local_shipping</span>
+                      </div>
+                      <p className="text-on-surface-variant leading-relaxed text-lg font-medium">
+                        Hãy cùng nối lại những toa tàu, viết hành trình cho chuyến tàu <span className="text-primary font-bold">"2003-2006"</span> ngày ấy.
+                      </p>
+                   </div>
+                </div>
+
+                {/* Final Call to Action */}
+                <div className="text-center space-y-10 py-12 border-t border-outline-variant/30 relative">
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-background px-6">
+                    <span className="material-symbols-outlined text-primary/30 text-4xl">local_shipping</span>
+                  </div>
+                  
+                  <p className="text-2xl md:text-3xl font-headline text-primary font-bold max-w-2xl mx-auto leading-relaxed">
+                    Hãy cùng nối lại những toa tàu, viết hành trình cho chuyến tàu “2003-2006” ngày ấy.
+                  </p>
+                  
+                  <button 
+                    onClick={() => document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="group bg-primary text-white font-title text-xl py-6 px-12 md:px-20 rounded-2xl shadow-2xl shadow-primary/30 hover:bg-primary-container hover:scale-105 active:scale-95 transition-all flex items-center gap-4 mx-auto"
+                  >
+                    Xác nhận tham gia ngay
+                    <span className="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                  </button>
+                </div>
+
               </div>
             </div>
-            </div>
-            {/* Registration Section */}
+{/* Registration Section */}
             <div id="registration-section" className="mt-16 mb-20 relative">
               {submitted ? (
                 /* ===== THANK YOU SCREEN ===== */
@@ -1193,3 +1201,5 @@ export default function DangKyPage() {
     </div>
   );
 }
+
+
