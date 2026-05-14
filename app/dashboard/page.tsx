@@ -642,6 +642,29 @@ export default function DashboardPage() {
   const [defaultAmount, setDefaultAmount] = useState('1000000');
   const [defaultSyntax, setDefaultSyntax] = useState('BS2006 [HO TEN] [SDT]');
   
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword) return addNotification('Vui lòng nhập mật khẩu mới', 'warning');
+    if (newPassword !== confirmPassword) return addNotification('Mật khẩu xác nhận không khớp', 'warning');
+    if (newPassword.length < 6) return addNotification('Mật khẩu phải có ít nhất 6 ký tự', 'warning');
+
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      addNotification('Đã đổi mật khẩu thành công!', 'success');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      addNotification(`Lỗi: ${err.message}`, 'warning');
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
   const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.jpg?amount=${defaultAmount}&addInfo=${encodeURIComponent(defaultSyntax)}&accountName=${encodeURIComponent(accountName)}`;
 
   const handleLogout = async () => {
@@ -1332,79 +1355,6 @@ export default function DashboardPage() {
                    </tbody>
                  </table>
                </div>
-
-                {/* Modal Thêm / Sửa người dùng */}
-                {editingUser && (
-                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-                      <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                        <h3 className="font-bold text-slate-900 text-lg">
-                          {editingUser.id ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'}
-                        </h3>
-                        <button onClick={() => setEditingUser(null)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400"><X size={18} /></button>
-                      </div>
-                      <div className="p-6 space-y-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Họ và Tên</label>
-                          <input
-                            type="text"
-                            value={editingUser.name}
-                            onChange={e => setEditingUser({ ...editingUser, name: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            placeholder="Nguyễn Văn A"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
-                          <input
-                            type="email"
-                            value={editingUser.email}
-                            onChange={e => setEditingUser({ ...editingUser, email: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            placeholder="email@example.com"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Mật khẩu</label>
-                          <input
-                            type="password"
-                            value={editingUser.password || ''}
-                            onChange={e => setEditingUser({ ...editingUser, password: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            placeholder="Để trống nếu không thay đổi"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Vai trò</label>
-                          <select
-                            value={editingUser.role}
-                            onChange={e => setEditingUser({ ...editingUser, role: e.target.value as Role })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          >
-                            <option value="MEMBER">MEMBER (Thành viên)</option>
-                            <option value="FINANCE">FINANCE (Kế toán)</option>
-                            <option value="ADMIN">ADMIN (Quản trị viên)</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Quyền truy cập</label>
-                          <div className="grid grid-cols-2 gap-2 mt-2">
-                            {['overview', 'transactions', 'tasks', 'reports', 'settings', 'users', 'appearance'].map(perm => (
-                              <label key={perm} className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
-                                <input
-                                  type="checkbox"
-                                  checked={editingUser.permissions.includes(perm as Permission)}
-                                  onChange={e => {
-                                    const newPerms = e.target.checked
-                                      ? [...editingUser.permissions, perm as Permission]
-                                      : editingUser.permissions.filter(p => p !== perm);
-                                    setEditingUser({ ...editingUser, permissions: newPerms });
-                                  }}
-                                  className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                                />
-                                <span className="text-xs font-medium text-slate-700 capitalize">{perm}</span>
-                              </label>
-                            ))}
                           </div>
                         </div>
                       </div>
