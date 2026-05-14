@@ -9,32 +9,17 @@ import { supabase } from '@/lib/supabaseClient';
 // ── FinanceStatisticsBlock: Block thống kê thu chi (bao gồm Danh sách đăng ký) ──
 function FinanceStatisticsBlock() {
   const [incomes, setIncomes] = React.useState<{name:string;phone:string;will_attend:string;amount?:number;created_at:string;memory?:string;class_c?:string;class_b?:string}[]>([]);
-  const [expenses, setExpenses] = React.useState<{id:string;date:string;name:string;amount:number;type:string;note:string;created_at:string}[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [activeStatTab, setActiveStatTab] = React.useState<'IN' | 'OUT' | 'PLAN'>('IN');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [classCFilter, setClassCFilter] = React.useState('');
   const [classBFilter, setClassBFilter] = React.useState('');
 
-  // Dự kiến chi (kế hoạch)
-  const plannedExpenses = [
-    { name: 'Tiệc kỷ niệm & Buffet', amount: 72000000, note: '~120 người × 600k', icon: 'restaurant' },
-    { name: 'Chụp hình / Quay phim', amount: 27000000, note: 'Ekip chuyên nghiệp', icon: 'videocam' },
-    { name: 'Sân khấu & Âm thanh ánh sáng', amount: 36000000, note: 'Thuê trọn gói', icon: 'music_note' },
-    { name: 'Quà lưu niệm cho thành viên', amount: 18000000, note: '120 phần × 150k', icon: 'card_giftcard' },
-    { name: 'Quỹ dự phòng', amount: 27000000, note: 'Chi phí phát sinh', icon: 'savings' },
-  ];
-  const totalPlanned = plannedExpenses.reduce((s, e) => s + e.amount, 0);
-
   React.useEffect(() => {
-    Promise.all([
-      supabase.from('registrations').select('*').order('created_at', { ascending: false }),
-      supabase.from('transactions').select('*').eq('type', 'OUT').order('created_at', { ascending: false })
-    ]).then(([regsRes, transRes]) => {
-      if (regsRes.data) setIncomes(regsRes.data);
-      if (transRes.data) setExpenses(transRes.data);
-      setLoading(false);
-    });
+    supabase.from('registrations').select('*').order('created_at', { ascending: false })
+      .then((regsRes) => {
+        if (regsRes.data) setIncomes(regsRes.data);
+        setLoading(false);
+      });
   }, []);
 
   const getClasses = (row: any) => {
@@ -63,102 +48,63 @@ function FinanceStatisticsBlock() {
     return matchesSearch && matchesClassC && matchesClassB;
   });
 
-  const filteredExpenses = expenses.filter(t =>
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (t.note && t.note.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
   const attending = incomes.filter(r => r.will_attend === 'yes').length;
   const totalIncome = incomes.reduce((s, r) => s + (r.amount || 0), 0);
-  const totalOutActual = expenses.reduce((s, t) => s + Math.abs(t.amount), 0);
-  const remaining = totalIncome - totalOutActual;
 
   return (
     <div className="mt-6 md:mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
 
       {/* Summary row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 border-b border-slate-100">
+      <div className="grid grid-cols-2 border-b border-slate-100">
         <div className="p-4 md:p-6 text-center border-r border-slate-100">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hành khách</p>
           <p className="text-2xl md:text-3xl font-bold tracking-tight text-primary">{attending}<span className="text-sm text-slate-400 font-medium ml-1">sẽ về</span></p>
         </div>
-        <div className="p-4 md:p-6 text-center border-r border-slate-100">
+        <div className="p-4 md:p-6 text-center">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tổng đóng góp</p>
           <p className="text-xl md:text-2xl font-bold tracking-tight text-emerald-600">{totalIncome > 0 ? totalIncome.toLocaleString('vi-VN') + 'đ' : '—'}</p>
         </div>
-        <div className="p-4 md:p-6 text-center border-r border-slate-100">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đã chi thực tế</p>
-          <p className="text-xl md:text-2xl font-bold tracking-tight text-rose-500">{totalOutActual > 0 ? totalOutActual.toLocaleString('vi-VN') + 'đ' : '—'}</p>
-        </div>
-        <div className="p-4 md:p-6 text-center">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Còn lại / thiếu</p>
-          <p className={`text-xl md:text-2xl font-bold tracking-tight ${remaining >= 0 ? 'text-blue-600' : 'text-orange-500'}`}>
-            {remaining !== 0 ? (remaining > 0 ? '+' : '') + remaining.toLocaleString('vi-VN') + 'đ' : '—'}
-          </p>
-        </div>
       </div>
 
-      {/* Tabs + Search */}
+      {/* Search + Filters */}
       <div className="p-3 md:p-6 border-b border-slate-100 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
-        <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto gap-1">
-          <button
-            onClick={() => setActiveStatTab('IN')}
-            className={`flex-1 md:px-5 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${activeStatTab === 'IN' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            ✈️ Hành khách ({incomes.length})
-          </button>
-          <button
-            onClick={() => setActiveStatTab('OUT')}
-            className={`flex-1 md:px-5 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${activeStatTab === 'OUT' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            💸 Đã chi ({expenses.length})
-          </button>
-          <button
-            onClick={() => setActiveStatTab('PLAN')}
-            className={`flex-1 md:px-5 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${activeStatTab === 'PLAN' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            📋 Dự kiến chi
-          </button>
-        </div>
+        <h3 className="font-bold text-slate-800 flex items-center gap-2 px-2">
+          <span className="material-symbols-outlined text-primary">groups</span>
+          Danh sách hành khách ({incomes.length})
+        </h3>
 
-        {activeStatTab !== 'PLAN' && (
-          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-            <div className="relative w-full md:w-56">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-              <input
-                type="text"
-                placeholder="Tìm kiếm..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
-              />
-            </div>
-            {activeStatTab === 'IN' && (
-              <>
-                <select
-                  value={classCFilter}
-                  onChange={(e) => setClassCFilter(e.target.value)}
-                  className="w-full md:w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm appearance-none cursor-pointer"
-                >
-                  <option value="">Lớp C</option>
-                  {Array.from({ length: 13 }, (_, i) => `C${i + 1}`).map(cls => (
-                    <option key={cls} value={cls}>{cls}</option>
-                  ))}
-                </select>
-                <select
-                  value={classBFilter}
-                  onChange={(e) => setClassBFilter(e.target.value)}
-                  className="w-full md:w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm appearance-none cursor-pointer"
-                >
-                  <option value="">Lớp B</option>
-                  {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
-                    <option key={cls} value={cls}>{cls}</option>
-                  ))}
-                </select>
-              </>
-            )}
+        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+          <div className="relative w-full md:w-56">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
+            />
           </div>
-        )}
+          <select
+            value={classCFilter}
+            onChange={(e) => setClassCFilter(e.target.value)}
+            className="w-full md:w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm appearance-none cursor-pointer"
+          >
+            <option value="">Lớp C</option>
+            {Array.from({ length: 13 }, (_, i) => `C${i + 1}`).map(cls => (
+              <option key={cls} value={cls}>{cls}</option>
+            ))}
+          </select>
+          <select
+            value={classBFilter}
+            onChange={(e) => setClassBFilter(e.target.value)}
+            className="w-full md:w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm appearance-none cursor-pointer"
+          >
+            <option value="">Lớp B</option>
+            {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
+              <option key={cls} value={cls}>{cls}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Content */}
@@ -167,7 +113,7 @@ function FinanceStatisticsBlock() {
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : activeStatTab === 'IN' ? (
+        ) : (
           <table className="w-full text-left">
             <thead className="bg-slate-50/80 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
               <tr>
@@ -218,68 +164,6 @@ function FinanceStatisticsBlock() {
               )}
             </tbody>
           </table>
-
-        ) : activeStatTab === 'OUT' ? (
-          <table className="w-full text-left">
-            <thead className="bg-slate-50/80 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-              <tr>
-                <th className="px-4 md:px-6 py-3">Thời gian</th>
-                <th className="px-4 md:px-6 py-3">Nội dung chi</th>
-                <th className="px-4 md:px-6 py-3 hidden md:table-cell">Ghi chú</th>
-                <th className="px-4 md:px-6 py-3 text-right">Số tiền</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredExpenses.length === 0 ? (
-                <tr><td colSpan={4} className="text-center py-12 text-slate-400">Chưa có khoản chi nào được ghi nhận</td></tr>
-              ) : (
-                filteredExpenses.map((t, idx) => (
-                  <tr key={t.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-4 md:px-6 py-3 text-xs text-slate-400 whitespace-nowrap">{t.date || new Date(t.created_at).toLocaleDateString('vi-VN')}</td>
-                    <td className="px-4 md:px-6 py-3 font-medium text-slate-800 text-sm">{t.name}</td>
-                    <td className="px-4 md:px-6 py-3 text-xs text-slate-400 hidden md:table-cell">{t.note || '—'}</td>
-                    <td className="px-4 md:px-6 py-3 text-right font-bold text-rose-500 text-sm whitespace-nowrap">
-                      -{Math.abs(t.amount).toLocaleString('vi-VN')}đ
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-            {filteredExpenses.length > 0 && (
-              <tfoot className="border-t-2 border-slate-200 bg-slate-50">
-                <tr>
-                  <td colSpan={3} className="px-4 md:px-6 py-3 font-bold text-slate-600 text-sm">Tổng đã chi</td>
-                  <td className="px-4 md:px-6 py-3 text-right font-black text-rose-600">-{totalOutActual.toLocaleString('vi-VN')}đ</td>
-                </tr>
-              </tfoot>
-            )}
-          </table>
-
-        ) : (
-          /* PLAN tab */
-          <div className="p-3 md:p-6 space-y-3">
-            <p className="text-xs text-slate-400 font-medium mb-4">Dự toán chi phí tổ chức hội khóa (chưa thực chi)</p>
-            {plannedExpenses.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 md:p-4 bg-amber-50 border border-amber-100 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-amber-600 text-lg">{item.icon}</span>
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-800 text-sm">{item.name}</p>
-                    <p className="text-xs text-slate-400">{item.note}</p>
-                  </div>
-                </div>
-                <span className="font-black text-amber-700 text-sm whitespace-nowrap ml-4">
-                  {item.amount.toLocaleString('vi-VN')}đ
-                </span>
-              </div>
-            ))}
-            <div className="flex items-center justify-between p-4 bg-slate-800 rounded-xl mt-2">
-              <span className="font-bold text-white">Tổng dự toán</span>
-              <span className="font-black text-amber-400 text-lg">{totalPlanned.toLocaleString('vi-VN')}đ</span>
-            </div>
-          </div>
         )}
       </div>
     </div>
