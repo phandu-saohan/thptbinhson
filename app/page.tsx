@@ -183,15 +183,15 @@ function FinanceStatisticsBlock() {
                             </p>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between mt-2">
-                        {r.will_attend === 'yes'
-                          ? <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase tracking-wider">Sẽ về</span>
-                          : <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold uppercase tracking-wider">Vắng</span>
-                        }
-                        <span className="text-[10px] text-slate-400">
-                          {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' })}
-                        </span>
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                          {r.will_attend === 'yes'
+                            ? <span className="text-[9px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase tracking-wider">Sẽ về</span>
+                            : <span className="text-[9px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold uppercase tracking-wider">Vắng</span>
+                          }
+                          <span className="text-[10px] text-slate-400">
+                            {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' })}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
