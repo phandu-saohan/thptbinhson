@@ -1072,17 +1072,23 @@ export default function DangKyPage() {
                     <div key={idx} className="relative group">
                       <div className="absolute -left-[41px] md:-left-[57px] w-4 h-4 bg-white border-2 border-primary rounded-full group-hover:bg-primary transition-colors shadow-sm"></div>
                       <div className="glass-card p-4 md:p-6 rounded-2xl border border-outline-variant/30 hover:shadow-lg transition-all">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 group-hover:bg-primary/5 transition-colors">
-                              <span className="material-symbols-outlined text-primary text-xl">{item.icon}</span>
-                            </div>
-                            <div>
-                              <h4 className="font-bold text-slate-800 text-lg group-hover:text-primary transition-colors">{item.title}</h4>
-                              <p className="text-on-surface-variant text-sm leading-relaxed mt-1">{item.desc}</p>
-                            </div>
+                        <div className="flex items-start gap-3 md:gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 group-hover:bg-primary/5 transition-colors">
+                            <span className="material-symbols-outlined text-primary text-xl">{item.icon}</span>
                           </div>
-                          <span className="text-xs font-black text-slate-400 whitespace-nowrap bg-slate-50 px-3 py-1 rounded-full border border-slate-100 group-hover:text-primary group-hover:border-primary/20 transition-all">{item.time}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+                              <h4 className="font-bold text-slate-800 text-lg group-hover:text-primary transition-colors leading-tight">
+                                {item.title}
+                              </h4>
+                              <span className="text-[10px] md:text-xs font-black text-slate-400 whitespace-nowrap bg-slate-50 px-3 py-1 rounded-full border border-slate-100 group-hover:text-primary group-hover:border-primary/20 transition-all w-fit">
+                                {item.time}
+                              </span>
+                            </div>
+                            <p className="text-on-surface-variant text-sm leading-relaxed">
+                              {item.desc}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
