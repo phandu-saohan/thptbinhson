@@ -1307,7 +1307,7 @@ export default function DangKyPage() {
               }}
               className="bg-primary text-white w-14 h-14 rounded-full shadow-xl shadow-primary/40 border-4 border-white flex items-center justify-center active:scale-90 transition-all transform -translate-y-2"
             >
-              <span className="material-symbols-outlined text-[28px]">train</span>
+              <span className="material-symbols-outlined text-[28px]">edit_note</span>
             </button>
             <span className="text-[10px] font-black text-primary mt-1">ĐĂNG KÝ</span>
           </div>
