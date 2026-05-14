@@ -632,7 +632,7 @@ export default function DangKyPage() {
       <main className="max-w-container-max mx-auto px-3 md:px-margin-desktop py-4 md:py-stack-lg">
 
       {/* Main Content */}
-      <div id="content" className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop relative z-30 pb-16 md:pb-8">
+      <div id="content" className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop relative z-30 md:pb-8">
         
         {/* Tab 1: Thư Ngỏ & Đăng Ký */}
         {activeTab === 'home' && (
