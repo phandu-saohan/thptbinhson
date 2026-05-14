@@ -3,7 +3,7 @@ import './globals.css';
 import { supabase } from '@/lib/supabaseClient';
 
 export async function generateMetadata(): Promise<Metadata> {
-  let seoImage = '/logo.jpg';
+  let seoImage = '/logo.png';
   try {
     const { data } = await supabase.from('site_settings').select('value').eq('key', 'seo_image').maybeSingle();
     if (data?.value) {
@@ -40,7 +40,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="vi">
       <head>
-        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+        <link rel="icon" href="/logo.png" type="image/png" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>

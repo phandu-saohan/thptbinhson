@@ -436,7 +436,7 @@ export default function DashboardPage() {
   const [photo1, setPhoto1] = useState('https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=800&auto=format&fit=crop');
   const [photo2, setPhoto2] = useState('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop');
   const [photo3, setPhoto3] = useState('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=800&auto=format&fit=crop');
-  const [seoImage, setSeoImage] = useState('/logo.jpg');
+  const [seoImage, setSeoImage] = useState('/logo.png');
   const [uploadingKey, setUploadingKey] = useState<string|null>(null);
 
   // Appearance Settings State — Trang Chủ Content
