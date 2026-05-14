@@ -302,6 +302,41 @@ export default function DashboardPage() {
     setEditingTransaction(null);
   };
 
+  const handleExportRegistrations = () => {
+    if (registrations.length === 0) {
+      addNotification('Không có dữ liệu để xuất', 'warning');
+      return;
+    }
+
+    const headers = ['Họ và tên', 'Số điện thoại', 'Lớp C', 'Lớp B', 'Tham dự', 'Đóng góp', 'Kỷ niệm', 'Ngày đăng ký'];
+    const rows = registrations.map(r => [
+      r.name,
+      r.phone,
+      r.class_c || '',
+      r.class_b || '',
+      r.will_attend === 'yes' ? 'Có về' : 'Không về',
+      r.amount || 0,
+      (r.memory || '').replace(/\n/g, ' '),
+      new Date(r.created_at).toLocaleString('vi-VN')
+    ]);
+
+    let csvContent = "\uFEFF"; // BOM for UTF-8 Excel support
+    csvContent += headers.join(',') + '\n';
+    rows.forEach(row => {
+      csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Danh_sach_dang_ky_Hoi_khoa_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addNotification('Đã tải xuống file danh sách', 'success');
+  };
+
   const handleDeleteTransaction = async (id: string) => {
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (!error) {
@@ -797,13 +832,22 @@ export default function DashboardPage() {
                         className="pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
                       />
                     </div>
-                    <button
-                      onClick={() => setEditingRegistration({ id: '', name: '', phone: '', class_c: '', class_b: '', will_attend: 'yes', memory: '', amount: 0, created_at: new Date().toISOString() })}
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Thêm mới
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleExportRegistrations}
+                        className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-emerald-500/20 hover:bg-emerald-700 transition"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Xuất Excel
+                      </button>
+                      <button
+                        onClick={() => setEditingRegistration({ id: '', name: '', phone: '', class_c: '', class_b: '', will_attend: 'yes', memory: '', amount: 0, created_at: new Date().toISOString() })}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Thêm mới
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
