@@ -69,6 +69,7 @@ export interface User {
   email: string;
   role: Role;
   permissions: Permission[];
+  password?: string;
 }
 
 const mockUsers: User[] = [
