@@ -1142,12 +1142,18 @@ export default function DangKyPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
-                          {item.representatives.map((rep, rIdx) => (
-                            <div key={rIdx} className="flex items-center gap-2 text-slate-600 font-medium">
-                              <span className="material-symbols-outlined text-sm text-primary/60">phone_in_talk</span>
-                              {rep}
-                            </div>
-                          ))}
+                          {item.representatives.map((rep, rIdx) => {
+                            const [name, phone] = rep.split(': ');
+                            return (
+                              <div key={rIdx} className="flex items-center gap-2 text-slate-600 font-medium">
+                                <span className="material-symbols-outlined text-sm text-primary/60">phone_in_talk</span>
+                                <span className="font-black text-slate-900">{name}</span>: 
+                                <a href={`tel:${phone ? phone.replace(/\./g, '') : ''}`} className="text-primary hover:underline transition-all">
+                                  {phone}
+                                </a>
+                              </div>
+                            );
+                          })}
                         </div>
                       </td>
                     </tr>
