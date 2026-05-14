@@ -621,7 +621,7 @@ export default function DangKyPage() {
               onClick={() => {
                 setActiveTab('home');
                 setTimeout(() => {
-                  document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
               }}
               className="bg-white text-primary px-8 py-3 md:px-10 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:bg-primary-fixed-dim hover:scale-105 active:scale-95 transition-all flex items-center gap-3 group border-2 border-white/50"
@@ -822,7 +822,7 @@ export default function DangKyPage() {
                 </div>
 
               ) : (
-                <div id="registration-section" className="bg-surface-container rounded-xl p-3 md:p-10 border border-outline-variant/30 shadow-sm">
+                <div id="registration-section" className="bg-surface-container rounded-xl p-3 md:p-10 border border-outline-variant/30 shadow-sm scroll-mt-20">
                   <div className="text-center mb-10">
                     <h2 className="text-2xl md:text-4xl font-headline flex flex-col md:flex-row items-center justify-center text-primary tracking-tight gap-4">
                       <span className="w-14 h-14 bg-primary-fixed text-on-primary-fixed rounded-full flex items-center justify-center shadow-inner">
@@ -1302,7 +1302,7 @@ export default function DangKyPage() {
               onClick={() => {
                 setActiveTab('home');
                 setTimeout(() => {
-                  document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
               }}
               className="bg-primary text-white w-14 h-14 rounded-full shadow-xl shadow-primary/40 border-4 border-white flex items-center justify-center active:scale-90 transition-all transform -translate-y-2"
