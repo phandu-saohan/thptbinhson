@@ -124,6 +124,7 @@ function FinanceStatisticsBlock() {
                   <th className="px-6 py-3 text-center">Lớp C</th>
                   <th className="px-6 py-3 text-center">Lớp B</th>
                   <th className="px-6 py-3 text-center">Tham dự</th>
+                  <th className="px-6 py-3 text-right">Đóng góp</th>
                   <th className="px-6 py-3 hidden lg:table-cell">Thời gian</th>
                 </tr>
               </thead>
@@ -149,6 +150,12 @@ function FinanceStatisticsBlock() {
                         {r.will_attend === 'yes'
                           ? <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold">Sẽ về</span>
                           : <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold">Vắng</span>
+                        }
+                      </td>
+                      <td className="px-6 py-3 text-right">
+                        {r.amount && r.amount > 0
+                          ? <span className="font-bold text-emerald-600 text-sm">+{r.amount.toLocaleString('vi-VN')}đ</span>
+                          : <span className="text-slate-300 text-sm">—</span>
                         }
                       </td>
                       <td className="px-6 py-3 hidden lg:table-cell text-xs text-slate-400">
@@ -183,7 +190,10 @@ function FinanceStatisticsBlock() {
                             </p>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          {r.amount && r.amount > 0 && (
+                            <p className="font-bold text-emerald-600 text-sm mb-1">+{r.amount.toLocaleString('vi-VN')}đ</p>
+                          )}
                           {r.will_attend === 'yes'
                             ? <span className="text-[9px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase tracking-wider">Sẽ về</span>
                             : <span className="text-[9px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold uppercase tracking-wider">Vắng</span>
