@@ -1279,34 +1279,51 @@ export default function DangKyPage() {
 
       {/* BottomNavBar */}
       <nav className="md:hidden bg-surface/95 backdrop-blur-lg border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(0,53,127,0.1)] bottom-0 rounded-t-xl z-50 fixed w-full">
-        <div className="flex justify-around items-center w-full py-2 px-4 pb-safe">
+        <div className="flex justify-between items-end w-full px-2 pb-safe relative">
           <button 
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'home' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'home' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
           >
-            <span className="material-symbols-outlined text-[22px]">mail</span>
-            <span className="text-[11px] font-bold">Thư ngỏ</span>
+            <span className="material-symbols-outlined text-[24px]">mail</span>
+            <span className="text-[10px] font-bold">Thư ngỏ</span>
           </button>
           <button 
             onClick={() => setActiveTab('plan')}
-            className={`flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${activeTab === 'plan' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'plan' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
           >
-            <span className="material-symbols-outlined text-[22px]">map</span>
-            <span className="text-[11px] font-bold">Kế hoạch</span>
+            <span className="material-symbols-outlined text-[24px]">map</span>
+            <span className="text-[10px] font-bold">Kế hoạch</span>
           </button>
+
+          {/* Nút Đăng ký nổi bật */}
+          <div className="flex-1 flex flex-col items-center mb-4">
+            <button 
+              onClick={() => {
+                setActiveTab('home');
+                setTimeout(() => {
+                  document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+              }}
+              className="bg-primary text-white w-14 h-14 rounded-full shadow-xl shadow-primary/40 border-4 border-white flex items-center justify-center active:scale-90 transition-all transform -translate-y-2"
+            >
+              <span className="material-symbols-outlined text-[28px]">edit_note</span>
+            </button>
+            <span className="text-[10px] font-black text-primary mt-1">ĐĂNG KÝ</span>
+          </div>
+
           <button 
             onClick={() => setActiveTab('finance')}
-            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${activeTab === 'finance' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'finance' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
           >
-            <span className="material-symbols-outlined text-[22px]">account_balance_wallet</span>
-            <span className="text-[11px] font-bold">Tài chính</span>
+            <span className="material-symbols-outlined text-[24px]">account_balance_wallet</span>
+            <span className="text-[10px] font-bold">Tài chính</span>
           </button>
           <button 
             onClick={() => setActiveTab('contacts')}
-            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${activeTab === 'contacts' ? 'bg-primary text-white' : 'text-on-surface-variant'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'contacts' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
           >
-            <span className="material-symbols-outlined text-[22px]">people</span>
-            <span className="text-[11px] font-bold">Liên lạc</span>
+            <span className="material-symbols-outlined text-[24px]">people</span>
+            <span className="text-[10px] font-bold">Liên lạc</span>
           </button>
         </div>
       </nav>
