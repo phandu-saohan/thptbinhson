@@ -610,9 +610,24 @@ export default function DangKyPage() {
           <p className="font-display text-lg md:text-3xl text-white/90 mb-4 md:mb-6 drop-shadow text-center font-medium tracking-wide">
             Kỷ niệm 20 năm ngày ra trường
           </p>
-          <div className="mt-2 md:mt-4 inline-flex items-center gap-3 bg-white/20 backdrop-blur-md px-6 py-2 md:px-10 md:py-3 rounded-full border border-white/30 shadow-2xl animate-bounce-slow">
-            <span className="material-symbols-outlined text-white text-lg md:text-2xl">calendar_month</span>
-            <span className="text-white text-lg md:text-3xl font-black tracking-widest drop-shadow-md">NGÀY 11-12/07/2026</span>
+          <div className="mt-4 md:mt-8 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+            <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-md px-6 py-2 md:px-10 md:py-3 rounded-full border border-white/30 shadow-2xl animate-bounce-slow">
+              <span className="material-symbols-outlined text-white text-lg md:text-2xl">calendar_month</span>
+              <span className="text-white text-lg md:text-3xl font-black tracking-widest drop-shadow-md">NGÀY 11-12/07/2026</span>
+            </div>
+            
+            <button 
+              onClick={() => {
+                setActiveTab('home');
+                setTimeout(() => {
+                  document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+              }}
+              className="bg-white text-primary px-8 py-3 md:px-10 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:bg-primary-fixed-dim hover:scale-105 active:scale-95 transition-all flex items-center gap-3 group border-2 border-white/50"
+            >
+              <span className="material-symbols-outlined font-bold group-hover:rotate-12 transition-transform">edit_note</span>
+              ĐĂNG KÝ THAM DỰ
+            </button>
           </div>
         </div>
       </section>
@@ -806,7 +821,7 @@ export default function DangKyPage() {
                 </div>
 
               ) : (
-                <div className="bg-surface-container rounded-xl p-3 md:p-10 border border-outline-variant/30 shadow-sm">
+                <div id="registration-section" className="bg-surface-container rounded-xl p-3 md:p-10 border border-outline-variant/30 shadow-sm">
                   <div className="text-center mb-10">
                     <h2 className="text-2xl md:text-4xl font-headline flex flex-col md:flex-row items-center justify-center text-primary tracking-tight gap-4">
                       <span className="w-14 h-14 bg-primary-fixed text-on-primary-fixed rounded-full flex items-center justify-center shadow-inner">
