@@ -562,9 +562,10 @@ export default function DangKyPage() {
           <p className="font-display text-lg md:text-3xl text-white/90 mb-4 md:mb-6 drop-shadow text-center font-medium tracking-wide">
             Kỷ niệm 20 năm ngày ra trường
           </p>
-          <p className="text-primary-fixed text-sm md:text-xl italic text-center md:whitespace-nowrap max-w-xs md:max-w-none mx-auto leading-relaxed px-2">
-            &ldquo;Thời gian trôi qua kẽ tay, nhưng ký ức còn đọng lại trên sân trường cũ...&rdquo;
-          </p>
+          <div className="mt-2 md:mt-4 inline-flex items-center gap-3 bg-white/20 backdrop-blur-md px-6 py-2 md:px-10 md:py-3 rounded-full border border-white/30 shadow-2xl animate-bounce-slow">
+            <span className="material-symbols-outlined text-white text-lg md:text-2xl">calendar_month</span>
+            <span className="text-white text-lg md:text-3xl font-black tracking-widest drop-shadow-md">NGÀY 11-12/07/2026</span>
+          </div>
         </div>
       </section>
 
