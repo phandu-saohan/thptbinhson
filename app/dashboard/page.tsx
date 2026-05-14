@@ -1331,6 +1331,88 @@ export default function DashboardPage() {
                    </tbody>
                  </table>
                </div>
+
+                {/* Modal Thêm / Sửa người dùng */}
+                {editingUser && (
+                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+                      <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h3 className="font-bold text-slate-900 text-lg">
+                          {editingUser.id ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'}
+                        </h3>
+                        <button onClick={() => setEditingUser(null)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400"><X size={18} /></button>
+                      </div>
+                      <div className="p-6 space-y-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Họ và Tên</label>
+                          <input
+                            type="text"
+                            value={editingUser.name}
+                            onChange={e => setEditingUser({ ...editingUser, name: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="Nguyễn Văn A"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
+                          <input
+                            type="email"
+                            value={editingUser.email}
+                            onChange={e => setEditingUser({ ...editingUser, email: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="email@example.com"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Vai trò</label>
+                          <select
+                            value={editingUser.role}
+                            onChange={e => setEditingUser({ ...editingUser, role: e.target.value as Role })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          >
+                            <option value="MEMBER">MEMBER (Thành viên)</option>
+                            <option value="FINANCE">FINANCE (Kế toán)</option>
+                            <option value="ADMIN">ADMIN (Quản trị viên)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Quyền truy cập</label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {['overview', 'transactions', 'tasks', 'reports', 'settings', 'users', 'appearance'].map(perm => (
+                              <label key={perm} className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={editingUser.permissions.includes(perm as Permission)}
+                                  onChange={e => {
+                                    const newPerms = e.target.checked
+                                      ? [...editingUser.permissions, perm as Permission]
+                                      : editingUser.permissions.filter(p => p !== perm);
+                                    setEditingUser({ ...editingUser, permissions: newPerms });
+                                  }}
+                                  className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                                />
+                                <span className="text-xs font-medium text-slate-700 capitalize">{perm}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6 pt-0 flex justify-end gap-3">
+                        <button
+                          onClick={() => setEditingUser(null)}
+                          className="px-5 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition"
+                        >Hủy</button>
+                        <button
+                          onClick={() => handleSaveUser(editingUser)}
+                          className="px-5 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+                        >
+                          <Save size={15} />
+                          Lưu thay đổi
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
             </div>
           )}
 
