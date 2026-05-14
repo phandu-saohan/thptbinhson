@@ -613,7 +613,7 @@ export default function DangKyPage() {
           <div className="mt-4 md:mt-8 flex flex-col md:flex-row items-center gap-4 md:gap-6">
             <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-md px-6 py-2 md:px-10 md:py-3 rounded-full border border-white/30 shadow-2xl animate-bounce-slow">
               <span className="material-symbols-outlined text-white text-lg md:text-2xl">calendar_month</span>
-              <span className="text-white text-lg md:text-3xl font-black tracking-widest drop-shadow-md">NGÀY 11-12/07/2026</span>
+              <span className="text-white text-lg md:text-3xl font-black tracking-widest drop-shadow-md">NGÀY 12/07/2026</span>
             </div>
             
             <button 
