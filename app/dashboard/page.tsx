@@ -1364,6 +1364,16 @@ export default function DashboardPage() {
                           />
                         </div>
                         <div>
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Mật khẩu</label>
+                          <input
+                            type="password"
+                            value={editingUser.password || ''}
+                            onChange={e => setEditingUser({ ...editingUser, password: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="Để trống nếu không thay đổi"
+                          />
+                        </div>
+                        <div>
                           <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Vai trò</label>
                           <select
                             value={editingUser.role}
@@ -2147,8 +2157,10 @@ function TransactionModal({ transaction, onClose }: { transaction: Transaction |
   )
 }
 
-function UserModal({ user, onClose, onSave }: { user: User, onClose: () => void, onSave: (user: User) => void }) {
+function UserModal({ user, onClose, onSave }: { user: User, onClose: () => void, onSave: (user: User, password?: string) => void }) {
   const [editedUser, setEditedUser] = useState<User>(user);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!editedUser) return null;
 
@@ -2159,13 +2171,14 @@ function UserModal({ user, onClose, onSave }: { user: User, onClose: () => void,
     { id: 'tasks', label: 'Công việc' },
     { id: 'reports', label: 'Báo cáo' },
     { id: 'users', label: 'Quản trị viên' },
-    { id: 'settings', label: 'Thiết lập' }
+    { id: 'settings', label: 'Thiết lập' },
+    { id: 'appearance', label: 'Giao diện' }
   ];
 
   const handleRoleChange = (newRole: Role) => {
     let defaultPerms: Permission[] = ['overview'];
     if (newRole === 'ADMIN') {
-      defaultPerms = ['overview', 'transactions', 'tasks', 'reports', 'settings', 'users'];
+      defaultPerms = ['overview', 'transactions', 'tasks', 'reports', 'settings', 'users', 'appearance'];
     } else if (newRole === 'FINANCE') {
       defaultPerms = ['overview', 'transactions', 'reports'];
     } else if (newRole === 'MEMBER') {
@@ -2184,25 +2197,50 @@ function UserModal({ user, onClose, onSave }: { user: User, onClose: () => void,
   
   return (
     <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <h3 className="text-lg font-bold text-slate-900 mb-4">{editedUser.id ? 'Sửa thông tin người dùng' : 'Thêm người dùng mới'}</h3>
-        <div className="space-y-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-bold text-slate-900">{editedUser.id ? 'Sửa thông tin người dùng' : 'Thêm người dùng mới'}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
+        </div>
+        
+        <div className="space-y-4 overflow-y-auto pr-2">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Tên người dùng</label>
-            <input type="text" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={editedUser.name} onChange={e => setEditedUser({...editedUser, name: e.target.value})} />
+            <label className="block text-xs font-bold text-slate-600 uppercase mb-1.5 tracking-wider">Tên người dùng</label>
+            <input type="text" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={editedUser.name} onChange={e => setEditedUser({...editedUser, name: e.target.value})} placeholder="Nguyễn Văn A" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
-            <input type="email" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={editedUser.email} onChange={e => setEditedUser({...editedUser, email: e.target.value})} />
+            <label className="block text-xs font-bold text-slate-600 uppercase mb-1.5 tracking-wider">Email</label>
+            <input type="email" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={editedUser.email} onChange={e => setEditedUser({...editedUser, email: e.target.value})} placeholder="admin@example.com" />
           </div>
+          
+          {!editedUser.id && (
+            <div>
+              <label className="block text-xs font-bold text-slate-600 uppercase mb-1.5 tracking-wider">Mật khẩu ban đầu</label>
+              <div className="relative">
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono" 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)} 
+                  placeholder="••••••••"
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2 text-slate-400 hover:text-slate-600">
+                   {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">Cần thiết để người dùng đăng nhập lần đầu.</p>
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Vai trò</label>
+            <label className="block text-xs font-bold text-slate-600 uppercase mb-1.5 tracking-wider">Vai trò</label>
             <select className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={editedUser.role} onChange={e => handleRoleChange(e.target.value as Role)}>
               {roles.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
+
           <div>
-             <label className="block text-xs font-semibold text-slate-600 uppercase mb-2 mt-4 text-center">Quyền truy cập modules</label>
+             <label className="block text-xs font-bold text-slate-600 uppercase mb-2 tracking-wider mt-2">Quyền truy cập modules</label>
              <div className="flex flex-wrap gap-2">
                {availablePermissions.map(p => {
                  const hasAccess = editedUser.permissions.includes(p.id);
@@ -2210,9 +2248,9 @@ function UserModal({ user, onClose, onSave }: { user: User, onClose: () => void,
                    <button 
                      key={p.id} 
                      onClick={() => togglePermission(p.id)}
-                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                     className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${
                        hasAccess 
-                         ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' 
+                         ? 'bg-blue-600 border-blue-600 text-white shadow-sm' 
                          : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                      }`}
                    >
@@ -2223,9 +2261,10 @@ function UserModal({ user, onClose, onSave }: { user: User, onClose: () => void,
              </div>
           </div>
         </div>
-        <div className="mt-8 flex justify-end space-x-3">
-          <button className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-lg transition" onClick={onClose}>Hủy</button>
-          <button className="px-4 py-2 text-sm font-bold bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 transition" onClick={() => onSave(editedUser)}>Lưu lại</button>
+        
+        <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end space-x-3">
+          <button className="px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition" onClick={onClose}>Hủy</button>
+          <button className="px-6 py-2 text-sm font-bold bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition active:scale-95" onClick={() => onSave(editedUser, password)}>Lưu lại</button>
         </div>
       </div>
     </div>
