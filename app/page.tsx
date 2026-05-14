@@ -56,14 +56,13 @@ function FinanceStatisticsBlock() {
     <div className="mt-6 md:mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
 
       {/* Summary row */}
-      <div className="grid grid-cols-2 border-b border-slate-100">
-        <div className="p-4 md:p-6 text-center border-r border-slate-100">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hành khách</p>
-          <p className="text-2xl md:text-3xl font-bold tracking-tight text-primary">{attending}<span className="text-sm text-slate-400 font-medium ml-1">sẽ về</span></p>
-        </div>
-        <div className="p-4 md:p-6 text-center">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tổng đóng góp</p>
-          <p className="text-xl md:text-2xl font-bold tracking-tight text-emerald-600">{totalIncome > 0 ? totalIncome.toLocaleString('vi-VN') + 'đ' : '—'}</p>
+      <div className="border-b border-slate-100">
+        <div className="p-4 md:p-8 text-center">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Hành khách đã xác nhận</p>
+          <p className="text-3xl md:text-5xl font-black tracking-tight text-primary flex items-center justify-center gap-3">
+            {attending}
+            <span className="text-sm md:text-base text-slate-400 font-bold uppercase tracking-wider">Thành viên sẽ về</span>
+          </p>
         </div>
       </div>
 
@@ -125,7 +124,6 @@ function FinanceStatisticsBlock() {
                   <th className="px-6 py-3 text-center">Lớp C</th>
                   <th className="px-6 py-3 text-center">Lớp B</th>
                   <th className="px-6 py-3 text-center">Tham dự</th>
-                  <th className="px-6 py-3 text-right">Đóng góp</th>
                   <th className="px-6 py-3 hidden lg:table-cell">Thời gian</th>
                 </tr>
               </thead>
@@ -151,12 +149,6 @@ function FinanceStatisticsBlock() {
                         {r.will_attend === 'yes'
                           ? <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold">Sẽ về</span>
                           : <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold">Vắng</span>
-                        }
-                      </td>
-                      <td className="px-6 py-3 text-right">
-                        {r.amount && r.amount > 0
-                          ? <span className="font-bold text-emerald-600 text-sm">+{r.amount.toLocaleString('vi-VN')}đ</span>
-                          : <span className="text-slate-300 text-sm">—</span>
                         }
                       </td>
                       <td className="px-6 py-3 hidden lg:table-cell text-xs text-slate-400">
@@ -190,12 +182,6 @@ function FinanceStatisticsBlock() {
                               {!classC && !classB ? 'Hành khách' : ''}
                             </p>
                           </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          {r.amount && r.amount > 0
-                            ? <p className="font-black text-emerald-600 text-sm">+{r.amount.toLocaleString('vi-VN')}đ</p>
-                            : <p className="text-slate-300 text-xs">—</p>
-                          }
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-2">
