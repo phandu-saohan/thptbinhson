@@ -108,62 +108,110 @@ function FinanceStatisticsBlock() {
       </div>
 
       {/* Content */}
-      <div className="overflow-x-auto">
+      {/* Content */}
+      <div className="overflow-x-auto md:overflow-x-visible">
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <table className="w-full text-left">
-            <thead className="bg-slate-50/80 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-              <tr>
-                <th className="px-4 md:px-6 py-3">Thành viên</th>
-                <th className="px-4 md:px-6 py-3 text-center hidden md:table-cell">Lớp C</th>
-                <th className="px-4 md:px-6 py-3 text-center hidden md:table-cell">Lớp B</th>
-                <th className="px-4 md:px-6 py-3 text-center">Tham dự</th>
-                <th className="px-4 md:px-6 py-3 text-right">Đóng góp</th>
-                <th className="px-4 md:px-6 py-3 hidden lg:table-cell">Thời gian</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+          <>
+            {/* Desktop Table View */}
+            <table className="w-full text-left hidden md:table">
+              <thead className="bg-slate-50/80 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <tr>
+                  <th className="px-6 py-3">Thành viên</th>
+                  <th className="px-6 py-3 text-center">Lớp C</th>
+                  <th className="px-6 py-3 text-center">Lớp B</th>
+                  <th className="px-6 py-3 text-center">Tham dự</th>
+                  <th className="px-6 py-3 text-right">Đóng góp</th>
+                  <th className="px-6 py-3 hidden lg:table-cell">Thời gian</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredIncomes.length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-12 text-slate-400">Chưa có dữ liệu</td></tr>
+                ) : (
+                  filteredIncomes.map((r, idx) => {
+                    const { cleanName, classC, classB } = getClasses(r);
+                    return (
+                    <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="px-6 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0">
+                            {cleanName.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-medium text-slate-800 text-sm">{cleanName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-3 text-center text-sm text-slate-600 font-medium">{classC || '-'}</td>
+                      <td className="px-6 py-3 text-center text-sm text-slate-600 font-medium">{classB || '-'}</td>
+                      <td className="px-6 py-3 text-center">
+                        {r.will_attend === 'yes'
+                          ? <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold">Sẽ về</span>
+                          : <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold">Vắng</span>
+                        }
+                      </td>
+                      <td className="px-6 py-3 text-right">
+                        {r.amount && r.amount > 0
+                          ? <span className="font-bold text-emerald-600 text-sm">+{r.amount.toLocaleString('vi-VN')}đ</span>
+                          : <span className="text-slate-300 text-sm">—</span>
+                        }
+                      </td>
+                      <td className="px-6 py-3 hidden lg:table-cell text-xs text-slate-400">
+                        {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' })}
+                      </td>
+                    </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-slate-100">
               {filteredIncomes.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-12 text-slate-400">Chưa có dữ liệu</td></tr>
+                <div className="text-center py-12 text-slate-400">Chưa có dữ liệu</div>
               ) : (
                 filteredIncomes.map((r, idx) => {
                   const { cleanName, classC, classB } = getClasses(r);
                   return (
-                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-4 md:px-6 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0">
-                          {cleanName.charAt(0).toUpperCase()}
+                    <div key={idx} className="p-4 hover:bg-slate-50 transition-colors">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0">
+                            {cleanName.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-800 text-sm truncate">{cleanName}</p>
+                            <p className="text-[10px] text-slate-500 font-medium">
+                              {classC ? `Lớp C: ${classC}` : ''} {classC && classB ? '•' : ''} {classB ? `Lớp B: ${classB}` : ''}
+                              {!classC && !classB ? 'Hành khách' : ''}
+                            </p>
+                          </div>
                         </div>
-                        <span className="font-medium text-slate-800 text-sm">{cleanName}</span>
+                        <div className="text-right shrink-0">
+                          {r.amount && r.amount > 0
+                            ? <p className="font-black text-emerald-600 text-sm">+{r.amount.toLocaleString('vi-VN')}đ</p>
+                            : <p className="text-slate-300 text-xs">—</p>
+                          }
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-4 md:px-6 py-3 text-center hidden md:table-cell text-sm text-slate-600 font-medium">{classC || '-'}</td>
-                    <td className="px-4 md:px-6 py-3 text-center hidden md:table-cell text-sm text-slate-600 font-medium">{classB || '-'}</td>
-                    <td className="px-4 md:px-6 py-3 text-center">
-                      {r.will_attend === 'yes'
-                        ? <span className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-bold">Sẽ về</span>
-                        : <span className="text-xs px-2 py-1 bg-slate-100 text-slate-500 rounded-full font-bold">Vắng</span>
-                      }
-                    </td>
-                    <td className="px-4 md:px-6 py-3 text-right">
-                      {r.amount && r.amount > 0
-                        ? <span className="font-bold text-emerald-600 text-sm">+{r.amount.toLocaleString('vi-VN')}đ</span>
-                        : <span className="text-slate-300 text-sm">—</span>
-                      }
-                    </td>
-                    <td className="px-4 md:px-6 py-3 hidden lg:table-cell text-xs text-slate-400">
-                      {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' })}
-                    </td>
-                  </tr>
+                      <div className="flex items-center justify-between mt-2">
+                        {r.will_attend === 'yes'
+                          ? <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase tracking-wider">Sẽ về</span>
+                          : <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold uppercase tracking-wider">Vắng</span>
+                        }
+                        <span className="text-[10px] text-slate-400">
+                          {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' })}
+                        </span>
+                      </div>
+                    </div>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -1131,8 +1179,9 @@ export default function DangKyPage() {
               <p className="text-on-surface-variant mt-4 max-w-lg mx-auto">Danh sách đại diện các lớp phụ trách kết nối thành viên và hỗ trợ thông tin Hội khóa</p>
             </div>
 
-            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl shadow-primary/5 border border-slate-100 overflow-hidden">
-              <table className="w-full text-left border-collapse">
+            <div className="max-w-4xl mx-auto md:bg-white md:rounded-2xl md:shadow-xl md:shadow-primary/5 md:border md:border-slate-100 overflow-hidden">
+              {/* Desktop Table View */}
+              <table className="w-full text-left border-collapse hidden md:table">
                 <thead>
                   <tr className="bg-primary/5 text-primary">
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-sm border-b border-primary/10">Ban liên lạc / Lớp</th>
@@ -1143,7 +1192,7 @@ export default function DangKyPage() {
                   {contactData.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                       <td className="px-6 py-4">
-                        <span className={`font-bold ${item.group === 'Trưởng Ban liên lạc' ? 'text-primary' : 'text-slate-700'}`}>
+                        <span className={`font-bold ${item.group === 'Trưởng Ban liên lạc' ? 'text-primary text-base' : 'text-slate-700 text-sm'}`}>
                           {item.group}
                         </span>
                       </td>
@@ -1152,8 +1201,8 @@ export default function DangKyPage() {
                           {item.representatives.map((rep, rIdx) => {
                             const [name, phone] = rep.split(': ');
                             return (
-                              <div key={rIdx} className="flex items-center gap-2 text-slate-600 font-medium">
-                                <span className="material-symbols-outlined text-sm text-primary/60">phone_in_talk</span>
+                              <div key={rIdx} className="flex items-center gap-2 text-slate-600 font-medium text-sm">
+                                <span className="material-symbols-outlined text-xs text-primary/60">phone_in_talk</span>
                                 <span className="font-black text-slate-900">{name}</span>: 
                                 <a href={`tel:${phone ? phone.replace(/\./g, '') : ''}`} className="text-primary hover:underline transition-all">
                                   {phone}
@@ -1167,6 +1216,36 @@ export default function DangKyPage() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {contactData.map((item, idx) => (
+                  <div key={idx} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                    <div className="flex items-center justify-between border-b border-slate-50 pb-2 mb-3">
+                      <span className={`font-black uppercase tracking-wider text-xs ${item.group === 'Trưởng Ban liên lạc' ? 'text-primary' : 'text-slate-400'}`}>
+                        {item.group}
+                      </span>
+                      <div className="w-6 h-6 rounded-full bg-primary/5 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[14px] text-primary">groups</span>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {item.representatives.map((rep, rIdx) => {
+                        const [name, phone] = rep.split(': ');
+                        return (
+                          <div key={rIdx} className="flex items-center justify-between gap-4">
+                            <span className="font-bold text-slate-800 text-sm">{name}</span>
+                            <a href={`tel:${phone ? phone.replace(/\./g, '') : ''}`} className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg text-[11px] font-bold shadow-sm shadow-primary/20 active:scale-95 transition-all">
+                              <span className="material-symbols-outlined text-[12px]">call</span>
+                              {phone}
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="mt-12 bg-primary/5 p-8 rounded-2xl border border-primary/10 text-center">
