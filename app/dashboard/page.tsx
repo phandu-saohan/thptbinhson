@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
-import { LayoutDashboard, ReceiptText, ListTodo, FileBarChart, Settings, Plus, ArrowUpRight, ArrowDownRight, Edit2, Check, Download, QrCode, Search, Trash2, Bell, X, AlertCircle, CheckCircle2, Users, Shield, LayoutTemplate, Save, ClipboardList, Phone, Calendar, Upload } from 'lucide-react';
+import { LayoutDashboard, ReceiptText, ListTodo, FileBarChart, Settings, Plus, ArrowUpRight, ArrowDownRight, Edit2, Eye, Check, Download, QrCode, Search, Trash2, Bell, X, AlertCircle, CheckCircle2, Users, Shield, LayoutTemplate, Save, ClipboardList, Phone, Calendar, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from '@/lib/supabaseClient';
@@ -359,6 +359,7 @@ export default function DashboardPage() {
   };
 
   const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
+  const [viewingRegistration, setViewingRegistration] = useState<Registration | null>(null);
 
   const handleSaveRegistration = async (reg: Registration) => {
     const isNew = !reg.id;
@@ -916,6 +917,11 @@ export default function DashboardPage() {
                           <td className="px-6 py-4 text-right">
                             <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
+                                onClick={() => setViewingRegistration(r)}
+                                className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                title="Xem chi tiết"
+                              ><Eye size={15} /></button>
+                              <button
                                 onClick={() => setEditingRegistration(r)}
                                 className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                                 title="Sửa"
@@ -1052,6 +1058,82 @@ export default function DashboardPage() {
                         <Save size={15} />
                         {editingRegistration.id ? 'Lưu thay đổi' : 'Thêm đăng ký'}
                       </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Modal Xem chi tiết */}
+              {viewingRegistration && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
+                    <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+                          {viewingRegistration.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-lg leading-none">{viewingRegistration.name}</h3>
+                          <p className="text-xs text-slate-500 mt-1">ID: {viewingRegistration.id}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => setViewingRegistration(null)} className="p-2 hover:bg-slate-200 rounded-lg text-slate-400 transition-colors"><X size={18} /></button>
+                    </div>
+                    
+                    <div className="p-6 grid grid-cols-2 gap-x-8 gap-y-6">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Số điện thoại</p>
+                        <p className="text-sm font-mono text-slate-700">{viewingRegistration.phone}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trạng thái tham dự</p>
+                        {viewingRegistration.will_attend === 'yes' 
+                          ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase">Có về ✓</span>
+                          : <span className="text-[10px] px-2.5 py-1 bg-rose-50 text-rose-600 rounded-md border border-rose-200 font-bold uppercase">Không về</span>
+                        }
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lớp cũ (2003-2006)</p>
+                        <p className="text-sm text-slate-700">
+                          {viewingRegistration.class_c && `Lớp C: ${viewingRegistration.class_c}`}
+                          {viewingRegistration.class_c && viewingRegistration.class_b ? ' • ' : ''}
+                          {viewingRegistration.class_b && `Lớp B: ${viewingRegistration.class_b}`}
+                          {!viewingRegistration.class_c && !viewingRegistration.class_b && '—'}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Số tiền đóng góp</p>
+                        <p className="text-sm font-black text-emerald-600">
+                          {viewingRegistration.amount ? viewingRegistration.amount.toLocaleString('vi-VN') + 'đ' : '—'}
+                        </p>
+                      </div>
+                      <div className="col-span-2 space-y-1 pt-2 border-t border-slate-50">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kỷ niệm chia sẻ</p>
+                        <p className="text-sm text-slate-600 leading-relaxed italic bg-slate-50 p-4 rounded-xl border border-slate-100">
+                          {viewingRegistration.memory || 'Không có ghi chú kỷ niệm nào.'}
+                        </p>
+                      </div>
+                      <div className="col-span-2 space-y-1 pt-2 border-t border-slate-50">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Biên lai chuyển khoản</p>
+                        {viewingRegistration.receipt_url ? (
+                          <div className="mt-2">
+                             <img src={viewingRegistration.receipt_url} alt="Biên lai" className="w-full max-h-64 object-contain rounded-xl border border-slate-200 shadow-sm" />
+                             <a href={viewingRegistration.receipt_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center text-xs text-blue-600 hover:underline font-bold">
+                                <Download size={12} className="mr-1" /> Tải xuống bản gốc
+                             </a>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-400 italic">Chưa cập nhật biên lai.</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                      <p className="text-[10px] text-slate-400">Đăng ký lúc: {new Date(viewingRegistration.created_at).toLocaleString('vi-VN')}</p>
+                      <button
+                        onClick={() => setViewingRegistration(null)}
+                        className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-slate-800 transition-all"
+                      >Đóng</button>
                     </div>
                   </div>
                 </div>
