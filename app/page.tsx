@@ -2,6 +2,7 @@
 // Trigger redeploy with central mobile register button
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import AvatarEditor from '@/components/AvatarEditor';
 
 
 import { supabase } from '@/lib/supabaseClient';
@@ -251,7 +252,7 @@ const contactData = [
 export default function DangKyPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [submitted, setSubmitted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'contacts'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'contacts' | 'avatar'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Receipt upload & AI scan state
@@ -548,6 +549,13 @@ export default function DangKyPage() {
             >
               <span className="material-symbols-outlined text-[18px]">people</span>
               Ban liên lạc
+            </button>
+            <button 
+              onClick={() => setActiveTab('avatar')}
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'avatar' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+              Khung Avatar
             </button>
           </nav>
 
@@ -1259,6 +1267,11 @@ export default function DangKyPage() {
           </div>
         )}
 
+        {/* Tab 5: Tạo Avatar Kỷ Niệm */}
+        {activeTab === 'avatar' && (
+          <AvatarEditor />
+        )}
+
       </div>
       </main>
 
@@ -1310,6 +1323,13 @@ export default function DangKyPage() {
           >
             <span className="material-symbols-outlined text-[24px]">people</span>
             <span className="text-[10px] font-bold">Liên lạc</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('avatar')}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'avatar' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
+          >
+            <span className="material-symbols-outlined text-[24px]">auto_awesome</span>
+            <span className="text-[10px] font-bold">Avatar</span>
           </button>
         </div>
       </nav>
