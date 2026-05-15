@@ -173,13 +173,16 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
               zoom={zoom}
               aspect={1}
               cropShape="round"
-              showGrid={false}
+              showGrid={true}
               onCropChange={setCrop}
               onCropComplete={onCropComplete}
               onZoomChange={setZoom}
+              minZoom={0.2}
+              maxZoom={5}
               classes={{
                 containerClassName: "bg-slate-900",
                 mediaClassName: "opacity-90",
+                cropAreaClassName: "border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]"
               }}
             />
             {/* Real-time Frame Overlay */}
@@ -200,8 +203,8 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
               <input
                 type="range"
                 value={zoom}
-                min={1}
-                max={3}
+                min={0.2}
+                max={5}
                 step={0.1}
                 onChange={(e) => setZoom(Number(e.target.value))}
                 className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-primary"
