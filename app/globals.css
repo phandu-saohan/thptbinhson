@@ -68,6 +68,13 @@
   --spacing-margin-mobile: 12px;
   --spacing-stack-md: 12px;
   --spacing-container-max: 1200px;
+  --spacing-12: calc(var(--spacing) * 8);
+}
+
+@layer utilities {
+  .p-12 {
+    padding: calc(var(--spacing) * 8) !important;
+  }
 }
 
 @layer components {
@@ -88,6 +95,9 @@
     background-size: 24px 24px;
   }
 }
+
+
+
 @media (max-width: 767px) {
   .glass-card {
     @apply p-3;
