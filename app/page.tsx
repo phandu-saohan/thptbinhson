@@ -706,7 +706,7 @@ export default function DangKyPage() {
                 </div>
 
                 {/* Closing Sections */}
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="max-w-2xl mx-auto">
                    <div className="glass-card p-8 rounded-2xl flex flex-col gap-6 border-b-4 border-orange-500 bg-orange-50/20">
                       <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center shadow-sm">
                         <span className="material-symbols-outlined text-orange-600 text-3xl">favorite</span>
@@ -716,21 +716,10 @@ export default function DangKyPage() {
                         <p className="text-on-surface-variant leading-relaxed font-medium">Hãy dành một ngày cho những người bạn từng rất thân - rồi xa nhau lúc nào không hay.</p>
                       </div>
                    </div>
-                   <div className="glass-card p-8 rounded-2xl flex flex-col gap-6 border-b-4 border-primary bg-primary/5">
-                      <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm">
-                        <span className="material-symbols-outlined text-primary text-3xl">local_shipping</span>
-                      </div>
-                      <p className="text-on-surface-variant leading-relaxed text-lg font-medium">
-                        Hãy cùng nối lại những toa tàu, viết hành trình cho chuyến tàu <span className="text-primary font-bold">"2003-2006"</span> ngày ấy.
-                      </p>
-                   </div>
                 </div>
 
                 {/* Final Call to Action */}
-                <div className="text-center space-y-10 py-12 border-t border-outline-variant/30 relative">
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-background px-6">
-                    <span className="material-symbols-outlined text-primary/30 text-4xl">local_shipping</span>
-                  </div>
+                <div className="text-center space-y-10 py-12 relative">
                   
                   <p className="text-2xl md:text-3xl font-headline text-primary font-bold max-w-2xl mx-auto leading-relaxed">
                     Hãy cùng nối lại những toa tàu, viết hành trình cho chuyến tàu “2003-2006” ngày ấy.
