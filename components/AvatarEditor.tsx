@@ -27,6 +27,9 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
 
   const downloadAvatar = async () => {
     if (!image || !croppedAreaPixels) return;
+    if (!frameSource || frameSource === '/khung-avatar.png') {
+       // Optional: verify if file exists or just let it try
+    }
     setIsGenerating(true);
 
     try {
@@ -38,6 +41,10 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
 
       const userImg = new Image();
       const frameImg = new Image();
+      
+      // Fix CORS for Canvas
+      userImg.crossOrigin = "anonymous";
+      frameImg.crossOrigin = "anonymous";
 
       userImg.src = image;
       frameImg.src = frameSource;
@@ -81,9 +88,9 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
 
   return (
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl md:text-4xl font-headline text-primary mb-4">Tạo Avatar Kỷ Niệm</h2>
-        <p className="text-on-surface-variant italic">"Lồng khung ký ức - Gắn kết tương lai"</p>
+      <div className="text-center mb-6 md:mb-8">
+        <h2 className="text-2xl md:text-4xl font-headline text-primary mb-2 md:mb-4 tracking-tight">Tạo Avatar Kỷ Niệm</h2>
+        <p className="text-on-surface-variant text-sm md:text-base italic opacity-80">"Lồng khung ký ức - Gắn kết tương lai"</p>
       </div>
       
       {!image ? (
@@ -122,11 +129,12 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
             <img 
               src={frameSource} 
               alt="Frame Overlay" 
+              crossOrigin="anonymous"
               className="absolute top-0 left-0 w-full h-full pointer-events-none z-10"
             />
           </div>
 
-          <div className="w-full max-w-[500px] bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+          <div className="w-full max-w-[500px] bg-white p-4 md:p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-5 md:space-y-6">
             <div className="space-y-3">
               <div className="flex justify-between items-center text-sm font-bold text-slate-500 uppercase tracking-wider">
                 <span>Phóng to / Thu nhỏ</span>
