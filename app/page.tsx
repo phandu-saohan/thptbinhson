@@ -275,7 +275,7 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
   if (!timeLeft) return null;
 
   return (
-    <div className="flex gap-2 md:gap-4 mt-6 md:mt-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="flex justify-center gap-3 md:gap-6 mt-10 md:mt-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {[
         { label: 'Ngày', value: timeLeft.days },
         { label: 'Giờ', value: timeLeft.hours },
@@ -283,10 +283,10 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
         { label: 'Giây', value: timeLeft.seconds }
       ].map((item, idx) => (
         <div key={idx} className="flex flex-col items-center">
-          <div className="w-14 h-14 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center shadow-xl">
-            <span className="text-xl md:text-3xl font-black text-white tabular-nums">{item.value.toString().padStart(2, '0')}</span>
+          <div className="w-16 h-16 md:w-24 md:h-24 bg-primary text-on-primary rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center shadow-2xl shadow-primary/20 transform hover:scale-105 transition-transform border-4 border-white">
+            <span className="text-2xl md:text-4xl font-black tabular-nums tracking-tighter">{item.value.toString().padStart(2, '0')}</span>
           </div>
-          <span className="text-[10px] md:text-xs font-bold text-white/60 uppercase tracking-widest mt-2">{item.label}</span>
+          <span className="text-[10px] md:text-xs font-bold text-primary uppercase tracking-widest mt-3 opacity-80">{item.label}</span>
         </div>
       ))}
     </div>
