@@ -737,7 +737,7 @@ export default function DangKyPage() {
               </div>
             </div>
 {/* Registration Section */}
-            <div id="registration-section" className="mt-16 mb-20 relative">
+            <div id="registration-section" className="mt-16 relative">
               {submitted ? (
                 /* ===== THANK YOU SCREEN ===== */
                 <div className="relative bg-primary rounded-xl overflow-hidden shadow-2xl">
