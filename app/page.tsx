@@ -691,7 +691,7 @@ export default function DangKyPage() {
                 </div>
 
                 {/* Highlight Quote */}
-                <div className="bg-primary text-on-primary p-12 rounded-[2rem] text-center shadow-2xl relative group overflow-hidden border border-white/10">
+                <div className="bg-primary text-on-primary rounded-[2rem] text-center shadow-2xl relative group overflow-hidden border border-white/10">
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
                   <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-secondary opacity-90" />
                   <div className="relative z-10 space-y-6">
