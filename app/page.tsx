@@ -552,13 +552,6 @@ export default function DangKyPage() {
               <span className="material-symbols-outlined text-[18px]">people</span>
               Ban liên lạc
             </button>
-            <button 
-              onClick={() => setActiveTab('avatar')}
-              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'avatar' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
-            >
-              <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
-              Khung Avatar
-            </button>
           </nav>
 
           {/* Login Button */}
@@ -1326,15 +1319,17 @@ export default function DangKyPage() {
             <span className="material-symbols-outlined text-[24px]">people</span>
             <span className="text-[10px] font-bold">Liên lạc</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('avatar')}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'avatar' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
-          >
-            <span className="material-symbols-outlined text-[24px]">auto_awesome</span>
-            <span className="text-[10px] font-bold">Avatar</span>
-          </button>
         </div>
       </nav>
+
+      {/* Floating Action Button for Avatar */}
+      <button 
+        onClick={() => setActiveTab('avatar')}
+        className={`fixed bottom-24 right-6 md:bottom-10 md:right-10 z-[60] w-14 h-14 bg-primary text-white rounded-full shadow-2xl shadow-primary/40 flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 hover:scale-110 border-4 border-white ${activeTab === 'avatar' ? 'ring-4 ring-primary/20 scale-110' : ''}`}
+      >
+        <span className="material-symbols-outlined text-[24px]">auto_awesome</span>
+        <span className="text-[8px] font-bold leading-none uppercase">Avatar</span>
+      </button>
 
 
       {/* Footer */}
