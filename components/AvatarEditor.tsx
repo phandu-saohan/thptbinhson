@@ -11,6 +11,7 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [resultImage, setResultImage] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,10 +74,14 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
       // 2. Draw frame overlay
       ctx.drawImage(frameImg, 0, 0, 1000, 1000);
 
-      // 3. Download
+      // 3. Get Data URL
+      const dataUrl = canvas.toDataURL('image/png');
+      setResultImage(dataUrl);
+
+      // 4. Try auto-download (may be blocked by Zalo/FB)
       const link = document.createElement('a');
       link.download = `Avatar_BinhSon_20Nam_${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
       link.click();
     } catch (error) {
       console.error("Error generating avatar:", error);
@@ -205,6 +210,51 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
       )}
 
       <canvas ref={canvasRef} className="hidden" />
+
+      {/* Result Modal for In-app Browsers (Zalo/FB) */}
+      {resultImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] p-6 max-w-sm w-full flex flex-col items-center gap-6 shadow-2xl relative">
+            <button 
+              onClick={() => setResultImage(null)}
+              className="absolute -top-12 right-0 text-white flex items-center gap-2 font-bold"
+            >
+              Đóng <span className="material-symbols-outlined bg-white/20 rounded-full p-1">close</span>
+            </button>
+            
+            <div className="text-center space-y-1">
+              <h3 className="text-xl font-black text-primary uppercase tracking-tight">Hoàn tất!</h3>
+              <p className="text-xs text-on-surface-variant font-medium">Ảnh của bạn đã sẵn sàng</p>
+            </div>
+
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-inner border-4 border-slate-50">
+              <img src={resultImage} alt="Final Avatar" className="w-full h-full object-contain" />
+            </div>
+
+            <div className="w-full space-y-4">
+              <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                <p className="text-[11px] text-primary font-bold text-center leading-relaxed">
+                  💡 Mẹo cho Zalo/Facebook:<br/>
+                  Nhấn giữ vào ảnh trên và chọn "Lưu hình ảnh" để tải về máy.
+                </p>
+              </div>
+              
+              <button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.download = `Avatar_BinhSon_20Nam_${Date.now()}.png`;
+                  link.href = resultImage;
+                  link.click();
+                }}
+                className="w-full py-4 bg-primary text-white rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-primary/20"
+              >
+                <span className="material-symbols-outlined">download</span>
+                Tải lại một lần nữa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
