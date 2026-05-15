@@ -151,51 +151,50 @@ export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSou
               />
             </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => setImage(null)}
-                className="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition active:scale-95 flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-lg">close</span>
-                Chọn lại
-              </button>
+            <div className="flex flex-col gap-3">
               <button
                 onClick={downloadAvatar}
                 disabled={isGenerating}
-                className="flex-[2] px-4 py-3 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/30 transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70"
+                className="w-full px-6 py-4 bg-primary text-white rounded-2xl font-bold hover:shadow-lg hover:shadow-primary/30 transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70"
               >
                 {isGenerating ? (
                   <span className="material-symbols-outlined animate-spin">progress_activity</span>
                 ) : (
-                  <span className="material-symbols-outlined text-lg">download</span>
+                  <span className="material-symbols-outlined text-xl">download</span>
                 )}
-                {isGenerating ? "..." : "Tải ảnh"}
+                {isGenerating ? "Đang xử lý..." : "Tải ảnh về máy"}
               </button>
-              
-              <div className="flex gap-2 shrink-0">
-                <button
-                  onClick={() => {
-                    const url = encodeURIComponent(window.location.href);
-                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
-                  }}
-                  className="w-12 h-12 bg-[#1877F2] text-white rounded-xl flex items-center justify-center shadow-md hover:opacity-90 transition active:scale-95"
-                  title="Chia sẻ Facebook"
-                >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                </button>
-                <button
-                  onClick={() => {
-                    const url = encodeURIComponent(window.location.href);
-                    window.open(`https://sp.zalo.me/share/base?url=${url}`, '_blank');
-                  }}
-                  className="w-12 h-12 bg-[#0068FF] text-white rounded-xl flex items-center justify-center shadow-md hover:opacity-90 transition active:scale-95"
-                  title="Chia sẻ Zalo"
-                >
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" className="w-6 h-6 brightness-0 invert" />
-                </button>
-              </div>
+
+              <button
+                onClick={() => {
+                  const url = encodeURIComponent(window.location.href);
+                  window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+                }}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-[#1877F2] text-white rounded-2xl shadow-md hover:opacity-90 transition active:scale-95 text-sm font-bold"
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Chia sẻ lên Facebook
+              </button>
+              <button
+                onClick={() => {
+                  const url = encodeURIComponent(window.location.href);
+                  window.open(`https://sp.zalo.me/share/base?url=${url}`, '_blank');
+                }}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-[#0068FF] text-white rounded-2xl shadow-md hover:opacity-90 transition active:scale-95 text-sm font-bold"
+              >
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" className="w-5 h-5 brightness-0 invert" />
+                Chia sẻ qua Zalo
+              </button>
+
+              <button
+                onClick={() => setImage(null)}
+                className="w-full px-6 py-3 border border-slate-200 text-slate-500 rounded-2xl font-bold hover:bg-slate-50 transition active:scale-95 flex items-center justify-center gap-2 text-sm"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+                Chọn ảnh khác
+              </button>
             </div>
             
             <p className="text-[11px] text-slate-400 text-center italic">
