@@ -3,9 +3,9 @@
 import React, { useState, useCallback, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 
-const FRAME_SOURCE = '/khung-avatar.png';
+const DEFAULT_FRAME = '/khung-avatar.png';
 
-export default function AvatarEditor() {
+export default function AvatarEditor({ frameSource = DEFAULT_FRAME }: { frameSource?: string }) {
   const [image, setImage] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -40,7 +40,7 @@ export default function AvatarEditor() {
       const frameImg = new Image();
 
       userImg.src = image;
-      frameImg.src = FRAME_SOURCE;
+      frameImg.src = frameSource;
 
       await Promise.all([
         new Promise((res) => (userImg.onload = res)),
@@ -118,7 +118,7 @@ export default function AvatarEditor() {
             />
             {/* Real-time Frame Overlay */}
             <img 
-              src={FRAME_SOURCE} 
+              src={frameSource} 
               alt="Frame Overlay" 
               className="absolute top-0 left-0 w-full h-full pointer-events-none z-10"
             />

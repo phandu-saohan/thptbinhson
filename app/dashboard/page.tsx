@@ -458,6 +458,7 @@ export default function DashboardPage() {
   const [photo2, setPhoto2] = useState('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop');
   const [photo3, setPhoto3] = useState('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=800&auto=format&fit=crop');
   const [seoImage, setSeoImage] = useState('/logo.png');
+  const [avatarFrame, setAvatarFrame] = useState('/khung-avatar.png');
   const [uploadingKey, setUploadingKey] = useState<string|null>(null);
 
   const [siteTitle, setSiteTitle] = useState('Tìm Lại Thanh Xuân');
@@ -503,6 +504,7 @@ export default function DashboardPage() {
           if (map['photo3']) setPhoto3(map['photo3']);
           if (map['seo_image']) setSeoImage(map['seo_image']);
           if (map['hero_image']) setHeroImage(map['hero_image']);
+          if (map['avatar_frame']) setAvatarFrame(map['avatar_frame']);
           if (map['event_schedule']) {
             try { setEventSchedule(JSON.parse(map['event_schedule'])); } catch(e) { console.error(e); }
           }
@@ -526,7 +528,7 @@ export default function DashboardPage() {
       ['bank_holder', bankHolder], ['bank_id_qr', bankId2], ['bank_no_qr', bankNo2],
       ['donation_amount', donationAmount], ['hero_video', heroVideo], ['hero_image', heroImage],
       ['photo1', photo1], ['photo2', photo2], ['photo3', photo3], ['seo_image', seoImage],
-      ['event_schedule', JSON.stringify(eventSchedule)],
+      ['avatar_frame', avatarFrame], ['event_schedule', JSON.stringify(eventSchedule)],
       ['planned_expenses', JSON.stringify(plannedExpenses)],
     ];
     try {
@@ -1316,6 +1318,7 @@ export default function DashboardPage() {
                        <ImageUploadField label="Ảnh 2" currentUrl={photo2} settingKey="photo2" uploading={uploadingKey === 'photo2'} onFileSelect={(file) => handleImageUpload(file, 'photo2', setPhoto2)} onUrlChange={setPhoto2} />
                        <ImageUploadField label="Ảnh 3" currentUrl={photo3} settingKey="photo3" uploading={uploadingKey === 'photo3'} onFileSelect={(file) => handleImageUpload(file, 'photo3', setPhoto3)} onUrlChange={setPhoto3} />
                      </div>
+                     <ImageUploadField label="Khung Avatar (PNG trong suốt)" currentUrl={avatarFrame} settingKey="avatar_frame" uploading={uploadingKey === 'avatar_frame'} onFileSelect={(file) => handleImageUpload(file, 'avatar_frame', setAvatarFrame)} onUrlChange={setAvatarFrame} />
                    </div>
                  </div>
 

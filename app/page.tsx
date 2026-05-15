@@ -270,6 +270,7 @@ export default function DangKyPage() {
   const [photo1, setPhoto1] = useState('https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=800&auto=format&fit=crop');
   const [photo2, setPhoto2] = useState('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop');
   const [photo3, setPhoto3] = useState('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=800&auto=format&fit=crop');
+  const [avatarFrame, setAvatarFrame] = useState('/khung-avatar.png');
 
   // Appearance State — Content
   const [siteTitle, setSiteTitle] = useState('Tìm Lại Thanh Xuân');
@@ -317,6 +318,7 @@ export default function DangKyPage() {
           if (map['bank_id_qr']) setBankId2(map['bank_id_qr']);
           if (map['bank_no_qr']) setBankNo2(map['bank_no_qr']);
           if (map['donation_amount']) setDonationAmount(map['donation_amount']);
+          if (map['avatar_frame']) setAvatarFrame(map['avatar_frame']);
         } else {
           // Fallback to localStorage
           const load = (key: string, setter: (v: string) => void) => { const v = localStorage.getItem(key); if (v) setter(v); };
@@ -1269,7 +1271,7 @@ export default function DangKyPage() {
 
         {/* Tab 5: Tạo Avatar Kỷ Niệm */}
         {activeTab === 'avatar' && (
-          <AvatarEditor />
+          <AvatarEditor frameSource={avatarFrame} />
         )}
 
       </div>
