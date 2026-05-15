@@ -249,6 +249,50 @@ const contactData = [
   { group: '10-11B15', representatives: ['Vân: 0888.697.307'] },
 ];
 
+// ── CountdownTimer Component ──
+function CountdownTimer({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = useState<{days:number;hours:number;minutes:number;seconds:number} | null>(null);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = +new Date(targetDate) - +new Date();
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        };
+      }
+      return null;
+    };
+
+    setTimeLeft(calculateTimeLeft());
+    const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
+    return () => clearInterval(timer);
+  }, [targetDate]);
+
+  if (!timeLeft) return null;
+
+  return (
+    <div className="flex gap-2 md:gap-4 mt-6 md:mt-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      {[
+        { label: 'Ngày', value: timeLeft.days },
+        { label: 'Giờ', value: timeLeft.hours },
+        { label: 'Phút', value: timeLeft.minutes },
+        { label: 'Giây', value: timeLeft.seconds }
+      ].map((item, idx) => (
+        <div key={idx} className="flex flex-col items-center">
+          <div className="w-14 h-14 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center shadow-xl">
+            <span className="text-xl md:text-3xl font-black text-white tabular-nums">{item.value.toString().padStart(2, '0')}</span>
+          </div>
+          <span className="text-[10px] md:text-xs font-bold text-white/60 uppercase tracking-widest mt-2">{item.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function DangKyPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [submitted, setSubmitted] = useState(false);
@@ -735,6 +779,8 @@ export default function DangKyPage() {
                     Xác nhận tham gia ngay
                     <span className="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_forward</span>
                   </button>
+
+                  <CountdownTimer targetDate="2026-07-12T00:00:00" />
                 </div>
 
               </div>
