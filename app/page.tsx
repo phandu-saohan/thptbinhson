@@ -719,7 +719,7 @@ export default function DangKyPage() {
                 </div>
 
                 {/* Final Call to Action */}
-                <div className="text-center space-y-10 py-12 relative">
+                <div className="text-center space-y-10 relative">
                   
                   <p className="text-2xl md:text-3xl font-headline text-primary font-bold max-w-2xl mx-auto leading-relaxed">
                     Hãy cùng nối lại những toa tàu, viết hành trình cho chuyến tàu “2003-2006” ngày ấy.
