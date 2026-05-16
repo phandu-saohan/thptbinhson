@@ -1412,7 +1412,6 @@ export default function DangKyPage() {
           </div>
         </div>
       </footer>
-    </div>
 
       {/* Memory Detail Modal */}
       {selectedMemory && (
