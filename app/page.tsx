@@ -232,7 +232,6 @@ function FinanceStatisticsBlock() {
           </>
         )}
       </div>
-      </div>
 
       {/* Memory Detail Modal */}
       {selectedMemory && (
