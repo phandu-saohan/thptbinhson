@@ -326,6 +326,53 @@ export default function DashboardPage() {
     addNotification('Đã tải xuống file danh sách', 'success');
   };
 
+    }
+  };
+
+  const handleExportTransactions = () => {
+    if (transactions.length === 0) {
+      addNotification('Không có dữ liệu để xuất', 'warning');
+      return;
+    }
+
+    const headers = ['Ngày', 'Tên / Nội dung', 'Số điện thoại', 'Số tiền', 'Loại', 'Trạng thái', 'Ghi chú'];
+    const rows = transactions.map(t => [
+      t.date,
+      t.name,
+      t.phone || '',
+      t.amount,
+      t.type === 'IN' ? 'THU' : 'CHI',
+      t.status === 'SUCCESS' ? 'Hoàn tất' : 'Đang xử lý',
+      (t.note || '').replace(/\n/g, ' ')
+    ]);
+
+    let csvContent = "\uFEFF"; 
+    csvContent += headers.join(',') + '\n';
+    rows.forEach(row => {
+      csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `So_thu_chi_Hoi_khoa_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addNotification('Đã tải xuống sổ thu chi', 'success');
+  };
+
+  const handleVerifyTransaction = async (id: string) => {
+    const { error } = await supabase.from('transactions').update({ status: 'SUCCESS' }).eq('id', id);
+    if (!error) {
+      setTransactions(prev => prev.map(t => t.id === id ? { ...t, status: 'SUCCESS' } : t));
+      addNotification('Đã xác minh giao dịch thành công!', 'success');
+    } else {
+      addNotification('Xác minh thất bại', 'warning');
+    }
+  };
+
   const handleDeleteTransaction = async (id: string) => {
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (!error) {
@@ -764,42 +811,114 @@ export default function DashboardPage() {
           )}
 
           {activeTab === 'transactions' && (
-            <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
-               <div className="p-4 lg:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between bg-slate-50/50 gap-4">
-                  <div className="flex space-x-2 overflow-x-auto pb-2 md:pb-0">
-                     <button onClick={() => setTransactionFilter('ALL')} className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition ${transactionFilter === 'ALL' ? 'bg-slate-800 text-white shadow-sm hover:bg-slate-700' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>Tất cả</button>
-                     <button onClick={() => setTransactionFilter('IN')} className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition ${transactionFilter === 'IN' ? 'bg-slate-800 text-white shadow-sm hover:bg-slate-700' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>Thu khoản</button>
-                     <button onClick={() => setTransactionFilter('OUT')} className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition ${transactionFilter === 'OUT' ? 'bg-slate-800 text-white shadow-sm hover:bg-slate-700' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>Chi phí</button>
+            <div className="flex-1 space-y-4 flex flex-col">
+               {/* Transaction Summary Cards */}
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+                  <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center justify-between">
+                     <div>
+                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Tổng thu (Xác minh)</p>
+                        <p className="text-xl font-black text-emerald-700">
+                           {transactions.filter(t => t.type === 'IN' && t.status === 'SUCCESS').reduce((s, t) => s + t.amount, 0).toLocaleString('vi-VN')}đ
+                        </p>
+                     </div>
+                     <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                        <ArrowUpRight size={20} />
+                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-                    <div className="relative flex-1">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                      <input 
-                        type="text" 
-                        placeholder="Tìm kiếm..."
-                        value={transactionSearch}
-                        onChange={(e) => setTransactionSearch(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:w-64 text-slate-700 placeholder-slate-400"
-                      />
+                  <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center justify-between">
+                     <div>
+                        <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-1">Tổng chi tiêu</p>
+                        <p className="text-xl font-black text-rose-700">
+                           {Math.abs(transactions.filter(t => t.type === 'OUT').reduce((s, t) => s + t.amount, 0)).toLocaleString('vi-VN')}đ
+                        </p>
+                     </div>
+                     <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center text-rose-600">
+                        <ArrowDownRight size={20} />
+                     </div>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between">
+                     <div>
+                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Số dư còn lại</p>
+                        <p className="text-xl font-black text-blue-700">
+                           {(transactions.filter(t => t.type === 'IN' && t.status === 'SUCCESS').reduce((s, t) => s + t.amount, 0) - Math.abs(transactions.filter(t => t.type === 'OUT').reduce((s, t) => s + t.amount, 0))).toLocaleString('vi-VN')}đ
+                        </p>
+                     </div>
+                     <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                        <Shield size={20} />
+                     </div>
+                  </div>
+               </div>
+
+               <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                <div className="p-4 lg:p-5 border-b border-slate-100 bg-slate-50/50">
+                  <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                    <div className="flex flex-wrap gap-2">
+                       <button 
+                         onClick={() => setTransactionFilter('ALL')}
+                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${transactionFilter === 'ALL' ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'}`}
+                       >
+                         Tất cả ({transactions.length})
+                       </button>
+                       <button 
+                         onClick={() => setTransactionFilter('IN')}
+                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${transactionFilter === 'IN' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-emerald-600 border border-emerald-100 hover:bg-emerald-50'}`}
+                       >
+                         Khoản thu
+                       </button>
+                       <button 
+                         onClick={() => setTransactionFilter('OUT')}
+                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${transactionFilter === 'OUT' ? 'bg-rose-600 text-white shadow-sm' : 'bg-white text-rose-600 border border-rose-100 hover:bg-rose-50'}`}
+                       >
+                         Khoản chi
+                       </button>
                     </div>
-                    <button
-                      onClick={() => setEditingTransaction({ id: '', date: new Date().toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }), name: '', phone: '', amount: 0, type: 'IN', status: 'SUCCESS', note: '' })}
-                      className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Thêm bản ghi
-                    </button>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <div className="relative flex-1">
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="Tìm giao dịch..."
+                          value={transactionSearch}
+                          onChange={e => setTransactionSearch(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 xl:w-64"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleExportTransactions}
+                          className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-emerald-700 transition"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          <span className="hidden sm:inline">Xuất Excel</span>
+                        </button>
+                        <button 
+                          onClick={() => setEditingTransaction({ id: '', date: new Date().toLocaleDateString('vi-VN'), name: '', amount: 0, type: 'IN', status: 'SUCCESS' })}
+                          className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-blue-700 transition"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          <span>Thêm mới</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-               </div>
-               <div className="flex-1 overflow-x-auto overflow-y-auto">
-                 {filteredTransactions.length > 0 ? (
-                   <TransactionTable transactions={filteredTransactions} onRowClick={setSelectedTransaction} onEdit={setEditingTransaction} onDelete={handleDeleteTransaction} />
-                 ) : (
-                   <div className="flex flex-col flex-1 h-full items-center justify-center p-12 text-slate-400 mt-10">
-                     <Search className="w-10 h-10 mb-4 text-slate-300" />
-                     <p className="text-sm font-medium">Không tìm thấy giao dịch nào phù hợp</p>
-                   </div>
-                 )}
-               </div>
+                </div>
+                <div className="flex-1 overflow-x-auto overflow-y-auto">
+                   {filteredTransactions.length > 0 ? (
+                      <TransactionTable 
+                        transactions={filteredTransactions} 
+                        onRowClick={setSelectedTransaction} 
+                        onEdit={setEditingTransaction} 
+                        onDelete={handleDeleteTransaction}
+                        onVerify={handleVerifyTransaction}
+                      />
+                   ) : (
+                      <div className="flex flex-col flex-1 h-full items-center justify-center p-12 text-slate-400 mt-10">
+                        <Search className="w-10 h-10 mb-4 text-slate-300" />
+                        <p className="text-sm font-medium">Không tìm thấy giao dịch nào phù hợp</p>
+                      </div>
+                   )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -1695,7 +1814,7 @@ function DashboardCard({ title, value, trend, trendPositive, progress, subtitle 
   );
 }
 
-function TransactionTable({ transactions, onRowClick, onEdit, onDelete }: { transactions: Transaction[], onRowClick?: (t: Transaction) => void, onEdit?: (t: Transaction) => void, onDelete?: (id: string) => void }) {
+function TransactionTable({ transactions, onRowClick, onEdit, onDelete, onVerify }: { transactions: Transaction[], onRowClick?: (t: Transaction) => void, onEdit?: (t: Transaction) => void, onDelete?: (id: string) => void, onVerify?: (id: string) => void }) {
   return (
     <div className="flex-1 overflow-y-auto bg-white">
       {/* Desktop Table */}
@@ -1707,7 +1826,7 @@ function TransactionTable({ transactions, onRowClick, onEdit, onDelete }: { tran
               <th className="px-6 py-4">Người góp / Nội dung</th>
               <th className="px-6 py-4 text-right">Số tiền</th>
               <th className="px-6 py-4">Trạng thái</th>
-              {(onEdit || onDelete) && <th className="px-6 py-4 text-right">Thao tác</th>}
+              {(onEdit || onDelete || onVerify) && <th className="px-6 py-4 text-right">Thao tác</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -1723,12 +1842,13 @@ function TransactionTable({ transactions, onRowClick, onEdit, onDelete }: { tran
                 </td>
                 <td className="px-6 py-4">
                   <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${t.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
-                    {t.status === 'SUCCESS' ? 'Xong' : 'Chờ AI'}
+                    {t.status === 'SUCCESS' ? 'Xong' : 'Chờ xác minh'}
                   </span>
                 </td>
-                {(onEdit || onDelete) && (
+                {(onEdit || onDelete || onVerify) && (
                   <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                     <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {onVerify && t.status !== 'SUCCESS' && <button onClick={() => onVerify(t.id)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md" title="Xác minh ngay"><Check size={14}/></button>}
                       {onEdit && <button onClick={() => onEdit(t)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md"><Edit2 size={14}/></button>}
                       {onDelete && <button onClick={() => { if(confirm(`Xóa giao dịch?`)) onDelete(t.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md"><Trash2 size={14}/></button>}
                     </div>
@@ -1763,8 +1883,13 @@ function TransactionTable({ transactions, onRowClick, onEdit, onDelete }: { tran
                    </span>
                 </div>
              </div>
-             {(onEdit || onDelete) && (
+             {(onEdit || onDelete || onVerify) && (
                <div className="flex gap-2 pt-1" onClick={e => e.stopPropagation()}>
+                  {onVerify && t.status !== 'SUCCESS' && (
+                    <button onClick={() => onVerify(t.id)} className="flex-1 py-2 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold border border-emerald-100 flex items-center justify-center gap-1.5">
+                       <Check size={14} /> Xác minh
+                    </button>
+                  )}
                   <button onClick={() => onEdit && onEdit(t)} className="flex-1 py-2 bg-slate-50 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 flex items-center justify-center gap-1.5">
                      <Edit2 size={14} /> Sửa
                   </button>
