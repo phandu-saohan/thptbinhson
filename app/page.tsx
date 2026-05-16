@@ -15,6 +15,8 @@ function FinanceStatisticsBlock() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [classCFilter, setClassCFilter] = React.useState('');
   const [classBFilter, setClassBFilter] = React.useState('');
+  const [selectedMemory, setSelectedMemory] = React.useState<{name:string;memory:string} | null>(null);
+
 
   React.useEffect(() => {
     supabase.from('registrations').select('*').order('created_at', { ascending: false })
@@ -142,7 +144,17 @@ function FinanceStatisticsBlock() {
                           <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0">
                             {cleanName.charAt(0).toUpperCase()}
                           </div>
-                          <span className="font-medium text-slate-800 text-sm">{cleanName}</span>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-slate-800 text-sm">{cleanName}</span>
+                            {r.memory && (
+                              <button 
+                                onClick={() => setSelectedMemory({ name: cleanName, memory: r.memory! })}
+                                className="text-[11px] text-slate-500 line-clamp-1 italic text-left hover:text-primary transition-colors max-w-[200px]"
+                              >
+                                "{r.memory}"
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-3 text-center text-sm text-slate-600 font-medium">{classC || '-'}</td>
@@ -189,6 +201,14 @@ function FinanceStatisticsBlock() {
                               {classC ? `Lớp C: ${classC}` : ''} {classC && classB ? '•' : ''} {classB ? `Lớp B: ${classB}` : ''}
                               {!classC && !classB ? 'Hành khách' : ''}
                             </p>
+                            {r.memory && (
+                              <p 
+                                className="mt-1 text-[11px] text-slate-600 line-clamp-2 italic cursor-pointer hover:text-primary transition-colors leading-relaxed"
+                                onClick={() => setSelectedMemory({ name: cleanName, memory: r.memory! })}
+                              >
+                                "{r.memory}"
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1 shrink-0">
@@ -212,6 +232,50 @@ function FinanceStatisticsBlock() {
           </>
         )}
       </div>
+      </div>
+
+      {/* Memory Detail Modal */}
+      {selectedMemory && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setSelectedMemory(null)} />
+          <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="p-6 md:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+                    {selectedMemory.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 text-lg leading-tight">{selectedMemory.name}</h4>
+                    <p className="text-sm text-slate-500">Kỷ niệm chia sẻ</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedMemory(null)}
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-slate-400">close</span>
+                </button>
+              </div>
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 relative">
+                <span className="material-symbols-outlined absolute -top-3 -left-2 text-primary/20 text-4xl select-none">format_quote</span>
+                <p className="text-slate-700 leading-relaxed italic relative z-10 whitespace-pre-wrap">
+                  {selectedMemory.memory}
+                </p>
+                <span className="material-symbols-outlined absolute -bottom-3 -right-2 text-primary/20 text-4xl select-none rotate-180">format_quote</span>
+              </div>
+              <div className="mt-8 flex justify-end">
+                <button 
+                  onClick={() => setSelectedMemory(null)}
+                  className="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
