@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
-type Tab = 'overview' | 'transactions' | 'tasks' | 'users' | 'settings' | 'appearance' | 'registrations';
+type Tab = 'overview' | 'transactions' | 'tasks' | 'users' | 'settings' | 'appearance' | 'registrations' | 'reports';
 type TransactionType = 'IN' | 'OUT';
 
 interface Registration {
@@ -648,6 +648,7 @@ export default function DashboardPage() {
           <NavItem icon={<LayoutDashboard size={20} />} label="Tổng quan" active={activeTab === 'overview'} onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ReceiptText size={20} />} label="Thu - Chi" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ClipboardList size={20} />} label="Đăng Ký" active={activeTab === 'registrations'} onClick={() => { setActiveTab('registrations'); setIsSidebarOpen(false); }} badge={registrations.filter(r => r.will_attend === 'yes').length} />
+          <NavItem icon={<FileBarChart size={20} />} label="Báo cáo" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ListTodo size={20} />} label="Công việc" active={activeTab === 'tasks'} onClick={() => { setActiveTab('tasks'); setIsSidebarOpen(false); }} />
           <NavItem icon={<Users size={20} />} label="Quản trị viên" active={activeTab === 'users'} onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} />
           <NavItem icon={<LayoutTemplate size={20} />} label="Giao diện" active={activeTab === 'appearance'} onClick={() => { setActiveTab('appearance'); setIsSidebarOpen(false); }} />
@@ -676,6 +677,7 @@ export default function DashboardPage() {
                 {activeTab === 'overview' && 'Trang tổng quan'}
                 {activeTab === 'transactions' && 'Quản lý Thu - Chi'}
                 {activeTab === 'registrations' && 'Đăng Ký Tham Dự'}
+                {activeTab === 'reports' && 'Báo cáo trực quan'}
                 {activeTab === 'tasks' && 'Tiến độ công việc'}
                 {activeTab === 'users' && 'Quản trị viên'}
                 {activeTab === 'appearance' && 'Giao diện'}
@@ -702,13 +704,28 @@ export default function DashboardPage() {
           {activeTab === 'overview' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 shrink-0">
-                <DashboardCard title="Tổng thu dự kiến" value="240.0M" trend="↑ 12% so với tuần trước" trendPositive={true} />
-                <DashboardCard title="Thực thu (Đã xác minh)" value="156.4M" progress={65} />
-                <DashboardCard title="Đã chi tiêu" value="42.8M" subtitle="22 khoản mục đã thanh toán" />
-                <div className="bg-orange-50 p-6 rounded-2xl shadow-sm border border-orange-200 flex flex-col justify-center">
-                   <p className="text-xs font-semibold text-orange-600 uppercase tracking-wide">Cảnh báo ngân sách</p>
-                   <p className="text-lg font-bold text-orange-900 mt-2">Vượt trần 02 mục</p>
-                   <p className="text-xs text-orange-700 mt-1 italic leading-relaxed">Hạng mục: Thuê sân khấu & Ăn uống</p>
+                <DashboardCard 
+                  title="Tổng thu dự kiến" 
+                  value={`${((registrations.reduce((s, r) => s + (r.amount || 0), 0) + transactions.filter(t => t.type === 'IN' && !t.note?.includes('trang chủ')).reduce((s, t) => s + t.amount, 0)) / 1000000).toFixed(1)}M`} 
+                  trend={`Từ ${registrations.length} đăng ký`} 
+                  trendPositive={true} 
+                />
+                <DashboardCard 
+                  title="Thực thu (Xác minh)" 
+                  value={`${(transactions.filter(t => t.type === 'IN' && t.status === 'SUCCESS').reduce((s, t) => s + t.amount, 0) / 1000000).toFixed(1)}M`} 
+                  progress={Math.min(100, Math.round((transactions.filter(t => t.type === 'IN' && t.status === 'SUCCESS').reduce((s, t) => s + t.amount, 0) / (registrations.reduce((s, r) => s + (r.amount || 0), 0) || 1)) * 100))} 
+                />
+                <DashboardCard 
+                  title="Đã chi tiêu" 
+                  value={`${(Math.abs(transactions.filter(t => t.type === 'OUT').reduce((s, t) => s + t.amount, 0)) / 1000000).toFixed(1)}M`} 
+                  subtitle={`${transactions.filter(t => t.type === 'OUT').length} khoản mục đã chi`} 
+                />
+                <div className="bg-blue-50 p-6 rounded-2xl shadow-sm border border-blue-200 flex flex-col justify-center">
+                   <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Số dư hiện tại</p>
+                   <p className="text-lg font-bold text-blue-900 mt-2">
+                     {( (transactions.filter(t => t.type === 'IN' && t.status === 'SUCCESS').reduce((s, t) => s + t.amount, 0) - Math.abs(transactions.filter(t => t.type === 'OUT').reduce((s, t) => s + t.amount, 0))) / 1000000 ).toFixed(1)}M VNĐ
+                   </p>
+                   <p className="text-xs text-blue-700 mt-1 italic leading-relaxed">Cập nhật theo thời gian thực</p>
                 </div>
               </div>
 
@@ -838,91 +855,148 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 overflow-x-auto overflow-y-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50 sticky top-0 text-[10px] font-bold text-slate-500 border-b border-slate-100 tracking-wider uppercase">
-                    <tr>
-                      <th className="px-6 py-4">Họ và tên</th>
-                      <th className="px-6 py-4">Số điện thoại</th>
-                      <th className="px-6 py-4">Lớp</th>
-                      <th className="px-6 py-4">Tham dự</th>
-                      <th className="px-6 py-4 text-right">Đóng góp</th>
-                      <th className="px-6 py-4 text-center">Biên lai</th>
-                      <th className="px-6 py-4">Kỷ niệm chia sẻ</th>
-                      <th className="px-6 py-4">Ngày đăng ký</th>
-                      <th className="px-6 py-4 text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {registrations
-                      .filter(r => {
-                        const q = regSearch.toLowerCase();
-                        return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
-                      })
-                      .map(r => (
-                        <tr key={r.id} className="hover:bg-slate-50/80 transition-colors group">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-xs">{r.name.charAt(0).toUpperCase()}</div>
-                              <span className="font-bold text-slate-900 text-sm">{r.name}</span>
+              <div className="flex-1 overflow-y-auto">
+                {/* Desktop Table View */}
+                <div className="hidden md:block">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50 sticky top-0 z-10 text-[10px] font-bold text-slate-500 border-b border-slate-100 tracking-wider uppercase">
+                      <tr>
+                        <th className="px-6 py-4">Họ và tên</th>
+                        <th className="px-6 py-4">Số điện thoại</th>
+                        <th className="px-6 py-4">Lớp</th>
+                        <th className="px-6 py-4">Tham dự</th>
+                        <th className="px-6 py-4 text-right">Đóng góp</th>
+                        <th className="px-6 py-4 text-center">Biên lai</th>
+                        <th className="px-6 py-4">Kỷ niệm</th>
+                        <th className="px-6 py-4">Ngày đăng ký</th>
+                        <th className="px-6 py-4 text-right">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 bg-white">
+                      {registrations
+                        .filter(r => {
+                          const q = regSearch.toLowerCase();
+                          return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+                        })
+                        .map(r => (
+                          <tr key={r.id} className="hover:bg-slate-50/80 transition-colors group">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-xs shrink-0">{r.name.charAt(0).toUpperCase()}</div>
+                                <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{r.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 font-mono text-sm text-slate-600 whitespace-nowrap">{r.phone}</td>
+                            <td className="px-6 py-4 text-sm text-slate-600">
+                               <div className="flex flex-col">
+                                  {r.class_c && <span className="font-bold text-blue-600">Lớp C: {r.class_c}</span>}
+                                  {r.class_b && <span className="text-xs text-slate-500">Lớp B: {r.class_b}</span>}
+                                  {!r.class_c && !r.class_b && <span className="italic text-slate-300">—</span>}
+                               </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              {r.will_attend === 'yes'
+                                ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase whitespace-nowrap">Có về ✓</span>
+                                : <span className="text-[10px] px-2.5 py-1 bg-rose-50 text-rose-600 rounded-md border border-rose-200 font-bold uppercase whitespace-nowrap">Không về</span>
+                              }
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {r.amount && r.amount > 0
+                                ? <span className="text-sm font-black text-emerald-700 whitespace-nowrap">+{r.amount.toLocaleString('vi-VN')}đ</span>
+                                : <span className="text-xs text-slate-300 italic">—</span>
+                              }
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {r.receipt_url ? (
+                                <a href={r.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors" title="Xem biên lai">
+                                  <ReceiptText size={18} />
+                                </a>
+                              ) : (
+                                <span className="text-slate-300 italic">—</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-slate-500 max-w-[150px] truncate">{r.memory || <span className="italic text-slate-300">—</span>}</td>
+                            <td className="px-6 py-4 text-xs text-slate-400 whitespace-nowrap">
+                              {new Date(r.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => setViewingRegistration(r)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"><Eye size={15} /></button>
+                                <button onClick={() => setEditingRegistration(r)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"><Edit2 size={15} /></button>
+                                <button onClick={() => { if (confirm(`Xóa đăng ký của ${r.name}?`)) handleDeleteRegistration(r.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"><Trash2 size={15} /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile List View */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {registrations
+                    .filter(r => {
+                      const q = regSearch.toLowerCase();
+                      return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+                    })
+                    .map(r => (
+                      <div key={r.id} className="p-4 space-y-3 bg-white active:bg-slate-50 transition-colors">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-sm shrink-0">
+                              {r.name.charAt(0).toUpperCase()}
                             </div>
-                          </td>
-                          <td className="px-6 py-4 font-mono text-sm text-slate-600">{r.phone}</td>
-                          <td className="px-6 py-4 text-sm text-slate-600">
-                             <div className="flex flex-col">
-                                {r.class_c && <span className="font-bold text-blue-600">Lớp C: {r.class_c}</span>}
-                                {r.class_b && <span className="text-xs text-slate-500">Lớp B: {r.class_b}</span>}
-                                {!r.class_c && !r.class_b && <span className="italic text-slate-300">—</span>}
-                             </div>
-                          </td>
-                          <td className="px-6 py-4">
+                            <div>
+                              <p className="font-bold text-slate-900 text-sm leading-snug">{r.name}</p>
+                              <p className="text-xs text-slate-500 font-mono mt-0.5">{r.phone}</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1.5">
                             {r.will_attend === 'yes'
-                              ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase">Có về ✓</span>
-                              : <span className="text-[10px] px-2.5 py-1 bg-rose-50 text-rose-600 rounded-md border border-rose-200 font-bold uppercase">Không về</span>
+                              ? <span className="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-bold uppercase">Có về ✓</span>
+                              : <span className="text-[9px] px-2 py-0.5 bg-rose-50 text-rose-600 rounded border border-rose-100 font-bold uppercase">Vắng</span>
                             }
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            {r.amount && r.amount > 0
-                              ? <span className="text-sm font-black text-emerald-700">+{r.amount.toLocaleString('vi-VN')}đ</span>
-                              : <span className="text-xs text-slate-300 italic">—</span>
-                            }
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            {r.receipt_url ? (
-                              <a href={r.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors" title="Xem biên lai">
-                                <ReceiptText size={18} />
-                              </a>
-                            ) : (
-                              <span className="text-slate-300 italic">—</span>
+                            {r.amount && r.amount > 0 && (
+                              <span className="text-xs font-black text-emerald-600">+{r.amount.toLocaleString('vi-VN')}đ</span>
                             )}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-slate-500 max-w-[250px] truncate">{r.memory || <span className="italic text-slate-300">—</span>}</td>
-                          <td className="px-6 py-4 text-xs text-slate-400 whitespace-nowrap">
-                            {new Date(r.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={() => setViewingRegistration(r)}
-                                className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
-                                title="Xem chi tiết"
-                              ><Eye size={15} /></button>
-                              <button
-                                onClick={() => setEditingRegistration(r)}
-                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                                title="Sửa"
-                              ><Edit2 size={15} /></button>
-                              <button
-                                onClick={() => { if (confirm(`Xóa đăng ký của ${r.name}?`)) handleDeleteRegistration(r.id); }}
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
-                                title="Xóa"
-                              ><Trash2 size={15} /></button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs py-2 px-3 bg-slate-50 rounded-lg">
+                           <div className="flex gap-4">
+                              <div className="flex flex-col">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Lớp C</span>
+                                <span className="font-bold text-blue-600">{r.class_c || '—'}</span>
+                              </div>
+                              <div className="flex flex-col border-l border-slate-200 pl-4">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Lớp B</span>
+                                <span className="font-semibold text-slate-600">{r.class_b || '—'}</span>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-2">
+                             {r.receipt_url && (
+                               <a href={r.receipt_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+                                 <ReceiptText size={16} />
+                               </a>
+                             )}
+                           </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-1">
+                          <button onClick={() => setViewingRegistration(r)} className="flex-1 py-2 bg-slate-50 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 flex items-center justify-center gap-1.5">
+                             <Eye size={14} /> Chi tiết
+                          </button>
+                          <button onClick={() => setEditingRegistration(r)} className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold border border-blue-100 flex items-center justify-center gap-1.5">
+                             <Edit2 size={14} /> Sửa
+                          </button>
+                          <button onClick={() => { if (confirm(`Xóa đăng ký của ${r.name}?`)) handleDeleteRegistration(r.id); }} className="w-10 py-2 bg-rose-50 text-rose-600 rounded-lg border border-rose-100 flex items-center justify-center">
+                             <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
                 {registrations.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                     <ClipboardList className="w-10 h-10 mb-3 text-slate-300" />
@@ -1124,6 +1198,203 @@ export default function DashboardPage() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'reports' && (
+            <div className="flex-1 space-y-6">
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 className="text-sm font-bold text-slate-900 mb-6 uppercase tracking-wider flex items-center gap-2">
+                      <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                      Biểu đồ Thu - Chi (VNĐ)
+                    </h3>
+                    <div className="h-80 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={[
+                          { 
+                            name: 'Dự kiến', 
+                            amount: registrations.reduce((s, r) => s + (r.amount || 0), 0) + transactions.filter(t => t.type === 'IN' && !t.note?.includes('trang chủ')).reduce((s, t) => s + t.amount, 0) 
+                          },
+                          { 
+                            name: 'Thực thu', 
+                            amount: transactions.filter(t => t.type === 'IN' && t.status === 'SUCCESS').reduce((s, t) => s + t.amount, 0) 
+                          },
+                          { 
+                            name: 'Đã chi', 
+                            amount: Math.abs(transactions.filter(t => t.type === 'OUT').reduce((s, t) => s + t.amount, 0)) 
+                          }
+                        ]}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 600, fill: '#64748b'}} dy={10} />
+                          <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} />
+                          <RechartsTooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                            formatter={(value: number) => [new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ', 'Số tiền']}
+                          />
+                          <Bar dataKey="amount" radius={[6, 6, 0, 0]} barSize={60}>
+                            {
+                              [0, 1, 2].map((entry, index) => (
+                                <rect key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : index === 1 ? '#10b981' : '#f43f5e'} />
+                              ))
+                            }
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 className="text-sm font-bold text-slate-900 mb-6 uppercase tracking-wider flex items-center gap-2">
+                      <Users className="w-4 h-4 text-blue-500" />
+                      Cơ cấu tham dự
+                    </h3>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-2xl font-black text-slate-900">{registrations.length}</p>
+                          <p className="text-xs text-slate-500 font-medium">Tổng số đăng ký</p>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                           <ClipboardList size={24} />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs font-bold">
+                            <span className="text-emerald-600">CÓ THAM DỰ ({registrations.filter(r => r.will_attend === 'yes').length})</span>
+                            <span className="text-slate-400">{Math.round((registrations.filter(r => r.will_attend === 'yes').length / (registrations.length || 1)) * 100)}%</span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div className="bg-emerald-500 h-full" style={{ width: `${(registrations.filter(r => r.will_attend === 'yes').length / (registrations.length || 1)) * 100}%` }}></div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs font-bold">
+                            <span className="text-rose-500">KHÔNG THAM DỰ ({registrations.filter(r => r.will_attend === 'no').length})</span>
+                            <span className="text-slate-400">{Math.round((registrations.filter(r => r.will_attend === 'no').length / (registrations.length || 1)) * 100)}%</span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div className="bg-rose-400 h-full" style={{ width: `${(registrations.filter(r => r.will_attend === 'no').length / (registrations.length || 1)) * 100}%` }}></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-6 border-t border-slate-100">
+                         <div className="bg-slate-50 p-4 rounded-xl">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Dự kiến thu từ đăng ký</p>
+                            <p className="text-lg font-black text-slate-900">
+                               {registrations.reduce((s, r) => s + (r.amount || 0), 0).toLocaleString('vi-VN')}đ
+                            </p>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+               </div>
+
+               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                  <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                      <ReceiptText className="w-4 h-4 text-blue-500" />
+                      Chi tiết các nguồn thu
+                    </h3>
+                  </div>
+                  
+                  {/* Desktop View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 border-b border-slate-100 tracking-wider uppercase">
+                        <tr>
+                          <th className="px-6 py-4">Nguồn</th>
+                          <th className="px-6 py-4">Tên / Nội dung</th>
+                          <th className="px-6 py-4">Thời gian</th>
+                          <th className="px-6 py-4 text-right">Số tiền</th>
+                          <th className="px-6 py-4">Trạng thái</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {[
+                          ...registrations.filter(r => r.amount && r.amount > 0).map(r => ({
+                            id: r.id,
+                            source: 'Đăng ký',
+                            name: r.name,
+                            date: new Date(r.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit' }),
+                            amount: r.amount || 0,
+                            status: 'SUCCESS'
+                          })),
+                          ...transactions.filter(t => t.type === 'IN' && !t.note?.includes('trang chủ')).map(t => ({
+                            id: t.id,
+                            source: 'Thu ngoài',
+                            name: t.name,
+                            date: t.date,
+                            amount: t.amount,
+                            status: t.status
+                          }))
+                        ].sort((a, b) => b.amount - a.amount).slice(0, 10).map(item => (
+                          <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="px-6 py-4">
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${item.source === 'Đăng ký' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                                {item.source}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-sm font-bold text-slate-900">{item.name}</td>
+                            <td className="px-6 py-4 text-xs text-slate-500">{item.date}</td>
+                            <td className="px-6 py-4 text-right text-sm font-black text-emerald-600">+{item.amount.toLocaleString('vi-VN')}đ</td>
+                            <td className="px-6 py-4">
+                              <span className={`text-[10px] font-bold uppercase ${item.status === 'SUCCESS' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                {item.status === 'SUCCESS' ? 'Đã xác minh' : 'Chờ xác minh'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile View */}
+                  <div className="md:hidden divide-y divide-slate-100">
+                    {[
+                      ...registrations.filter(r => r.amount && r.amount > 0).map(r => ({
+                        id: r.id,
+                        source: 'Đăng ký',
+                        name: r.name,
+                        date: new Date(r.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit' }),
+                        amount: r.amount || 0,
+                        status: 'SUCCESS'
+                      })),
+                      ...transactions.filter(t => t.type === 'IN' && !t.note?.includes('trang chủ')).map(t => ({
+                        id: t.id,
+                        source: 'Thu ngoài',
+                        name: t.name,
+                        date: t.date,
+                        amount: t.amount,
+                        status: t.status
+                      }))
+                    ].sort((a, b) => b.amount - a.amount).slice(0, 8).map(item => (
+                      <div key={item.id} className="p-4 flex items-center justify-between gap-3">
+                         <div className="flex items-center gap-3">
+                            <div className={`w-2 h-8 rounded-full ${item.source === 'Đăng ký' ? 'bg-blue-500' : 'bg-emerald-500'}`}></div>
+                            <div>
+                               <p className="font-bold text-slate-900 text-sm leading-none">{item.name}</p>
+                               <div className="flex items-center gap-2 mt-1.5">
+                                  <span className="text-[9px] font-bold text-slate-400 uppercase">{item.source}</span>
+                                  <span className="text-slate-200">•</span>
+                                  <span className="text-[9px] text-slate-400 font-medium">{item.date}</span>
+                               </div>
+                            </div>
+                         </div>
+                         <div className="text-right">
+                            <p className="text-sm font-black text-emerald-600">+{item.amount.toLocaleString('vi-VN')}đ</p>
+                            <p className={`text-[8px] font-bold uppercase mt-0.5 ${item.status === 'SUCCESS' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                               {item.status === 'SUCCESS' ? 'Đã xác minh' : 'Chờ'}
+                            </p>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
             </div>
           )}
 
@@ -1426,44 +1697,86 @@ function DashboardCard({ title, value, trend, trendPositive, progress, subtitle 
 
 function TransactionTable({ transactions, onRowClick, onEdit, onDelete }: { transactions: Transaction[], onRowClick?: (t: Transaction) => void, onEdit?: (t: Transaction) => void, onDelete?: (id: string) => void }) {
   return (
-    <table className="w-full text-left">
-      <thead className="bg-slate-50 sticky top-0 text-[10px] font-bold text-slate-500 border-b border-slate-100 tracking-wider uppercase">
-        <tr>
-          <th className="px-6 py-4">Thời gian</th>
-          <th className="px-6 py-4">Người góp</th>
-          <th className="px-6 py-4 text-right">Số tiền</th>
-          <th className="px-6 py-4">Trạng thái</th>
-          {(onEdit || onDelete) && <th className="px-6 py-4 text-right">Thác tác</th>}
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-slate-100">
+    <div className="flex-1 overflow-y-auto bg-white">
+      {/* Desktop Table */}
+      <div className="hidden md:block">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-slate-50 sticky top-0 z-10 text-[10px] font-bold text-slate-500 border-b border-slate-100 tracking-wider uppercase">
+            <tr>
+              <th className="px-6 py-4">Thời gian</th>
+              <th className="px-6 py-4">Người góp / Nội dung</th>
+              <th className="px-6 py-4 text-right">Số tiền</th>
+              <th className="px-6 py-4">Trạng thái</th>
+              {(onEdit || onDelete) && <th className="px-6 py-4 text-right">Thao tác</th>}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {transactions.map(t => (
+              <tr key={t.id} onClick={() => onRowClick && onRowClick(t)} className="hover:bg-slate-50/80 transition-colors group cursor-pointer">
+                <td className="px-6 py-4 text-xs font-medium text-slate-500 whitespace-nowrap">{t.date}</td>
+                <td className="px-6 py-4">
+                  <p className="font-bold text-slate-900 text-sm">{t.name}</p>
+                  {t.phone && <p className="text-[10px] text-slate-400 mt-0.5 font-mono">{t.phone}</p>}
+                </td>
+                <td className={`px-6 py-4 text-right font-black text-sm whitespace-nowrap ${t.type === 'IN' ? 'text-emerald-700' : 'text-rose-600'}`}>
+                  {t.type === 'IN' ? '+' : '-'}{Math.abs(t.amount).toLocaleString('vi-VN')}đ
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${t.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                    {t.status === 'SUCCESS' ? 'Xong' : 'Chờ AI'}
+                  </span>
+                </td>
+                {(onEdit || onDelete) && (
+                  <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {onEdit && <button onClick={() => onEdit(t)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md"><Edit2 size={14}/></button>}
+                      {onDelete && <button onClick={() => { if(confirm(`Xóa giao dịch?`)) onDelete(t.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md"><Trash2 size={14}/></button>}
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card List */}
+      <div className="md:hidden divide-y divide-slate-100">
         {transactions.map(t => (
-          <tr key={t.id} onClick={() => onRowClick && onRowClick(t)} className="hover:bg-slate-50/80 transition-colors group cursor-pointer">
-            <td className="px-6 py-4 text-xs font-medium text-slate-500 whitespace-nowrap">{t.date}</td>
-            <td className="px-6 py-4">
-              <p className="font-bold text-slate-900 text-sm">{t.name}</p>
-              {t.phone && <p className="text-[10px] text-slate-400 mt-0.5 font-mono">{t.phone}</p>}
-            </td>
-            <td className={`px-6 py-4 text-right font-black text-sm whitespace-nowrap ${t.type === 'IN' ? 'text-emerald-700' : 'text-rose-600'}`}>
-              {t.type === 'IN' ? '+' : '-'}{Math.abs(t.amount).toLocaleString('vi-VN')}đ
-            </td>
-            <td className="px-6 py-4">
-              <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${t.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
-                {t.status === 'SUCCESS' ? 'Xong' : 'Chờ AI'}
-              </span>
-            </td>
-            {(onEdit || onDelete) && (
-              <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {onEdit && <button onClick={() => onEdit(t)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md"><Edit2 size={14}/></button>}
-                  {onDelete && <button onClick={() => { if(confirm(`Xóa giao dịch?`)) onDelete(t.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md"><Trash2 size={14}/></button>}
+          <div key={t.id} onClick={() => onRowClick && onRowClick(t)} className="p-4 active:bg-slate-50 transition-colors space-y-3">
+             <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${t.type === 'IN' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                      {t.type === 'IN' ? 'THU' : 'CHI'}
+                   </div>
+                   <div>
+                      <p className="font-bold text-slate-900 text-sm leading-tight">{t.name}</p>
+                      <p className="text-[10px] text-slate-500 mt-1 font-medium">{t.date}</p>
+                   </div>
                 </div>
-              </td>
-            )}
-          </tr>
+                <div className="text-right">
+                   <p className={`font-black text-sm ${t.type === 'IN' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {t.type === 'IN' ? '+' : '-'}{Math.abs(t.amount).toLocaleString('vi-VN')}đ
+                   </p>
+                   <span className={`inline-block mt-1 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${t.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                      {t.status === 'SUCCESS' ? 'Hoàn tất' : 'Đang xử lý'}
+                   </span>
+                </div>
+             </div>
+             {(onEdit || onDelete) && (
+               <div className="flex gap-2 pt-1" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => onEdit && onEdit(t)} className="flex-1 py-2 bg-slate-50 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 flex items-center justify-center gap-1.5">
+                     <Edit2 size={14} /> Sửa
+                  </button>
+                  <button onClick={() => { if(onDelete && confirm(`Xóa giao dịch?`)) onDelete(t.id); }} className="w-10 py-2 bg-rose-50 text-rose-600 rounded-lg border border-rose-100 flex items-center justify-center">
+                     <Trash2 size={14} />
+                  </button>
+               </div>
+             )}
+          </div>
         ))}
-      </tbody>
-    </table>
+      </div>
+    </div>
   );
 }
 
