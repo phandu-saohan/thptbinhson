@@ -1230,7 +1230,7 @@ export default function DashboardPage() {
                           <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} />
                           <RechartsTooltip 
                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                            formatter={(value: number) => [new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ', 'Số tiền']}
+                            formatter={(value: any) => [new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ', 'Số tiền']}
                           />
                           <Bar dataKey="amount" radius={[6, 6, 0, 0]} barSize={60}>
                             {
