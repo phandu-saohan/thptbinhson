@@ -231,6 +231,7 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
           </>
         )}
       </div>
+    </div>
   );
 }
 
