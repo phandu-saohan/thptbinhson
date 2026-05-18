@@ -300,7 +300,7 @@ export default function TicketGenerator() {
         </button>
       </div>
 
-      <p className="mt-4 text-[11px] text-slate-400 text-center italic max-w-sm">
+      <p className="mt-5 text-sm md:text-base text-red-600 font-bold text-center max-w-sm bg-red-50 py-2 px-4 rounded-xl border border-red-100 shadow-sm animate-pulse">
         * Note: Trên điện thoại để lấy vé bấm vào nút Zalo hoặc FB.
       </p>
     </div>
