@@ -1,10 +1,12 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function TicketGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [members, setMembers] = useState<any[]>([]);
 
   const [ticketData, setTicketData] = useState({
     fullName: 'Ung Thanh Khiết',
@@ -13,11 +15,18 @@ export default function TicketGenerator() {
     hangVe: 'EXPRESS',
   });
 
-  // Đảm bảo Google Fonts đã được tải xong
+  // Đảm bảo Google Fonts đã được tải xong và lấy dữ liệu
   useEffect(() => {
     document.fonts.ready.then(() => {
       setFontsLoaded(true);
     });
+
+    supabase.from('registrations')
+      .select('id, name, class_c, class_b, created_at')
+      .order('created_at', { ascending: true })
+      .then((res) => {
+        if (res.data) setMembers(res.data);
+      });
   }, []);
 
   // Vẽ vé lên canvas
@@ -41,7 +50,7 @@ export default function TicketGenerator() {
       ctx.drawImage(baseImage, 0, 0);
 
       // 2. Tên hành khách – Open Sans Bold
-      ctx.font = `bold 64px "Open Sans", "Arial", sans-serif`;
+      ctx.font = `bold 52px "Open Sans", "Arial", sans-serif`;
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'center';
       ctx.fillText(ticketData.fullName.toUpperCase(), canvas.width / 2, 165);
@@ -87,7 +96,7 @@ export default function TicketGenerator() {
       ctx.textAlign = 'center';
       ctx.fillText('CHUYẾN TÀU THANH XUÂN', canvas.width / 2, 110);
 
-      ctx.font = `bold 64px "Open Sans", "Arial", sans-serif`;
+      ctx.font = `bold 52px "Open Sans", "Arial", sans-serif`;
       ctx.fillStyle = '#0F52BA';
       ctx.fillText(ticketData.fullName.toUpperCase(), canvas.width / 2, 185);
 
@@ -136,20 +145,43 @@ export default function TicketGenerator() {
 
       {/* Form nhập liệu */}
       <div className="w-full max-w-2xl bg-white p-6 rounded-3xl shadow-xl shadow-primary/10 border border-slate-100 mb-8 space-y-5">
-        {/* Tên hành khách */}
+        {/* Chọn hành khách */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
             <span className="material-symbols-outlined text-[14px] align-middle mr-1 text-primary">person</span>
-            Tên hành khách
+            Thành viên đã đăng ký
           </label>
-          <input
-            type="text"
-            id="ticket-full-name"
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-slate-800 font-bold text-base transition"
-            value={ticketData.fullName}
-            onChange={(e) => setTicketData({ ...ticketData, fullName: e.target.value })}
-            placeholder="Nhập họ và tên..."
-          />
+          <select
+            id="ticket-member-select"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-slate-800 font-bold text-base transition appearance-none cursor-pointer"
+            onChange={(e) => {
+              const selectedIdx = e.target.value;
+              if (selectedIdx === '') return;
+              const idx = parseInt(selectedIdx, 10);
+              const member = members[idx];
+              if (member) {
+                const classC = member.class_c || '';
+                const classB = member.class_b || '';
+                const toa = [classC, classB].filter(Boolean).join(' - ') || 'VIP';
+                setTicketData({
+                  fullName: member.name,
+                  toa: toa,
+                  ghe: (idx + 1).toString().padStart(2, '0'),
+                  hangVe: 'EXPRESS',
+                });
+              }
+            }}
+          >
+            <option value="">-- Chọn tên của bạn --</option>
+            {members.map((m, idx) => {
+              const classStr = [m.class_c, m.class_b].filter(Boolean).join(' - ');
+              return (
+                <option key={m.id} value={idx}>
+                  {m.name} {classStr ? `(${classStr})` : ''}
+                </option>
+              );
+            })}
+          </select>
         </div>
 
         {/* Thông tin toa / ghế / hạng vé */}
@@ -161,10 +193,9 @@ export default function TicketGenerator() {
             </label>
             <input
               type="text"
-              id="ticket-toa"
-              className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-slate-800 font-bold text-sm transition text-center"
+              readOnly
+              className="w-full px-3 py-3 bg-slate-100/50 border border-slate-200 rounded-2xl text-slate-500 font-bold text-sm text-center cursor-not-allowed"
               value={ticketData.toa}
-              onChange={(e) => setTicketData({ ...ticketData, toa: e.target.value })}
             />
           </div>
           <div>
@@ -174,10 +205,9 @@ export default function TicketGenerator() {
             </label>
             <input
               type="text"
-              id="ticket-ghe"
-              className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-slate-800 font-bold text-sm transition text-center"
+              readOnly
+              className="w-full px-3 py-3 bg-slate-100/50 border border-slate-200 rounded-2xl text-slate-500 font-bold text-sm text-center cursor-not-allowed"
               value={ticketData.ghe}
-              onChange={(e) => setTicketData({ ...ticketData, ghe: e.target.value })}
             />
           </div>
           <div>
@@ -187,10 +217,9 @@ export default function TicketGenerator() {
             </label>
             <input
               type="text"
-              id="ticket-hang-ve"
-              className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-slate-800 font-bold text-sm transition text-center"
+              readOnly
+              className="w-full px-3 py-3 bg-slate-100/50 border border-slate-200 rounded-2xl text-slate-500 font-bold text-sm text-center cursor-not-allowed"
               value={ticketData.hangVe}
-              onChange={(e) => setTicketData({ ...ticketData, hangVe: e.target.value })}
             />
           </div>
         </div>
