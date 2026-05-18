@@ -326,9 +326,6 @@ export default function DashboardPage() {
     addNotification('Đã tải xuống file danh sách', 'success');
   };
 
-    }
-  };
-
   const handleExportTransactions = () => {
     if (transactions.length === 0) {
       addNotification('Không có dữ liệu để xuất', 'warning');
