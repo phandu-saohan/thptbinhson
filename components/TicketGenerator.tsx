@@ -301,7 +301,7 @@ export default function TicketGenerator() {
       </div>
 
       <p className="mt-4 text-[11px] text-slate-400 text-center italic max-w-sm">
-        * Mẹo: Điện thoại có thể chia sẻ ảnh trực tiếp. Trên máy tính, bạn hãy tải vé về trước khi đăng bài nhé!
+        * Note: Trên điện thoại để lấy vé bấm vào nút Zalo hoặc FB.
       </p>
     </div>
   );
