@@ -12,10 +12,10 @@ export default function TicketGenerator() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [ticketData, setTicketData] = useState({
-    fullName: 'Ung Thanh Khiết',
-    toa: 'B1 - C10',
-    ghe: '26',
-    hangVe: 'EXPRESS',
+    fullName: '',
+    toa: '',
+    ghe: '',
+    hangVe: '',
   });
 
   // Đảm bảo Google Fonts đã được tải xong và lấy dữ liệu
@@ -53,12 +53,15 @@ export default function TicketGenerator() {
     baseImage.crossOrigin = 'anonymous';
     baseImage.src = '/images/ticket-blank.jpg';
 
-    baseImage.onload = () => {
+      baseImage.onload = () => {
       canvas.width = baseImage.naturalWidth;
       canvas.height = baseImage.naturalHeight;
 
       // 1. Vẽ phôi nền
       ctx.drawImage(baseImage, 0, 0);
+
+      // Nếu chưa chọn thành viên thì không vẽ text
+      if (!ticketData.fullName) return;
 
       // 2. Tên hành khách – Open Sans Bold
       ctx.font = `bold 52px "Open Sans", "Arial", sans-serif`;
@@ -107,6 +110,13 @@ export default function TicketGenerator() {
       ctx.textAlign = 'center';
       ctx.fillText('CHUYẾN TÀU THANH XUÂN', canvas.width / 2, 110);
 
+      // Watermark
+      ctx.font = `bold 20px "Open Sans", "Arial", sans-serif`;
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.fillText('* Hãy đặt file ticket-blank.jpg vào /public/images/ *', canvas.width / 2, 590);
+
+      if (!ticketData.fullName) return;
+
       ctx.font = `bold 52px "Open Sans", "Arial", sans-serif`;
       ctx.fillStyle = '#0F52BA';
       ctx.fillText(ticketData.fullName.toUpperCase(), canvas.width / 2, 185);
@@ -124,11 +134,6 @@ export default function TicketGenerator() {
       ctx.fillText('TOA', 400, 422);
       ctx.fillText('GHẾ', 543, 422);
       ctx.fillText('HẠNG VÉ', 690, 422);
-
-      // Watermark
-      ctx.font = `bold 20px "Open Sans", "Arial", sans-serif`;
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.fillText('* Hãy đặt file ticket-blank.jpg vào /public/images/ *', canvas.width / 2, 590);
     };
   }, [ticketData, fontsLoaded]);
 
