@@ -131,6 +131,44 @@ export default function TicketGenerator() {
     link.click();
   };
 
+  const shareTicket = async (platform: 'fb' | 'zalo') => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    if (navigator.share) {
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `Ve_ThanhXuan_${ticketData.fullName.replace(/\s+/g, '_')}.jpg`, { type: 'image/jpeg' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Chuyến Tàu Thanh Xuân',
+              text: 'Vé lên chuyến tàu thanh xuân 2003-2006 của tôi!',
+            });
+            return;
+          } catch (error) {
+            console.log('Lỗi chia sẻ:', error);
+          }
+        } else {
+            fallbackShare(platform);
+        }
+      }, 'image/jpeg', 0.92);
+    } else {
+      fallbackShare(platform);
+    }
+  };
+
+  const fallbackShare = (platform: 'fb' | 'zalo') => {
+      const url = encodeURIComponent(window.location.href);
+      if (platform === 'fb') {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+      } else if (platform === 'zalo') {
+        window.open(`https://zalo.me/share?link=${url}`, '_blank');
+      }
+  };
+
   return (
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
       {/* Tiêu đề */}
@@ -238,14 +276,32 @@ export default function TicketGenerator() {
       <button
         onClick={downloadTicket}
         id="download-ticket-btn"
-        className="mt-6 px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 text-base"
+        className="mt-6 px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 text-base w-full max-w-xs justify-center"
       >
         <span className="material-symbols-outlined">download</span>
         Tải vé về máy
       </button>
 
-      <p className="mt-4 text-[11px] text-slate-400 text-center italic">
-        * Mẹo: Sau khi tải về, hãy đăng lên Facebook hoặc Zalo để khoe với bạn bè nhé!
+      {/* Social Share Buttons */}
+      <div className="flex items-center gap-4 mt-4">
+        <button
+          onClick={() => shareTicket('zalo')}
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#0068ff] text-white font-bold rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all"
+        >
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Zalo_Logo.svg/512px-Zalo_Logo.svg.png" alt="Zalo" className="w-5 h-5 object-contain bg-white rounded-full p-0.5" />
+          Zalo
+        </button>
+        <button
+          onClick={() => shareTicket('fb')}
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#1877F2] text-white font-bold rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all"
+        >
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Facebook
+        </button>
+      </div>
+
+      <p className="mt-4 text-[11px] text-slate-400 text-center italic max-w-sm">
+        * Mẹo: Điện thoại có thể chia sẻ ảnh trực tiếp. Trên máy tính, bạn hãy tải vé về trước khi đăng bài nhé!
       </p>
     </div>
   );
