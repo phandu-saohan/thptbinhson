@@ -857,7 +857,7 @@ export default function DangKyPage() {
                     <div className="w-full max-w-xs h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-12" />
 
                     {/* Event info pills */}
-                    <div className="flex flex-wrap justify-center gap-3 mb-10">
+                    <div className="flex flex-wrap justify-center gap-3 mb-8">
                       <span className="flex items-center gap-2 bg-white/10 text-white/80 text-label-sm px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm">
                         <span className="material-symbols-outlined text-sm">calendar_today</span>
                         Ngày {eventDate}
@@ -866,6 +866,22 @@ export default function DangKyPage() {
                         <span className="material-symbols-outlined text-sm">location_on</span>
                         Trường THPT Bình Sơn
                       </span>
+                    </div>
+
+                    {/* Action button to switch to Ticket tab */}
+                    <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                      <button
+                        onClick={() => {
+                          setActiveTab('ticket');
+                          setTimeout(() => {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }, 100);
+                        }}
+                        className="bg-secondary-fixed text-on-secondary-fixed px-8 py-4 rounded-full font-bold shadow-xl shadow-black/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 mx-auto border-2 border-secondary-fixed/50 hover:bg-white hover:text-primary"
+                      >
+                        <span className="material-symbols-outlined">confirmation_number</span>
+                        Tạo Vé Chuyến Tàu Ngay
+                      </button>
                     </div>
 
                     {/* BTC signature */}
