@@ -2,7 +2,7 @@
 // Trigger redeploy with central mobile register button
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import AvatarEditor from '@/components/AvatarEditor';
+import TicketGenerator from '@/components/TicketGenerator';
 
 
 import { supabase } from '@/lib/supabaseClient';
@@ -316,7 +316,7 @@ export default function DangKyPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [selectedMemory, setSelectedMemory] = useState<{name:string;memory:string} | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'contacts' | 'avatar'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'contacts' | 'ticket'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Receipt upload & AI scan state
@@ -334,7 +334,7 @@ export default function DangKyPage() {
   const [photo1, setPhoto1] = useState('https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=800&auto=format&fit=crop');
   const [photo2, setPhoto2] = useState('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop');
   const [photo3, setPhoto3] = useState('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=800&auto=format&fit=crop');
-  const [avatarFrame, setAvatarFrame] = useState('/khung-avatar.png');
+  // avatarFrame đã được thay thế bởi TicketGenerator
 
   // Appearance State — Content
   const [siteTitle, setSiteTitle] = useState('Tìm Lại Thanh Xuân');
@@ -382,7 +382,7 @@ export default function DangKyPage() {
           if (map['bank_id_qr']) setBankId2(map['bank_id_qr']);
           if (map['bank_no_qr']) setBankNo2(map['bank_no_qr']);
           if (map['donation_amount']) setDonationAmount(map['donation_amount']);
-          if (map['avatar_frame']) setAvatarFrame(map['avatar_frame']);
+          // avatar_frame không còn sử dụng
         } else {
           // Fallback to localStorage
           const load = (key: string, setter: (v: string) => void) => { const v = localStorage.getItem(key); if (v) setter(v); };
@@ -1328,9 +1328,9 @@ export default function DangKyPage() {
           </div>
         )}
 
-        {/* Tab 5: Tạo Avatar Kỷ Niệm */}
-        {activeTab === 'avatar' && (
-          <AvatarEditor frameSource={avatarFrame} />
+        {/* Tab 5: Tạo Vé Chuyến Tàu */}
+        {activeTab === 'ticket' && (
+          <TicketGenerator />
         )}
 
       </div>
@@ -1388,13 +1388,14 @@ export default function DangKyPage() {
         </div>
       </nav>
 
-      {/* Floating Action Button for Avatar */}
+      {/* Floating Action Button for Tạo Vé */}
       <button 
-        onClick={() => setActiveTab('avatar')}
-        className={`fixed bottom-24 right-6 md:bottom-10 md:right-10 z-[60] w-14 h-14 bg-primary text-white rounded-full shadow-2xl shadow-primary/40 flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 hover:scale-110 border-4 border-white ${activeTab === 'avatar' ? 'ring-4 ring-primary/20 scale-110' : ''}`}
+        onClick={() => setActiveTab('ticket')}
+        id="fab-ticket-btn"
+        className={`fixed bottom-24 right-6 md:bottom-10 md:right-10 z-[60] w-14 h-14 bg-primary text-white rounded-full shadow-2xl shadow-primary/40 flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 hover:scale-110 border-4 border-white ${activeTab === 'ticket' ? 'ring-4 ring-primary/20 scale-110' : ''}`}
       >
-        <span className="material-symbols-outlined text-[24px]">auto_awesome</span>
-        <span className="text-[8px] font-bold leading-none uppercase">Avatar</span>
+        <span className="material-symbols-outlined text-[22px]">confirmation_number</span>
+        <span className="text-[8px] font-bold leading-none uppercase">Vé</span>
       </button>
 
 
