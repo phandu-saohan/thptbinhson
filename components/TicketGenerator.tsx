@@ -51,9 +51,9 @@ export default function TicketGenerator() {
       ctx.fillStyle = '#0F52BA';
       ctx.textAlign = 'center';
 
-      ctx.fillText(ticketData.toa, 445, 515);
-      ctx.fillText(ticketData.ghe, 608, 515);
-      ctx.fillText(ticketData.hangVe.toUpperCase(), 768, 515);
+      ctx.fillText(ticketData.toa, 400, 482);
+      ctx.fillText(ticketData.ghe, 543, 482);
+      ctx.fillText(ticketData.hangVe.toUpperCase(), 690, 482);
     };
 
     baseImage.onerror = () => {
@@ -94,16 +94,16 @@ export default function TicketGenerator() {
       // Các thông tin vé
       ctx.font = `45px "Anton", "Impact", sans-serif`;
       ctx.fillStyle = '#0F52BA';
-      ctx.fillText(ticketData.toa, 445, 415);
-      ctx.fillText(ticketData.ghe, 608, 415);
-      ctx.fillText(ticketData.hangVe.toUpperCase(), 768, 415);
+      ctx.fillText(ticketData.toa, 400, 482);
+      ctx.fillText(ticketData.ghe, 543, 482);
+      ctx.fillText(ticketData.hangVe.toUpperCase(), 690, 482);
 
       // Label
       ctx.font = `bold 18px "Open Sans", "Arial", sans-serif`;
       ctx.fillStyle = '#666699';
-      ctx.fillText('TOA', 445, 355);
-      ctx.fillText('GHẾ', 608, 355);
-      ctx.fillText('HẠNG VÉ', 768, 355);
+      ctx.fillText('TOA', 400, 422);
+      ctx.fillText('GHẾ', 543, 422);
+      ctx.fillText('HẠNG VÉ', 690, 422);
 
       // Watermark
       ctx.font = `bold 20px "Open Sans", "Arial", sans-serif`;
