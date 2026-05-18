@@ -5,8 +5,11 @@ import { supabase } from '@/lib/supabaseClient';
 
 export default function TicketGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [ticketData, setTicketData] = useState({
     fullName: 'Ung Thanh Khiết',
@@ -27,6 +30,14 @@ export default function TicketGenerator() {
       .then((res) => {
         if (res.data) setMembers(res.data);
       });
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Vẽ vé lên canvas
@@ -184,42 +195,70 @@ export default function TicketGenerator() {
       {/* Form nhập liệu */}
       <div className="w-full max-w-2xl bg-white p-6 rounded-3xl shadow-xl shadow-primary/10 border border-slate-100 mb-8 space-y-5">
         {/* Chọn hành khách */}
-        <div>
+        <div className="relative" ref={dropdownRef}>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
             <span className="material-symbols-outlined text-[14px] align-middle mr-1 text-primary">person</span>
             Thành viên đã đăng ký
           </label>
-          <select
-            id="ticket-member-select"
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-slate-800 font-bold text-base transition appearance-none cursor-pointer"
-            onChange={(e) => {
-              const selectedIdx = e.target.value;
-              if (selectedIdx === '') return;
-              const idx = parseInt(selectedIdx, 10);
-              const member = members[idx];
-              if (member) {
-                const classC = member.class_c || '';
-                const classB = member.class_b || '';
-                const toa = [classC, classB].filter(Boolean).join(' - ') || 'VIP';
-                setTicketData({
-                  fullName: member.name,
-                  toa: toa,
-                  ghe: (idx + 1).toString().padStart(2, '0'),
-                  hangVe: 'EXPRESS',
-                });
-              }
-            }}
-          >
-            <option value="">-- Chọn tên của bạn --</option>
-            {members.map((m, idx) => {
-              const classStr = [m.class_c, m.class_b].filter(Boolean).join(' - ');
-              return (
-                <option key={m.id} value={idx}>
-                  {m.name} {classStr ? `(${classStr})` : ''}
-                </option>
-              );
-            })}
-          </select>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Nhập tên của bạn để tìm kiếm..."
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 text-slate-800 font-bold text-base transition"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setIsDropdownOpen(true);
+              }}
+              onFocus={() => setIsDropdownOpen(true)}
+            />
+            <span className="material-symbols-outlined absolute right-4 top-3.5 text-slate-400 pointer-events-none">search</span>
+          </div>
+
+          {isDropdownOpen && (
+            <div className="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto">
+              {members.filter(m => {
+                const searchStr = searchTerm.toLowerCase();
+                const classStr = [m.class_c, m.class_b].filter(Boolean).join(' - ').toLowerCase();
+                return m.name.toLowerCase().includes(searchStr) || classStr.includes(searchStr);
+              }).length > 0 ? (
+                members.filter(m => {
+                  const searchStr = searchTerm.toLowerCase();
+                  const classStr = [m.class_c, m.class_b].filter(Boolean).join(' - ').toLowerCase();
+                  return m.name.toLowerCase().includes(searchStr) || classStr.includes(searchStr);
+                }).map((m) => {
+                  const classStr = [m.class_c, m.class_b].filter(Boolean).join(' - ');
+                  return (
+                    <div
+                      key={m.id}
+                      className="px-4 py-3 hover:bg-primary/5 cursor-pointer border-b border-slate-50 last:border-0 transition-colors"
+                      onClick={() => {
+                        const classC = m.class_c || '';
+                        const classB = m.class_b || '';
+                        const toa = [classC, classB].filter(Boolean).join(' - ') || 'VIP';
+                        const globalIdx = members.findIndex(member => member.id === m.id);
+                        setTicketData({
+                          fullName: m.name,
+                          toa: toa,
+                          ghe: (globalIdx + 1).toString().padStart(2, '0'),
+                          hangVe: 'EXPRESS',
+                        });
+                        setSearchTerm(`${m.name} ${classStr ? `(${classStr})` : ''}`);
+                        setIsDropdownOpen(false);
+                      }}
+                    >
+                      <div className="font-bold text-slate-800">{m.name}</div>
+                      {classStr && <div className="text-xs text-slate-500">{classStr}</div>}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="px-4 py-3 text-sm text-slate-500 italic text-center">
+                  Không tìm thấy thành viên
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Thông tin toa / ghế / hạng vé */}
