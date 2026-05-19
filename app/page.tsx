@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import TicketGenerator from '@/components/TicketGenerator';
+import MemoriesGalleryBlock from '@/components/MemoriesGalleryBlock';
 
 
 import { supabase } from '@/lib/supabaseClient';
@@ -316,7 +317,7 @@ export default function DangKyPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [selectedMemory, setSelectedMemory] = useState<{name:string;memory:string} | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'contacts' | 'ticket'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'contacts' | 'ticket' | 'memories'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Receipt upload & AI scan state
@@ -595,19 +596,20 @@ export default function DangKyPage() {
               <span className="material-symbols-outlined text-[18px]">mail</span>
               Thư ngỏ
             </button>
-            <button 
-              onClick={() => setActiveTab('plan')}
-              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'plan' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
-            >
-              <span className="material-symbols-outlined text-[18px]">map</span>
-              Kế hoạch
-            </button>
+
             <button 
               onClick={() => setActiveTab('finance')}
               className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'finance' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
             >
               <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
               Danh sách đăng ký
+            </button>
+            <button 
+              onClick={() => setActiveTab('memories')}
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'memories' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">photo_library</span>
+              Ảnh kỷ niệm
             </button>
             <button 
               onClick={() => setActiveTab('contacts')}
@@ -680,18 +682,33 @@ export default function DangKyPage() {
               <span className="text-white text-lg md:text-3xl font-black tracking-widest drop-shadow-md">NGÀY 12/07/2026</span>
             </div>
             
-            <button 
-              onClick={() => {
-                setActiveTab('home');
-                setTimeout(() => {
-                  document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-              }}
-              className="bg-white text-primary px-8 py-3 md:px-10 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:bg-primary-fixed-dim hover:scale-105 active:scale-95 transition-all flex items-center gap-3 group border-2 border-white/50"
-            >
-              <span className="material-symbols-outlined font-bold group-hover:rotate-12 transition-transform">edit_note</span>
-              ĐĂNG KÝ THAM DỰ
-            </button>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <button 
+                onClick={() => {
+                  setActiveTab('home');
+                  setTimeout(() => {
+                    document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                }}
+                className="w-full sm:w-auto bg-white text-primary px-6 py-3 md:px-8 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:bg-primary-fixed-dim hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group border-2 border-white/50"
+              >
+                <span className="material-symbols-outlined font-bold group-hover:rotate-12 transition-transform">edit_note</span>
+                ĐĂNG KÝ
+              </button>
+
+              <button 
+                onClick={() => {
+                  setActiveTab('plan');
+                  setTimeout(() => {
+                    document.getElementById('content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                }}
+                className="w-full sm:w-auto bg-primary/80 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:bg-primary hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group border-2 border-white/20"
+              >
+                <span className="material-symbols-outlined font-bold group-hover:-rotate-12 transition-transform">map</span>
+                KẾ HOẠCH
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -1344,7 +1361,12 @@ export default function DangKyPage() {
           </div>
         )}
 
-        {/* Tab 5: Tạo Vé Chuyến Tàu */}
+        {/* Tab 5: Ảnh Kỷ Niệm */}
+        {activeTab === 'memories' && (
+          <MemoriesGalleryBlock />
+        )}
+
+        {/* Tab 6: Tạo Vé Chuyến Tàu */}
         {activeTab === 'ticket' && (
           <TicketGenerator />
         )}
@@ -1363,12 +1385,14 @@ export default function DangKyPage() {
             <span className="material-symbols-outlined text-[24px]">mail</span>
             <span className="text-[10px] font-bold">Thư ngỏ</span>
           </button>
+
+
           <button 
-            onClick={() => setActiveTab('plan')}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'plan' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
+            onClick={() => setActiveTab('memories')}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'memories' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
           >
-            <span className="material-symbols-outlined text-[24px]">map</span>
-            <span className="text-[10px] font-bold">Kế hoạch</span>
+            <span className="material-symbols-outlined text-[24px]">photo_library</span>
+            <span className="text-[10px] font-bold">Kỷ niệm</span>
           </button>
 
           {/* Nút Đăng ký nổi bật */}
@@ -1394,6 +1418,7 @@ export default function DangKyPage() {
             <span className="material-symbols-outlined text-[24px]">list_alt</span>
             <span className="text-[10px] font-bold">Danh sách</span>
           </button>
+
           <button 
             onClick={() => setActiveTab('contacts')}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'contacts' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
