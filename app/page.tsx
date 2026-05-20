@@ -362,12 +362,6 @@ function SponsorContributionsBlock({ onSelectMemory }: { onSelectMemory: (m: {na
     return { cleanName: row.name.replace(` (${classesStr})`, '').trim(), classC, classB };
   };
 
-  const getTier = (amount: number) => {
-    if (amount >= 5000000) return { name: 'Kim Cương', badge: '💎 Kim Cương', color: 'from-cyan-500/10 via-blue-500/5 to-transparent border-cyan-300/60 text-cyan-700 bg-cyan-50/50' };
-    if (amount >= 2000000) return { name: 'Vàng', badge: '🏆 Tài trợ Vàng', color: 'from-amber-500/10 via-yellow-500/5 to-transparent border-amber-300/60 text-amber-700 bg-amber-50/50' };
-    if (amount >= 1000000) return { name: 'Bạc', badge: '🥈 Tài trợ Bạc', color: 'from-slate-400/10 via-slate-300/5 to-transparent border-slate-300/60 text-slate-700 bg-slate-50/50' };
-    return { name: 'Đồng hành', badge: '🤝 Tấm lòng vàng', color: 'from-emerald-500/10 via-teal-500/5 to-transparent border-emerald-300/60 text-emerald-700 bg-emerald-50/50' };
-  };
 
   const filteredSponsors = sponsors.filter(t => {
     // Only display contributions from 2,000,000 and above
@@ -476,62 +470,53 @@ function SponsorContributionsBlock({ onSelectMemory }: { onSelectMemory: (m: {na
           <p className="text-slate-400 text-xs font-medium mt-1">Chưa có đóng góp vinh danh phù hợp</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {sortedSponsors.map((s, idx) => {
             const { cleanName, classC, classB } = getClasses(s);
-            const tier = getTier(s.amount || 0);
             return (
               <div
                 key={idx}
-                className={`bg-gradient-to-r ${tier.color} border p-2.5 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between relative overflow-hidden group gap-2`}
+                className="bg-white border border-primary/20 p-4 sm:p-5 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center justify-between relative overflow-hidden group gap-4"
               >
-                {/* VIP Side Highlight bar */}
-                {(s.amount || 0) >= 5000000 && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-400" />
-                )}
-                {(s.amount || 0) >= 2000000 && (s.amount || 0) < 5000000 && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400" />
-                )}
+                {/* Highlight bar */}
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary to-primary-fixed" />
 
                 {/* Left side: Avatar + Name + Class info */}
-                <div className="flex items-center gap-2 min-w-0 flex-1 pl-1">
-                  <div className="w-8 h-8 rounded-full bg-white shadow-xs border border-slate-100 flex items-center justify-center font-bold text-slate-800 text-xs shrink-0 select-none">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1 pl-1">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 shadow-sm border border-primary/20 flex items-center justify-center font-bold text-primary text-sm sm:text-base shrink-0 select-none">
                     {cleanName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-bold text-slate-800 text-xs leading-none tracking-tight font-title truncate group-hover:text-primary transition-colors">
+                    <h4 className="font-bold text-slate-800 text-sm sm:text-base leading-tight tracking-tight font-title truncate group-hover:text-primary transition-colors">
                       {cleanName}
                     </h4>
-                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       {classC && (
-                        <span className="bg-slate-100 text-[8px] font-extrabold text-slate-500 px-1 py-0.2 rounded">
+                        <span className="bg-slate-100 border border-slate-200 text-[10px] sm:text-xs font-bold text-slate-600 px-1.5 py-0.5 rounded-md">
                           C{classC.replace('C', '')}
                         </span>
                       )}
                       {classB && (
-                        <span className="bg-slate-100 text-[8px] font-extrabold text-slate-500 px-1 py-0.2 rounded">
+                        <span className="bg-slate-100 border border-slate-200 text-[10px] sm:text-xs font-bold text-slate-600 px-1.5 py-0.5 rounded-md">
                           B{classB.replace('B', '')}
                         </span>
                       )}
                       {!classC && !classB && (
-                        <span className="text-[8px] text-slate-400">Khóa 03-06</span>
+                        <span className="text-[10px] sm:text-xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded-md border border-slate-100">Khóa 03-06</span>
                       )}
-                      <span className="text-[8px] text-slate-400 font-medium">
+                      <span className="text-[10px] sm:text-xs text-slate-400 font-medium">
                         {new Date(s.created_at).toLocaleDateString('vi-VN')}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right side: Amount + Tier + Memory bubble */}
-                <div className="flex items-center gap-2 shrink-0">
+                {/* Right side: Amount + Memory bubble */}
+                <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
-                    <p className="font-black text-[13px] text-slate-800 tracking-tight leading-none">
+                    <p className="font-black text-sm sm:text-base text-primary tracking-tight">
                       {(s.amount || 0).toLocaleString('vi-VN')}đ
                     </p>
-                    <span className="text-[8px] font-bold text-slate-400 block mt-0.5">
-                      {tier.name}
-                    </span>
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
@@ -539,10 +524,10 @@ function SponsorContributionsBlock({ onSelectMemory }: { onSelectMemory: (m: {na
                       <button
                         onClick={() => onSelectMemory({ name: cleanName, memory: s.memory || '' })}
                         type="button"
-                        className="w-6 h-6 rounded-full bg-primary/5 hover:bg-primary text-primary hover:text-white flex items-center justify-center transition-all duration-200 shadow-xs"
+                        className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary text-primary hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm"
                         title="Xem lời chúc / kỷ niệm"
                       >
-                        <span className="material-symbols-outlined text-[12px]">chat</span>
+                        <span className="material-symbols-outlined text-[14px] sm:text-base">chat</span>
                       </button>
                     )}
                   </div>
