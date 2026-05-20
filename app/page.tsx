@@ -1919,14 +1919,14 @@ export default function DangKyPage() {
                         Thông tin tài khoản nhận
                       </h4>
                       <div className="text-xs space-y-1.5 text-slate-600">
-                        <p><strong className="text-slate-700">Ngân hàng:</strong> BIDV (Ngân hàng TMCP Đầu tư và Phát triển VN)</p>
+                        <p><strong className="text-slate-700">Ngân hàng:</strong> {bankId2}</p>
                         <p className="flex items-center gap-1.5">
                           <strong className="text-slate-700">Số tài khoản:</strong> 
-                          <span className="font-bold text-primary text-sm font-mono">573 016 2456</span>
+                          <span className="font-bold text-primary text-sm font-mono">{bankNo2}</span>
                           <button 
                             type="button"
                             onClick={() => {
-                              navigator.clipboard.writeText('5730162456');
+                              navigator.clipboard.writeText(bankNo2);
                               alert('Đã sao chép số tài khoản!');
                             }} 
                             className="text-slate-400 hover:text-primary transition"
@@ -1934,7 +1934,7 @@ export default function DangKyPage() {
                             <span className="material-symbols-outlined text-[14px]">content_copy</span>
                           </button>
                         </p>
-                        <p><strong className="text-slate-700">Chủ tài khoản:</strong> PHAM THI LY</p>
+                        <p><strong className="text-slate-700">Chủ tài khoản:</strong> {bankHolder}</p>
                         <div className="bg-white p-2 rounded-lg border border-slate-200 mt-2 text-center">
                           <p className="text-[9px] font-bold uppercase text-slate-400">Nội dung chuyển khoản tự động</p>
                           <p className="font-mono font-bold text-[11px] text-slate-800 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -1950,7 +1950,7 @@ export default function DangKyPage() {
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/5 to-primary-fixed-dim/5 rounded-2xl blur opacity-50 group-hover:opacity-70 transition duration-1000" />
                         <div className="relative bg-white rounded-xl">
                           <Image
-                            src={`https://img.vietqr.io/image/BIDV-5730162456-compact2.png?amount=${sponsorDonationAmount || '0'}&addInfo=${encodeURIComponent(sponsorFormData.name ? `${sponsorFormData.name} - ${sponsorFormData.classC || sponsorFormData.classB || 'Taitro'} - Dong gop 20 nam` : 'Dong gop 20 nam')}&accountName=PHAM%20THI%20LY`}
+                            src={`https://img.vietqr.io/image/${bankId2}-${bankNo2}-compact2.png?amount=${sponsorDonationAmount || '0'}&addInfo=${encodeURIComponent(sponsorFormData.name ? `${sponsorFormData.name} - ${sponsorFormData.classC || sponsorFormData.classB || 'Taitro'} - Dong gop 20 nam` : 'Dong gop 20 nam')}&accountName=${encodeURIComponent(bankHolder)}`}
                             alt="QR Code Đóng Góp"
                             width={280}
                             height={280}
