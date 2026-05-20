@@ -557,7 +557,7 @@ export default function DangKyPage() {
   const [sponsorFormData, setSponsorFormData] = useState({ name: '', phone: '', message: '', classC: '', classB: '' });
   const [sponsorReceiptFile, setSponsorReceiptFile] = useState<File | null>(null);
   const [sponsorReceiptPreview, setSponsorReceiptPreview] = useState<string | null>(null);
-  const [sponsorDonationAmount, setSponsorDonationAmount] = useState('1000000');
+  const [sponsorDonationAmount, setSponsorDonationAmount] = useState('');
   const [sponsorSubmitted, setSponsorSubmitted] = useState(false);
   const [sponsorAiScanning, setSponsorAiScanning] = useState(false);
   const sponsorFileInputRef = useRef<HTMLInputElement>(null);
@@ -1810,7 +1810,7 @@ export default function DangKyPage() {
                         setSponsorFormData({ name: '', phone: '', message: '', classC: '', classB: '' });
                         setSponsorReceiptFile(null);
                         setSponsorReceiptPreview(null);
-                        setSponsorDonationAmount('2000000');
+                        setSponsorDonationAmount('');
                       }}
                       className="bg-secondary-fixed text-on-secondary-fixed px-8 py-3 rounded-full font-bold shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border-2 border-secondary-fixed/50 hover:bg-white hover:text-primary"
                     >
