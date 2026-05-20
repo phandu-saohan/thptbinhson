@@ -854,7 +854,7 @@ export default function DangKyPage() {
              name: sponsorFormData.name,
              class_c: sponsorFormData.classC,
              class_b: sponsorFormData.classB,
-             amount: donatedAmount > 0 ? donatedAmount : existingSponsorForm.amount,
+             amount: donatedAmount > 0 ? ((existingSponsorForm.amount || 0) + donatedAmount) : existingSponsorForm.amount,
              receipt_url: uploadedReceiptUrl || existingSponsorForm.receipt_url,
              source: 'sponsor_form'
            })
