@@ -334,7 +334,7 @@ function SponsorContributionsBlock({ onSelectMemory }: { onSelectMemory: (m: {na
   const [sortBy, setSortBy] = React.useState<'gold' | 'latest'>('gold');
 
   React.useEffect(() => {
-    supabase.from('registrations')
+    supabase.from('sponsors')
       .select('*')
       .gt('amount', 0)
       .then((res) => {
@@ -364,9 +364,6 @@ function SponsorContributionsBlock({ onSelectMemory }: { onSelectMemory: (m: {na
 
 
   const filteredSponsors = sponsors.filter(t => {
-    // Only display contributions from 2,000,000 and above
-    if ((t.amount || 0) < 2000000) return false;
-
     const { cleanName, classC, classB } = getClasses(t);
     const matchesSearch = cleanName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (t.memory && t.memory.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -395,7 +392,7 @@ function SponsorContributionsBlock({ onSelectMemory }: { onSelectMemory: (m: {na
           <h3 className="text-lg md:text-xl font-black text-slate-800 font-headline tracking-wide">BẢNG VÀNG VINH DANH TÀI TRỢ</h3>
         </div>
         <p className="text-[10px] md:text-xs text-slate-500 max-w-lg mx-auto">
-          (Vinh danh các mức đóng góp từ 2.000.000đ trở lên. Trân trọng cảm ơn quý nhà tài trợ!)
+          (Vinh danh các nhà tài trợ đã đóng góp đồng hành cùng chương trình. Trân trọng cảm ơn quý vị!)
         </p>
       </div>
 
@@ -730,6 +727,37 @@ export default function DangKyPage() {
          if (regError) throw regError;
       }
 
+      // 2.5 Kiểm tra và tạo dòng bên bảng sponsors nếu tiền >= 2tr
+      if (donatedAmount >= 2000000) {
+        // Kiểm tra xem đã có bên sponsors chưa để upsert (tránh trùng)
+        const { data: existingSponsor } = await supabase
+          .from('sponsors')
+          .select('id')
+          .eq('phone', formData.phone)
+          .maybeSingle();
+
+        if (existingSponsor) {
+          await supabase.from('sponsors').update({
+            name: formData.name,
+            class_c: formData.classC,
+            class_b: formData.classB,
+            amount: donatedAmount,
+            receipt_url: uploadedReceiptUrl,
+            source: 'registration'
+          }).eq('id', existingSponsor.id);
+        } else {
+          await supabase.from('sponsors').insert([{
+            name: formData.name,
+            class_c: formData.classC,
+            class_b: formData.classB,
+            phone: formData.phone,
+            amount: donatedAmount,
+            receipt_url: uploadedReceiptUrl,
+            source: 'registration'
+          }]);
+        }
+      }
+
       // 3. Ghi nhận khoản thu
       if (donatedAmount > 0) {
         const now = new Date();
@@ -810,41 +838,37 @@ export default function DangKyPage() {
         }
       }
 
-      // 2. Ghi nhận đăng ký
-      const { data: existingReg } = await supabase
-        .from('registrations')
+      // 2. Ghi nhận đăng ký vào BẢNG SPONSORS
+      const { data: existingSponsorForm } = await supabase
+        .from('sponsors')
         .select('id, amount, receipt_url')
         .eq('phone', sponsorFormData.phone)
         .maybeSingle();
 
-      if (existingReg) {
+      if (existingSponsorForm) {
          // Cập nhật
          const { error: updateErr } = await supabase
-           .from('registrations')
+           .from('sponsors')
            .update({ 
              name: sponsorFormData.name,
              class_c: sponsorFormData.classC,
              class_b: sponsorFormData.classB,
-             will_attend: 'yes',
-             memory: sponsorFormData.message,
-             amount: donatedAmount > 0 ? donatedAmount : existingReg.amount,
-             receipt_url: uploadedReceiptUrl || existingReg.receipt_url,
-             source: 'sponsor'
+             amount: donatedAmount > 0 ? donatedAmount : existingSponsorForm.amount,
+             receipt_url: uploadedReceiptUrl || existingSponsorForm.receipt_url,
+             source: 'sponsor_form'
            })
-           .eq('id', existingReg.id);
+           .eq('id', existingSponsorForm.id);
          if (updateErr) throw updateErr;
       } else {
          // Thêm mới
-         const { error: regError } = await supabase.from('registrations').insert([{
+         const { error: regError } = await supabase.from('sponsors').insert([{
            name: sponsorFormData.name,
            class_c: sponsorFormData.classC,
            class_b: sponsorFormData.classB,
            phone: sponsorFormData.phone,
-           will_attend: 'yes',
-           memory: sponsorFormData.message,
            amount: donatedAmount,
            receipt_url: uploadedReceiptUrl,
-           source: 'sponsor'
+           source: 'sponsor_form'
          }]);
          if (regError) throw regError;
       }

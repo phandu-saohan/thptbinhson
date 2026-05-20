@@ -129,6 +129,9 @@ export default function DashboardPage() {
   // Registrations
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [regSearch, setRegSearch] = useState('');
+  
+  // Sponsors
+  const [sponsors, setSponsors] = useState<Registration[]>([]);
   const [sponsorSearch, setSponsorSearch] = useState('');
 
 
@@ -136,11 +139,12 @@ export default function DashboardPage() {
     let isMounted = true;
     const fetchData = async () => {
       try {
-        const [usersRes, tasksRes, transRes, regRes] = await Promise.all([
+        const [usersRes, tasksRes, transRes, regRes, sponsorRes] = await Promise.all([
           supabase.from('app_users').select('*'),
           supabase.from('tasks').select('*'),
           supabase.from('transactions').select('*').order('created_at', { ascending: false }),
-          supabase.from('registrations').select('*').order('created_at', { ascending: false })
+          supabase.from('registrations').select('*').order('created_at', { ascending: false }),
+          supabase.from('sponsors').select('*').order('created_at', { ascending: false })
         ]);
         
         if (isMounted) {
@@ -158,6 +162,7 @@ export default function DashboardPage() {
           }
           if (!transRes.error && transRes.data) setTransactions(transRes.data as Transaction[]);
           if (!regRes.error && regRes.data) setRegistrations(regRes.data as Registration[]);
+          if (!sponsorRes.error && sponsorRes.data) setSponsors(sponsorRes.data as Registration[]);
         }
       } catch (e) {
         console.error("Lỗi khi kết nối Supabase:", e);
@@ -171,6 +176,7 @@ export default function DashboardPage() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'app_users' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'registrations' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sponsors' }, () => fetchData())
       .subscribe();
 
     return () => {
@@ -293,12 +299,9 @@ export default function DashboardPage() {
     setEditingTransaction(null);
   };
 
-  const SPONSOR_THRESHOLD = 2000000;
-
   const handleExportSponsors = () => {
-    const sponsors = registrations.filter(r => r.source === 'sponsor' || (r.amount || 0) > SPONSOR_THRESHOLD);
     if (sponsors.length === 0) {
-      addNotification('Kh\u00f4ng c\u00f3 d\u1eef li\u1ec7u t\u00e0i tr\u1ee3 \u0111\u1ec3 xu\u1ea5t', 'warning');
+      addNotification('Không có dữ liệu tài trợ để xuất', 'warning');
       return;
     }
     const headers = ['STT', 'H\u1ecd v\u00e0 t\u00ean', 'S\u1ed1 \u0111i\u1ec7n tho\u1ea1i', 'L\u1edbp C', 'L\u1edbp B', 'S\u1ed1 ti\u1ec1n t\u00e0i tr\u1ee3', 'Ngu\u1ed3n', 'Ng\u00e0y \u0111\u00f3ng g\u00f3p'];
@@ -311,7 +314,7 @@ export default function DashboardPage() {
         r.class_c || '',
         r.class_b || '',
         r.amount || 0,
-        r.source === 'sponsor' ? 'Form t\u00e0i tr\u1ee3 tr\u1ef1c tuy\u1ebfn' : 'Form \u0111\u0103ng k\u00fd tham d\u1ef1',
+        r.source === 'sponsor_form' ? 'Form tài trợ trực tuyến' : 'Form đăng ký tham dự',
         new Date(r.created_at).toLocaleString('vi-VN')
       ]);
     let csvContent = '\uFEFF';
@@ -484,6 +487,72 @@ export default function DashboardPage() {
       if (!error && data) {
         setRegistrations(prev => [data as Registration, ...prev]);
         addNotification('Đã thêm đăng ký mới', 'success');
+      } else {
+        addNotification('Thêm thất bại: ' + (error?.message || ''), 'warning');
+      }
+    }
+    setEditingRegistration(null);
+  };
+
+  // Sponsor CRUD
+  const handleDeleteSponsor = async (id: string) => {
+    const { error } = await supabase.from('sponsors').delete().eq('id', id);
+    if (!error) {
+      setSponsors(prev => prev.filter(r => r.id !== id));
+      addNotification('Đã xóa dữ liệu tài trợ', 'success');
+    } else {
+      addNotification('Xóa thất bại', 'warning');
+    }
+  };
+
+  const handleUploadReceiptInDashboardSponsor = async (file: File, regId: string) => {
+    setRegUploadingId(regId);
+    const BUCKET = 'site-assets';
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `receipt-sponsor-${regId}-${Date.now()}.${ext}`;
+      let uploadResult = await supabase.storage.from(BUCKET).upload(fileName, file, { upsert: true, contentType: file.type });
+      if (uploadResult.error && (uploadResult.error.message.toLowerCase().includes('bucket') || uploadResult.error.message.toLowerCase().includes('not found'))) {
+        const { error: createErr } = await supabase.storage.createBucket(BUCKET, { public: true, allowedMimeTypes: ['image/*'], fileSizeLimit: 10485760 });
+        if (createErr && !createErr.message.toLowerCase().includes('already exists')) throw createErr;
+        uploadResult = await supabase.storage.from(BUCKET).upload(fileName, file, { upsert: true, contentType: file.type });
+      }
+      if (uploadResult.error) throw uploadResult.error;
+      const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(uploadResult.data.path);
+      const { error: updateErr } = await supabase.from('sponsors').update({ receipt_url: publicUrl }).eq('id', regId);
+      if (updateErr) throw updateErr;
+      setSponsors(prev => prev.map(r => r.id === regId ? { ...r, receipt_url: publicUrl } : r));
+      addNotification('✅ Đã upload ảnh chuyển khoản thành công!', 'success');
+    } catch (e: any) {
+      addNotification('❌ Upload thất bại: ' + (e.message || ''), 'warning');
+    } finally {
+      setRegUploadingId(null);
+    }
+  };
+
+  const handleSaveSponsor = async (reg: Registration) => {
+    const isNew = !reg.id;
+    const reqData = {
+      name: reg.name,
+      phone: reg.phone,
+      class_c: reg.class_c || '',
+      class_b: reg.class_b || '',
+      amount: reg.amount || 0,
+      source: reg.source || 'admin',
+    };
+    if (!isNew) {
+      const { error } = await supabase.from('sponsors').update(reqData).eq('id', reg.id);
+      if (!error) {
+        setSponsors(prev => prev.map(r => r.id === reg.id ? { ...r, ...reqData } : r));
+        addNotification('Đã cập nhật thông tin tài trợ', 'success');
+      } else {
+        addNotification('Cập nhật thất bại: ' + error.message, 'warning');
+      }
+    } else {
+      const { data, error } = await supabase.from('sponsors').insert([reqData]).select().single();
+      if (!error && data) {
+        setSponsors(prev => [data as Registration, ...prev]);
+        addNotification('Đã thêm dữ liệu tài trợ mới', 'success');
       } else {
         addNotification('Thêm thất bại: ' + (error?.message || ''), 'warning');
       }
@@ -758,7 +827,7 @@ export default function DashboardPage() {
           <NavItem icon={<LayoutDashboard size={20} />} label="Tổng quan" active={activeTab === 'overview'} onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ReceiptText size={20} />} label="Thu - Chi" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ClipboardList size={20} />} label="Đăng Ký" active={activeTab === 'registrations'} onClick={() => { setActiveTab('registrations'); setIsSidebarOpen(false); }} badge={registrations.filter(r => r.will_attend === 'yes').length} />
-          <NavItem icon={<QrCode size={20} />} label="Tài Trợ" active={activeTab === 'sponsors'} onClick={() => { setActiveTab('sponsors'); setIsSidebarOpen(false); }} badge={registrations.filter(r => r.source === 'sponsor' || (r.amount || 0) > 2000000).length} />
+          <NavItem icon={<QrCode size={20} />} label="Tài Trợ" active={activeTab === 'sponsors'} onClick={() => { setActiveTab('sponsors'); setIsSidebarOpen(false); }} badge={sponsors.length} />
           <NavItem icon={<FileBarChart size={20} />} label="Báo cáo" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ListTodo size={20} />} label="Công việc" active={activeTab === 'tasks'} onClick={() => { setActiveTab('tasks'); setIsSidebarOpen(false); }} />
           <NavItem icon={<Users size={20} />} label="Quản trị viên" active={activeTab === 'users'} onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} />
@@ -1473,11 +1542,7 @@ export default function DashboardPage() {
           )}
 
           {activeTab === 'sponsors' && (() => {
-            // Hiển thị:
-            // 1) source = 'sponsor' (đăng ký từ form Đóng Góp Tài Trợ Trực Tuyến)
-            // 2) amount > 2,000,000 (đăng ký tham dự có đóng góp lớn)
-            const sponsorList = registrations
-              .filter(r => r.source === 'sponsor' || (r.amount || 0) > 2000000)
+            const sponsorList = [...sponsors]
               .sort((a, b) => (b.amount || 0) - (a.amount || 0));
             const filteredSponsors = sponsorList.filter(r => {
               const q = sponsorSearch.toLowerCase();
@@ -1560,7 +1625,6 @@ export default function DashboardPage() {
                             <th className="px-4 py-4">Họ và tên</th>
                             <th className="px-4 py-4">Số điện thoại</th>
                             <th className="px-4 py-4">Lớp</th>
-                            <th className="px-4 py-4">Tham dự</th>
                             <th className="px-4 py-4 text-right">Số tiền tài trợ</th>
                             <th className="px-4 py-4 text-center">Nguồn</th>
                             <th className="px-4 py-4 text-center">Biên lai</th>
@@ -1588,17 +1652,11 @@ export default function DashboardPage() {
                                   {!r.class_c && !r.class_b && <span className="italic text-slate-300">—</span>}
                                 </div>
                               </td>
-                              <td className="px-6 py-4">
-                                {r.will_attend === 'yes'
-                                  ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase whitespace-nowrap">Có về ✓</span>
-                                  : <span className="text-[10px] px-2.5 py-1 bg-rose-50 text-rose-600 rounded-md border border-rose-200 font-bold uppercase whitespace-nowrap">Không về</span>
-                                }
-                              </td>
                               <td className="px-6 py-4 text-right">
                                 <span className="text-base font-black text-amber-600 whitespace-nowrap">+{(r.amount || 0).toLocaleString('vi-VN')}đ</span>
                               </td>
                               <td className="px-6 py-4 text-center">
-                                {r.source === 'sponsor' 
+                                {r.source === 'sponsor_form' 
                                   ? <span className="text-[10px] px-2.5 py-1 bg-amber-50 text-amber-700 rounded-md border border-amber-200 font-bold whitespace-nowrap">Form Tài trợ</span>
                                   : <span className="text-[10px] px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 font-bold whitespace-nowrap">Đăng ký tham dự</span>
                                 }
@@ -1624,7 +1682,7 @@ export default function DashboardPage() {
                                 ) : (
                                   <label className="cursor-pointer inline-flex flex-col items-center justify-center w-10 h-10 border-2 border-dashed border-amber-300 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition group" title="Upload biên lai">
                                     <Upload size={13} className="text-amber-400 group-hover:text-amber-600" />
-                                    <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUploadReceiptInDashboard(e.target.files[0], r.id); }} />
+                                    <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUploadReceiptInDashboardSponsor(e.target.files[0], r.id); }} />
                                   </label>
                                 )}
                               </td>
@@ -1660,10 +1718,6 @@ export default function DashboardPage() {
                             </div>
                             <div className="flex flex-col items-end gap-1.5">
                               <span className="text-sm font-black text-amber-600">+{(r.amount || 0).toLocaleString('vi-VN')}đ</span>
-                              {r.will_attend === 'yes'
-                                ? <span className="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-bold uppercase">Có về ✓</span>
-                                : <span className="text-[9px] px-2 py-0.5 bg-rose-50 text-rose-600 rounded border border-rose-100 font-bold uppercase">Vắng</span>
-                              }
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-xs py-2 px-3 bg-amber-50/60 rounded-lg">
@@ -1677,7 +1731,7 @@ export default function DashboardPage() {
                                 <span className="font-semibold text-slate-600">{r.class_b || '—'}</span>
                               </div>
                               <div className="flex flex-col border-l border-slate-200 pl-4">
-                                {r.source === 'sponsor' 
+                                {r.source === 'sponsor_form' 
                                   ? <span className="text-[9px] px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md font-bold whitespace-nowrap">Tài trợ</span>
                                   : <span className="text-[9px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md font-bold whitespace-nowrap">Đăng ký</span>
                                 }
@@ -1755,13 +1809,6 @@ export default function DashboardPage() {
                             <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Đóng góp (VNĐ)</label>
                             <input type="number" value={editingRegistration.amount || 0} onChange={e => setEditingRegistration({ ...editingRegistration, amount: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none" />
                           </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Tham dự</label>
-                            <select value={editingRegistration.will_attend} onChange={e => setEditingRegistration({ ...editingRegistration, will_attend: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                              <option value="yes">Có về ✓</option>
-                              <option value="no">Không về</option>
-                            </select>
-                          </div>
                         </div>
                       </div>
                       <div className="p-6 pt-4 flex justify-end gap-3 border-t border-slate-100">
@@ -1769,7 +1816,7 @@ export default function DashboardPage() {
                         <button
                           onClick={() => {
                             if (!editingRegistration.name || !editingRegistration.phone) { alert('Vui lòng nhập Họ tên và Số điện thoại!'); return; }
-                            handleSaveRegistration(editingRegistration);
+                            handleSaveSponsor(editingRegistration);
                           }}
                           className="px-5 py-2 text-sm font-bold text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition flex items-center gap-2"
                         >
@@ -1801,11 +1848,8 @@ export default function DashboardPage() {
                           <p className="text-sm font-mono text-slate-700">{viewingRegistration.phone}</p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trạng thái tham dự</p>
-                          {viewingRegistration.will_attend === 'yes'
-                            ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase">Có về ✓</span>
-                            : <span className="text-[10px] px-2.5 py-1 bg-rose-50 text-rose-600 rounded-md border border-rose-200 font-bold uppercase">Không về</span>
-                          }
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Số tiền đóng góp</p>
+                          <p className="text-lg font-black text-amber-600">{(viewingRegistration.amount || 0).toLocaleString('vi-VN')}đ</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lớp cũ</p>
@@ -1816,16 +1860,6 @@ export default function DashboardPage() {
                             {!viewingRegistration.class_c && !viewingRegistration.class_b && '—'}
                           </p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Số tiền đóng góp</p>
-                          <p className="text-lg font-black text-amber-600">{(viewingRegistration.amount || 0).toLocaleString('vi-VN')}đ</p>
-                        </div>
-                        {viewingRegistration.memory && (
-                          <div className="sm:col-span-2 space-y-1 pt-2 border-t border-slate-50">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kỷ niệm chia sẻ</p>
-                            <p className="text-sm text-slate-600 leading-relaxed italic bg-slate-50 p-4 rounded-xl border border-slate-100">{viewingRegistration.memory}</p>
-                          </div>
-                        )}
                         <div className="sm:col-span-2 space-y-1 pt-2 border-t border-slate-50">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Biên lai chuyển khoản</p>
                           {viewingRegistration.receipt_url ? (
