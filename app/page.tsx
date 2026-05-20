@@ -313,11 +313,254 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
   );
 }
 
+// ── SponsorContributionsBlock Component ──
+interface SponsorInfo {
+  name: string;
+  phone: string;
+  will_attend: string;
+  amount?: number;
+  created_at: string;
+  memory?: string;
+  class_c?: string;
+  class_b?: string;
+}
+
+function SponsorContributionsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:string;memory:string}) => void }) {
+  const [sponsors, setSponsors] = React.useState<SponsorInfo[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [classCFilter, setClassCFilter] = React.useState('');
+  const [classBFilter, setClassBFilter] = React.useState('');
+  const [sortBy, setSortBy] = React.useState<'gold' | 'latest'>('gold');
+
+  React.useEffect(() => {
+    supabase.from('registrations')
+      .select('*')
+      .gt('amount', 0)
+      .then((res) => {
+        if (res.data) {
+          setSponsors(res.data);
+        }
+        setLoading(false);
+      });
+  }, []);
+
+  const getClasses = (row: SponsorInfo) => {
+    if (row.class_c || row.class_b) {
+      return { cleanName: row.name, classC: row.class_c || '', classB: row.class_b || '' };
+    }
+    const match = row.name.match(/\((.*?)\)$/);
+    if (!match) return { cleanName: row.name, classC: '', classB: '' };
+    const classesStr = match[1];
+    const parts = classesStr.split(' | ');
+    let classC = '';
+    let classB = '';
+    parts.forEach((p: string) => {
+      if (p.startsWith('Lớp C: ')) classC = p.replace('Lớp C: ', '');
+      if (p.startsWith('Lớp B: ')) classB = p.replace('Lớp B: ', '');
+    });
+    return { cleanName: row.name.replace(` (${classesStr})`, '').trim(), classC, classB };
+  };
+
+  const getTier = (amount: number) => {
+    if (amount >= 5000000) return { name: 'Kim Cương', badge: '💎 Kim Cương', color: 'from-cyan-500/10 via-blue-500/5 to-transparent border-cyan-300/60 text-cyan-700 bg-cyan-50/50' };
+    if (amount >= 2000000) return { name: 'Vàng', badge: '🏆 Tài trợ Vàng', color: 'from-amber-500/10 via-yellow-500/5 to-transparent border-amber-300/60 text-amber-700 bg-amber-50/50' };
+    if (amount >= 1000000) return { name: 'Bạc', badge: '🥈 Tài trợ Bạc', color: 'from-slate-400/10 via-slate-300/5 to-transparent border-slate-300/60 text-slate-700 bg-slate-50/50' };
+    return { name: 'Đồng hành', badge: '🤝 Tấm lòng vàng', color: 'from-emerald-500/10 via-teal-500/5 to-transparent border-emerald-300/60 text-emerald-700 bg-emerald-50/50' };
+  };
+
+  const filteredSponsors = sponsors.filter(t => {
+    // Only display contributions from 2,000,000 and above
+    if ((t.amount || 0) < 2000000) return false;
+
+    const { cleanName, classC, classB } = getClasses(t);
+    const matchesSearch = cleanName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (t.memory && t.memory.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesClassC = classCFilter === '' || classC === classCFilter;
+    const matchesClassB = classBFilter === '' || classB === classBFilter;
+    return matchesSearch && matchesClassC && matchesClassB;
+  });
+
+  const sortedSponsors = [...filteredSponsors].sort((a, b) => {
+    if (sortBy === 'gold') {
+      return (b.amount || 0) - (a.amount || 0);
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  const totalSponsorsCount = sponsors.length;
+  const totalFunds = sponsors.reduce((sum, s) => sum + (s.amount || 0), 0);
+  const highestDonation = sponsors.reduce((max, s) => Math.max(max, s.amount || 0), 0);
+
+  return (
+    <div className="space-y-4 mt-6 animate-in fade-in duration-700">
+      {/* Title */}
+      <div className="text-center space-y-1">
+        <div className="flex items-center justify-center gap-1.5">
+          <span className="material-symbols-outlined text-lg md:text-xl text-amber-500 animate-pulse">workspace_premium</span>
+          <h3 className="text-lg md:text-xl font-black text-slate-800 font-headline tracking-wide">BẢNG VÀNG VINH DANH TÀI TRỢ</h3>
+        </div>
+        <p className="text-[10px] md:text-xs text-slate-500 max-w-lg mx-auto">
+          (Vinh danh các mức đóng góp từ 2.000.000đ trở lên. Trân trọng cảm ơn quý nhà tài trợ!)
+        </p>
+      </div>
+
+      {/* Đã loại bỏ các block tổng kết theo yêu cầu để tiết kiệm không gian */}
+
+      {/* Filter and Search Bar */}
+      <div className="bg-slate-50/80 border border-slate-200/60 p-2 rounded-2xl flex flex-col md:flex-row gap-2 items-center justify-between">
+        {/* Sorting Toggles */}
+        <div className="flex bg-slate-200/40 p-0.5 rounded-xl w-full md:w-auto">
+          <button
+            onClick={() => setSortBy('gold')}
+            className={`flex-1 md:flex-initial px-3 py-1 rounded-lg text-[11px] font-bold transition-all duration-200 ${sortBy === 'gold' ? 'bg-white text-primary shadow-xs' : 'text-slate-500 hover:text-primary'}`}
+          >
+            Bảng Vàng Vinh Danh
+          </button>
+          <button
+            onClick={() => setSortBy('latest')}
+            className={`flex-1 md:flex-initial px-3 py-1 rounded-lg text-[11px] font-bold transition-all duration-200 ${sortBy === 'latest' ? 'bg-white text-primary shadow-xs' : 'text-slate-500 hover:text-primary'}`}
+          >
+            Mới Nhất
+          </button>
+        </div>
+
+        {/* Inputs */}
+        <div className="flex gap-1.5 w-full md:w-auto items-center">
+          {/* Search */}
+          <div className="relative flex-1 md:flex-initial md:w-40">
+            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">search</span>
+            <input
+              type="text"
+              placeholder="Tìm tên..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-2.5 py-1 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary/20 text-[11px]"
+            />
+          </div>
+
+          {/* Class C Select */}
+          <select
+            value={classCFilter}
+            onChange={(e) => setClassCFilter(e.target.value)}
+            className="px-2 py-1 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary/20 text-[11px] cursor-pointer text-slate-600 font-semibold"
+          >
+            <option value="">Lớp C</option>
+            {Array.from({ length: 13 }, (_, i) => `C${i + 1}`).map(cls => (
+              <option key={cls} value={cls}>{cls}</option>
+            ))}
+          </select>
+
+          {/* Class B Select */}
+          <select
+            value={classBFilter}
+            onChange={(e) => setClassBFilter(e.target.value)}
+            className="px-2 py-1 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary/20 text-[11px] cursor-pointer text-slate-600 font-semibold"
+          >
+            <option value="">Lớp B</option>
+            {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
+              <option key={cls} value={cls}>{cls}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Grid List */}
+      {loading ? (
+        <div className="flex justify-center py-6">
+          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : sortedSponsors.length === 0 ? (
+        <div className="text-center py-8 bg-white rounded-2xl border border-slate-100">
+          <span className="material-symbols-outlined text-slate-300 text-3xl">volunteer_activism</span>
+          <p className="text-slate-400 text-xs font-medium mt-1">Chưa có đóng góp vinh danh phù hợp</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          {sortedSponsors.map((s, idx) => {
+            const { cleanName, classC, classB } = getClasses(s);
+            const tier = getTier(s.amount || 0);
+            return (
+              <div
+                key={idx}
+                className={`bg-gradient-to-r ${tier.color} border p-2.5 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between relative overflow-hidden group gap-2`}
+              >
+                {/* VIP Side Highlight bar */}
+                {(s.amount || 0) >= 5000000 && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-400" />
+                )}
+                {(s.amount || 0) >= 2000000 && (s.amount || 0) < 5000000 && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400" />
+                )}
+
+                {/* Left side: Avatar + Name + Class info */}
+                <div className="flex items-center gap-2 min-w-0 flex-1 pl-1">
+                  <div className="w-8 h-8 rounded-full bg-white shadow-xs border border-slate-100 flex items-center justify-center font-bold text-slate-800 text-xs shrink-0 select-none">
+                    {cleanName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-bold text-slate-800 text-xs leading-none tracking-tight font-title truncate group-hover:text-primary transition-colors">
+                      {cleanName}
+                    </h4>
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                      {classC && (
+                        <span className="bg-slate-100 text-[8px] font-extrabold text-slate-500 px-1 py-0.2 rounded">
+                          C{classC.replace('C', '')}
+                        </span>
+                      )}
+                      {classB && (
+                        <span className="bg-slate-100 text-[8px] font-extrabold text-slate-500 px-1 py-0.2 rounded">
+                          B{classB.replace('B', '')}
+                        </span>
+                      )}
+                      {!classC && !classB && (
+                        <span className="text-[8px] text-slate-400">Khóa 03-06</span>
+                      )}
+                      <span className="text-[8px] text-slate-400 font-medium">
+                        {new Date(s.created_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right side: Amount + Tier + Memory bubble */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <p className="font-black text-[13px] text-slate-800 tracking-tight leading-none">
+                      {(s.amount || 0).toLocaleString('vi-VN')}đ
+                    </p>
+                    <span className="text-[8px] font-bold text-slate-400 block mt-0.5">
+                      {tier.name}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    {s.memory && (
+                      <button
+                        onClick={() => onSelectMemory({ name: cleanName, memory: s.memory || '' })}
+                        type="button"
+                        className="w-6 h-6 rounded-full bg-primary/5 hover:bg-primary text-primary hover:text-white flex items-center justify-center transition-all duration-200 shadow-xs"
+                        title="Xem lời chúc / kỷ niệm"
+                      >
+                        <span className="material-symbols-outlined text-[12px]">chat</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DangKyPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [selectedMemory, setSelectedMemory] = useState<{name:string;memory:string} | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'contacts' | 'ticket' | 'memories'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'sponsor' | 'ticket' | 'memories'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Receipt upload & AI scan state
@@ -327,6 +570,15 @@ export default function DangKyPage() {
   const [aiResult, setAiResult] = useState<{ name?: string; phone?: string; amount?: string; saved?: boolean } | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sponsor states
+  const [sponsorFormData, setSponsorFormData] = useState({ name: '', phone: '', message: '', classC: '', classB: '' });
+  const [sponsorReceiptFile, setSponsorReceiptFile] = useState<File | null>(null);
+  const [sponsorReceiptPreview, setSponsorReceiptPreview] = useState<string | null>(null);
+  const [sponsorDonationAmount, setSponsorDonationAmount] = useState('2000000');
+  const [sponsorSubmitted, setSponsorSubmitted] = useState(false);
+  const [sponsorAiScanning, setSponsorAiScanning] = useState(false);
+  const sponsorFileInputRef = useRef<HTMLInputElement>(null);
 
   // Appearance State — Media
   const [logoImage, setLogoImage] = useState('/logo.png');
@@ -535,6 +787,118 @@ export default function DangKyPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleSubmitSponsor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sponsorFormData.name || !sponsorFormData.phone) return;
+
+    if (!sponsorReceiptFile) {
+      alert('Vui lòng đính kèm ảnh biên lai chuyển khoản để hoàn tất đóng góp tài trợ!');
+      return;
+    }
+
+    try {
+      setSponsorAiScanning(true);
+      let donatedAmount = parseInt(sponsorDonationAmount || '0');
+      if (donatedAmount <= 0) {
+        alert('Vui lòng nhập số tiền đóng góp hợp lệ!');
+        return;
+      }
+
+      // 1. Upload ảnh lên Supabase Storage
+      let uploadedReceiptUrl = '';
+      if (sponsorReceiptFile) {
+        try {
+          const fileExt = sponsorReceiptFile.name.split('.').pop();
+          const fileName = `receipt-${Date.now()}-${Math.floor(Math.random()*1000)}.${fileExt}`;
+          const { data: uploadData, error: uploadErr } = await supabase.storage
+            .from('site-assets')
+            .upload(`receipts/${fileName}`, sponsorReceiptFile);
+            
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabase.storage.from('site-assets').getPublicUrl(`receipts/${fileName}`);
+            uploadedReceiptUrl = publicUrlData.publicUrl;
+          } else {
+             console.error('Lỗi upload ảnh:', uploadErr);
+          }
+        } catch(err) {
+          console.error('Lỗi quá trình upload:', err);
+        }
+      }
+
+      // 2. Ghi nhận đăng ký
+      const { data: existingReg } = await supabase
+        .from('registrations')
+        .select('id, amount, receipt_url')
+        .eq('phone', sponsorFormData.phone)
+        .maybeSingle();
+
+      if (existingReg) {
+         // Cập nhật
+         const { error: updateErr } = await supabase
+           .from('registrations')
+           .update({ 
+             name: sponsorFormData.name,
+             class_c: sponsorFormData.classC,
+             class_b: sponsorFormData.classB,
+             will_attend: 'yes',
+             memory: sponsorFormData.message,
+             amount: donatedAmount > 0 ? donatedAmount : existingReg.amount,
+             receipt_url: uploadedReceiptUrl || existingReg.receipt_url
+           })
+           .eq('id', existingReg.id);
+         if (updateErr) throw updateErr;
+      } else {
+         // Thêm mới
+         const { error: regError } = await supabase.from('registrations').insert([{
+           name: sponsorFormData.name,
+           class_c: sponsorFormData.classC,
+           class_b: sponsorFormData.classB,
+           phone: sponsorFormData.phone,
+           will_attend: 'yes',
+           memory: sponsorFormData.message,
+           amount: donatedAmount,
+           receipt_url: uploadedReceiptUrl
+         }]);
+         if (regError) throw regError;
+      }
+
+      // 3. Ghi nhận khoản thu
+      if (donatedAmount > 0) {
+        const now = new Date();
+        const dateStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}, ${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}`;
+        const noteMsg = `Đóng góp tài trợ quỹ hội — đăng ký từ tab Tài trợ (${donatedAmount.toLocaleString('vi-VN')}đ)`;
+
+        await supabase.from('transactions').insert([{
+          date: dateStr,
+          name: sponsorFormData.name,
+          class_c: sponsorFormData.classC,
+          class_b: sponsorFormData.classB,
+          phone: sponsorFormData.phone,
+          amount: donatedAmount,
+          type: 'IN',
+          status: 'PENDING',
+          note: noteMsg
+        }]);
+      }
+
+      setSponsorSubmitted(true);
+    } catch (err) {
+      console.error('Lỗi khi gửi đóng góp tài trợ:', err);
+      alert('Đã xảy ra lỗi khi gửi đóng góp tài trợ, vui lòng thử lại!');
+    } finally {
+      setSponsorAiScanning(false);
+    }
+  };
+
+  const handleSponsorReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSponsorReceiptFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setSponsorReceiptPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -612,11 +976,11 @@ export default function DangKyPage() {
               Ảnh kỷ niệm
             </button>
             <button 
-              onClick={() => setActiveTab('contacts')}
-              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'contacts' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
+              onClick={() => setActiveTab('sponsor')}
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'sponsor' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
             >
-              <span className="material-symbols-outlined text-[18px]">people</span>
-              Ban liên lạc
+              <span className="material-symbols-outlined text-[18px]">volunteer_activism</span>
+              Tài trợ
             </button>
           </nav>
 
@@ -1049,9 +1413,9 @@ export default function DangKyPage() {
                         <Image
                            src={`https://img.vietqr.io/image/${bankId2}-${bankNo2}-compact2.png?amount=${donationAmount}&addInfo=${encodeURIComponent(formData.name && formData.phone ? `${formData.name} - ${formData.phone}` : 'Dong gop quy hoi')}&accountName=${encodeURIComponent(bankHolder)}`}
                            alt="QR Code Thanh Toán"
-                           width={240}
-                           height={240}
-                           className="rounded-xl"
+                           width={320}
+                           height={320}
+                           className="rounded-xl mx-auto"
                            unoptimized
                         />
                       </div>
@@ -1273,91 +1637,413 @@ export default function DangKyPage() {
           </div>
         )}
         
-        {/* Tab 4: Ban liên lạc */}
-        {activeTab === 'contacts' && (
-          <div className="animate-in fade-in duration-700">
-            <div className="text-center mb-12">
-              <span className="text-primary font-bold uppercase tracking-widest text-sm mb-3 block">Kết nối đồng đội</span>
-              <h2 className="text-4xl font-headline text-primary tracking-tight">Ban liên lạc các lớp</h2>
-              <p className="text-on-surface-variant mt-4 max-w-lg mx-auto">Danh sách đại diện các lớp phụ trách kết nối thành viên và hỗ trợ thông tin Hội khóa</p>
+        {/* Tab 4: Tài Trợ */}
+        {activeTab === 'sponsor' && (
+          <div className="animate-in fade-in duration-700 max-w-4xl mx-auto space-y-12">
+            <div className="text-center mb-6">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 mb-3">
+                <span className="material-symbols-outlined text-[20px] text-primary shrink-0">volunteer_activism</span>
+                <span className="text-primary font-bold uppercase tracking-widest text-xs sm:text-sm text-center leading-relaxed">
+                  Vòng tay bằng hữu - Tri ân mái trường
+                </span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-headline text-primary tracking-tight">Thư Kêu Gọi Đóng Góp</h2>
+              <p className="text-on-surface-variant mt-4 max-w-xl mx-auto font-medium text-slate-500">
+                Thân gửi các bạn cựu học sinh THPT Bình Sơn, Khóa 2003 - 2006
+              </p>
             </div>
 
-            <div className="max-w-4xl mx-auto md:bg-white md:rounded-2xl md:shadow-xl md:shadow-primary/5 md:border md:border-slate-100 overflow-hidden">
-              {/* Desktop Table View */}
-              <table className="w-full text-left border-collapse hidden md:table">
-                <thead>
-                  <tr className="bg-primary/5 text-primary">
-                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-sm border-b border-primary/10">Ban liên lạc / Lớp</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-sm border-b border-primary/10">Đại diện & Số điện thoại</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {contactData.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-6 py-4">
-                        <span className={`font-bold ${item.group === 'Trưởng Ban liên lạc' ? 'text-primary text-base' : 'text-slate-700 text-sm'}`}>
-                          {item.group}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          {item.representatives.map((rep, rIdx) => {
-                            const [name, phone] = rep.split(': ');
-                            return (
-                              <div key={rIdx} className="flex items-center gap-2 text-slate-600 font-medium text-sm">
-                                <span className="material-symbols-outlined text-xs text-primary/60">phone_in_talk</span>
-                                <span className="font-black text-slate-900">{name}</span>: 
-                                <a href={`tel:${phone ? phone.replace(/\./g, '') : ''}`} className="text-primary hover:underline transition-all">
-                                  {phone}
-                                </a>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Letter Content & Scrapbook Photo */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+              {/* Left Side: Appeal Letter */}
+              <div className="md:col-span-7 glass-card p-6 md:p-8 rounded-3xl border border-outline-variant/30 bg-gradient-to-br from-white to-primary/5 shadow-xl relative overflow-hidden space-y-6">
+                <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+                
+                <p className="text-slate-700 leading-relaxed text-sm md:text-base">
+                  Mới ngày nào chúng ta còn là những cô cậu học trò bỡ ngỡ bước vào mái Trường <strong>THPT Bình Sơn</strong>, nơi lưu giữ biết bao kỷ niệm đẹp của tuổi thanh xuân. Những buổi sáng vội vàng đến lớp, những giờ học đầy ắp tiếng cười, mùa chia tay lưu luyến... tất cả đã trở thành ký ức không thể phai mờ.
+                </p>
 
-              {/* Mobile Card View */}
-              <div className="md:hidden space-y-3">
-                {contactData.map((item, idx) => (
-                  <div key={idx} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                    <div className="flex items-center justify-between border-b border-slate-50 pb-2 mb-3">
-                      <span className={`font-black uppercase tracking-wider text-xs ${item.group === 'Trưởng Ban liên lạc' ? 'text-primary' : 'text-slate-400'}`}>
-                        {item.group}
-                      </span>
-                      <div className="w-6 h-6 rounded-full bg-primary/5 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[14px] text-primary">groups</span>
-                      </div>
+                <div className="border-l-4 border-primary pl-4 py-1 bg-primary/5 rounded-r-xl">
+                  <h4 className="text-lg font-bold text-primary font-title">Vậy mà đã 20 năm!</h4>
+                  <p className="text-slate-600 text-sm mt-1">
+                    Hai mươi năm - mỗi người một hành trình, một vị trí, một thành công riêng. Nhưng dù hôm nay ta ở đâu, làm gì, thì ký ức về thầy cô, bạn bè và mái trường xưa vẫn luôn là phần trong trẻo nhất của cuộc đời.
+                  </p>
+                </div>
+
+                <p className="text-slate-700 leading-relaxed text-sm md:text-base">
+                  Nhân dịp hội ngộ sau 20 năm, Ban Tổ chức phát động chương trình <span className="font-bold text-secondary">"Vòng tay bằng hữu - Tri ân mái trường"</span> với mong muốn ngày trở về không chỉ là cuộc gặp gỡ, mà còn là dịp để chúng ta cùng lan tỏa yêu thương và lòng biết ơn.
+                </p>
+
+                <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3">
+                  <span className="material-symbols-outlined text-emerald-600 mt-0.5 shrink-0">verified_user</span>
+                  <p className="text-xs md:text-sm text-emerald-800 font-medium">
+                    Mọi khoản đóng góp sẽ được công khai, minh bạch và sử dụng đúng mục đích.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Side: Quick Highlights/Stats or Photo */}
+              <div className="md:col-span-5 space-y-6">
+                <div className="relative h-64 rounded-3xl overflow-hidden shadow-2xl border border-white/20 transform scrapbook-rotate-right hover:rotate-0 transition-transform duration-500">
+                  <Image src={photo1} alt="Kỷ niệm" fill className="object-cover" unoptimized />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent flex flex-col justify-end p-5">
+                    <span className="text-xs uppercase tracking-widest text-primary font-bold mb-1">Mái trường xưa</span>
+                    <p className="text-white font-title italic text-sm font-semibold">Nơi kết nối những trái tim đồng hành</p>
+                  </div>
+                </div>
+
+                <div className="glass-card p-6 rounded-3xl border border-outline-variant/30 bg-surface/50 space-y-4">
+                  <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-[20px]">contact_support</span>
+                    Ban Tổ chức Hỗ trợ
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm border-b border-slate-100 pb-2">
+                      <span className="text-slate-500 font-medium">Bạn Long (Lớp C7)</span>
+                      <a href="tel:0822010880" className="font-bold text-primary hover:underline flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">call</span>
+                        0822.010.880
+                      </a>
                     </div>
-                    <div className="space-y-3">
-                      {item.representatives.map((rep, rIdx) => {
-                        const [name, phone] = rep.split(': ');
-                        return (
-                          <div key={rIdx} className="flex items-center justify-between gap-4">
-                            <span className="font-bold text-slate-800 text-sm">{name}</span>
-                            <a href={`tel:${phone ? phone.replace(/\./g, '') : ''}`} className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg text-[11px] font-bold shadow-sm shadow-primary/20 active:scale-95 transition-all">
-                              <span className="material-symbols-outlined text-[12px]">call</span>
-                              {phone}
-                            </a>
-                          </div>
-                        );
-                      })}
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-500 font-medium">Bạn Ly (Lớp C3)</span>
+                      <a href="tel:0915245504" className="font-bold text-primary hover:underline flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">call</span>
+                        0915.245.504
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Funding Goals */}
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-slate-800 font-title">Nội Dung Dự Kiến Đóng Góp</h3>
+                <p className="text-sm text-slate-500 mt-2">Các hoạt động và chương trình ý nghĩa của ngày hội khóa</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { title: 'Học bổng vượt khó', desc: 'Trao học bổng cho học sinh có hoàn cảnh khó khăn tại trường.', icon: 'school', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+                  { title: 'Quà tặng lưu niệm', desc: 'Gửi tặng nhà trường món quà lưu niệm ghi dấu ấn của Khóa 2003-2006 (Khóa 06).', icon: 'card_giftcard', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+                  { title: 'Tri ân thầy cô giáo', desc: 'Tri ân các thầy cô giáo cũ đã tận tình dạy dỗ và dìu dắt chúng ta năm xưa.', icon: 'favorite', color: 'bg-rose-50 text-rose-600 border-rose-100' },
+                  { title: 'Hoạt động chung', desc: 'Dự trù chi pháp thăm hỏi các bạn cựu học sinh và hoạt động chung của khóa.', icon: 'groups', color: 'bg-amber-50 text-amber-600 border-amber-100' },
+                ].map((item, idx) => (
+                  <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 ${item.color}`}>
+                      <span className="material-symbols-outlined text-2xl">{item.icon}</span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800 text-base">{item.title}</h4>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="mt-12 bg-primary/5 p-8 rounded-2xl border border-primary/10 text-center">
-              <h4 className="font-bold text-primary mb-3">Bạn chưa tìm thấy đại diện lớp mình?</h4>
-              <p className="text-slate-600 text-sm max-w-xl mx-auto leading-relaxed">
-                Nếu lớp bạn chưa có đại diện trong danh sách này hoặc bạn muốn tham gia hỗ trợ Ban liên lạc, 
-                vui lòng liên hệ trực tiếp với Trưởng Ban liên lạc để được cập nhật thông tin.
-              </p>
+            {/* QR Code and Account Details Card */}
+            {sponsorSubmitted ? (
+              <div className="relative bg-primary rounded-3xl overflow-hidden shadow-2xl p-8 md:p-12 text-center flex flex-col items-center space-y-6">
+                {/* Decorative background elements */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl" />
+                  <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+                </div>
+
+                <div className="relative z-10 space-y-6 flex flex-col items-center">
+                  <div className="relative mb-2">
+                    <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-2xl mx-auto">
+                      <span className="material-symbols-outlined text-5xl text-primary">volunteer_activism</span>
+                    </div>
+                    <div className="absolute inset-0 w-24 h-24 bg-white/20 rounded-full mx-auto animate-ping" style={{animationDuration:'2s'}} />
+                  </div>
+
+                  <span className="text-secondary-fixed text-label-sm font-bold uppercase tracking-[0.3em] block">Tài trợ hoàn thành</span>
+                  <h3 className="text-3xl md:text-5xl font-display text-white tracking-tight">
+                    Trân trọng cảm ơn tấm lòng vàng của cựu học sinh <span className="text-secondary-fixed">{sponsorFormData.name}</span>!
+                  </h3>
+                  <p className="text-primary-fixed text-lg font-medium">
+                    Chúng tôi đã ghi nhận đóng góp trị giá <span className="text-secondary-fixed font-bold">{parseInt(sponsorDonationAmount.replace(/\D/g, '') || '0').toLocaleString('vi-VN')} VNĐ</span>.
+                  </p>
+
+                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+
+                  <div className="max-w-2xl mx-auto space-y-4">
+                    <p className="text-xl md:text-2xl text-white/90 font-medium leading-relaxed italic font-headline">
+                      "Sự đồng hành của bạn chính là những viên gạch vững chắc xây dựng nên một ngày hội khóa trọn vẹn, ấm áp kỷ niệm thanh xuân."
+                    </p>
+                    <p className="text-sm text-primary-fixed leading-relaxed">
+                      Tên của bạn sẽ được vinh danh trang trọng trên bảng vinh danh nhà tài trợ.
+                    </p>
+                  </div>
+
+                  <div className="pt-6">
+                    <button
+                      onClick={() => {
+                        setSponsorSubmitted(false);
+                        setSponsorFormData({ name: '', phone: '', message: '', classC: '', classB: '' });
+                        setSponsorReceiptFile(null);
+                        setSponsorReceiptPreview(null);
+                        setSponsorDonationAmount('2000000');
+                      }}
+                      className="bg-secondary-fixed text-on-secondary-fixed px-8 py-3 rounded-full font-bold shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border-2 border-secondary-fixed/50 hover:bg-white hover:text-primary"
+                    >
+                      <span className="material-symbols-outlined">restart_alt</span>
+                      Gửi Đóng Góp Khác
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl shadow-xl shadow-primary/5 border border-slate-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-primary to-primary-fixed-dim p-6 md:p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-bold font-title">Đóng Góp Tài Trợ Trực Tuyến</h3>
+                    <p className="text-xs md:text-sm opacity-90 mt-1">Điền thông tin tài trợ, quét mã VietQR chuyển khoản và tải ảnh biên lai xác nhận</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-xs font-bold uppercase tracking-wider self-start md:self-auto flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Kết nối tự động ngân hàng
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmitSponsor} className="p-6 md:p-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                  {/* Left Column: Form Fields */}
+                  <div className="md:col-span-7 space-y-6">
+                    <h4 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-2 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-[20px]">assignment_ind</span>
+                      Thông tin Nhà tài trợ
+                    </h4>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="sponsor-name" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Họ và tên *</label>
+                        <input
+                          type="text"
+                          id="sponsor-name"
+                          required
+                          value={sponsorFormData.name}
+                          onChange={(e) => setSponsorFormData({...sponsorFormData, name: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body placeholder-slate-400"
+                          placeholder="VD: Nguyễn Văn A"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="sponsor-classC" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Lớp C</label>
+                          <select
+                            id="sponsor-classC"
+                            value={sponsorFormData.classC}
+                            onChange={(e) => setSponsorFormData({...sponsorFormData, classC: e.target.value})}
+                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body cursor-pointer appearance-none"
+                          >
+                            <option value="">Chọn lớp</option>
+                            {Array.from({ length: 13 }, (_, i) => `C${i + 1}`).map(cls => (
+                              <option key={cls} value={cls}>{cls}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="sponsor-classB" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Lớp B</label>
+                          <select
+                            id="sponsor-classB"
+                            value={sponsorFormData.classB}
+                            onChange={(e) => setSponsorFormData({...sponsorFormData, classB: e.target.value})}
+                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body cursor-pointer appearance-none"
+                          >
+                            <option value="">Chọn lớp</option>
+                            {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
+                              <option key={cls} value={cls}>{cls}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="sponsor-phone" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Số điện thoại *</label>
+                        <input
+                          type="tel"
+                          id="sponsor-phone"
+                          required
+                          value={sponsorFormData.phone}
+                          onChange={(e) => setSponsorFormData({...sponsorFormData, phone: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body placeholder-slate-400"
+                          placeholder="VD: 0912 345 678"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="sponsor-message" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Lời nhắn / Lời chúc gửi Hội khóa</label>
+                        <textarea
+                          id="sponsor-message"
+                          rows={2}
+                          value={sponsorFormData.message}
+                          onChange={(e) => setSponsorFormData({...sponsorFormData, message: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body placeholder-slate-400 resize-none"
+                          placeholder="Lời chúc mừng hoặc tâm sự bạn muốn gửi đến thầy cô và bạn bè..."
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="sponsor-amount" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Số tiền đóng góp tài trợ (VNĐ) *</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            id="sponsor-amount"
+                            required
+                            value={sponsorDonationAmount ? parseInt(sponsorDonationAmount.replace(/\D/g, '') || '0').toLocaleString('vi-VN') : ''}
+                            onChange={(e) => {
+                              const rawValue = e.target.value.replace(/\D/g, '');
+                              setSponsorDonationAmount(rawValue);
+                            }}
+                            className="w-full pl-4 pr-12 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body font-bold text-lg"
+                            placeholder="Nhập số tiền..."
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">VNĐ</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 italic mt-1">Mã QR bên cạnh sẽ tự động cập nhật số tiền và cú pháp chuẩn theo thông tin của bạn.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: QR Code & Payment Info & Receipt Upload */}
+                  <div className="md:col-span-5 space-y-6 flex flex-col justify-between h-full">
+                    {/* Bank Details Card */}
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                      <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-[18px]">account_balance</span>
+                        Thông tin tài khoản nhận
+                      </h4>
+                      <div className="text-xs space-y-1.5 text-slate-600">
+                        <p><strong className="text-slate-700">Ngân hàng:</strong> BIDV (Ngân hàng TMCP Đầu tư và Phát triển VN)</p>
+                        <p className="flex items-center gap-1.5">
+                          <strong className="text-slate-700">Số tài khoản:</strong> 
+                          <span className="font-bold text-primary text-sm font-mono">573 016 2456</span>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText('5730162456');
+                              alert('Đã sao chép số tài khoản!');
+                            }} 
+                            className="text-slate-400 hover:text-primary transition"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">content_copy</span>
+                          </button>
+                        </p>
+                        <p><strong className="text-slate-700">Chủ tài khoản:</strong> PHAM THI LY</p>
+                        <div className="bg-white p-2 rounded-lg border border-slate-200 mt-2 text-center">
+                          <p className="text-[9px] font-bold uppercase text-slate-400">Nội dung chuyển khoản tự động</p>
+                          <p className="font-mono font-bold text-[11px] text-slate-800 overflow-hidden text-ellipsis whitespace-nowrap">
+                            {sponsorFormData.name ? `${sponsorFormData.name} - ${sponsorFormData.classC || sponsorFormData.classB || 'Taitro'} - Dong gop 20 nam` : '[Họ Tên] - [Lớp] - Dong gop 20 nam'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* QR Code and upload */}
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="bg-white p-3 rounded-2xl shadow-md border border-slate-100 relative group transform hover:scale-[1.02] transition-transform">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/5 to-primary-fixed-dim/5 rounded-2xl blur opacity-50 group-hover:opacity-70 transition duration-1000" />
+                        <div className="relative bg-white rounded-xl">
+                          <Image
+                            src={`https://img.vietqr.io/image/BIDV-5730162456-compact2.png?amount=${sponsorDonationAmount || '0'}&addInfo=${encodeURIComponent(sponsorFormData.name ? `${sponsorFormData.name} - ${sponsorFormData.classC || sponsorFormData.classB || 'Taitro'} - Dong gop 20 nam` : 'Dong gop 20 nam')}&accountName=PHAM%20THI%20LY`}
+                            alt="QR Code Đóng Góp"
+                            width={280}
+                            height={280}
+                            className="rounded-lg mx-auto"
+                            unoptimized
+                          />
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mã QR Thanh Toán</p>
+                        <p className="text-[10px] text-slate-500">Quét để điền nhanh thông tin</p>
+                      </div>
+                    </div>
+
+                    {/* Receipt image upload (Required) */}
+                    <div className="rounded-xl border-2 border-dashed border-primary-fixed-dim bg-primary-fixed/20 p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-primary text-lg">camera_alt</span>
+                          Ảnh chuyển khoản *
+                        </p>
+                        <span className="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold uppercase">Bắt buộc</span>
+                      </div>
+                      
+                      {!sponsorReceiptPreview ? (
+                        <label className="flex flex-col items-center justify-center w-full h-24 bg-white border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-primary-fixed/30 transition-all group">
+                          <span className="material-symbols-outlined text-2xl text-slate-300 group-hover:text-primary mb-1 transition">photo_camera</span>
+                          <span className="text-[10px] text-slate-400 font-medium">Tải ảnh giao dịch thành công</span>
+                          <input ref={sponsorFileInputRef} type="file" accept="image/*" className="hidden" required onChange={handleSponsorReceiptChange} />
+                        </label>
+                      ) : (
+                        <div className="space-y-2 relative">
+                          <button
+                            type="button"
+                            onClick={() => { setSponsorReceiptFile(null); setSponsorReceiptPreview(null); if (sponsorFileInputRef.current) sponsorFileInputRef.current.value = ''; }}
+                            className="absolute right-1 top-1 z-10 w-6 h-6 bg-black/60 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition shadow-md"
+                          >
+                            <span className="material-symbols-outlined text-sm">close</span>
+                          </button>
+                          <div className="relative w-full h-24 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                            <img src={sponsorReceiptPreview} alt="Ảnh chuyển khoản" className="w-full h-full object-contain" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={sponsorAiScanning}
+                      className={`w-full py-3.5 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-bold text-base flex items-center justify-center space-x-2 transition-all shadow-lg active:scale-[0.98] ${sponsorAiScanning ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                      {sponsorAiScanning ? (
+                        <>
+                          <span>Đang gửi đóng góp...</span>
+                          <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Gửi Đóng Góp Tài Trợ</span>
+                          <span className="material-symbols-outlined text-lg">volunteer_activism</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Youth Quote & BTC warm wishes */}
+            <div className="text-center bg-gradient-to-br from-primary/5 to-secondary/5 rounded-[2.5rem] border border-outline-variant/20 p-10 md:p-12 space-y-6 relative overflow-hidden">
+              <span className="material-symbols-outlined text-primary/20 text-7xl absolute -top-4 -left-4 select-none">format_quote</span>
+              <span className="material-symbols-outlined text-primary/20 text-7xl absolute -bottom-8 -right-4 select-none rotate-180">format_quote</span>
+              
+              <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
+                <h3 className="text-xl md:text-2xl font-black text-slate-800 leading-relaxed font-headline italic">
+                  "Thành công có thể khác nhau, nhưng ký ức thanh xuân thì chỉ có một."
+                </h3>
+                <p className="text-slate-600 text-sm md:text-base leading-relaxed">
+                  Ban Tổ chức rất mong nhận được sự đồng hành của tất cả các bạn để ngày trở về thực sự ấm áp, ý nghĩa và đáng nhớ.
+                </p>
+                <div className="w-16 h-0.5 bg-primary/20 mx-auto rounded-full my-4" />
+                <p className="text-primary font-black text-xl tracking-wider font-title">
+                  Hẹn Gặp Lại Nhau Trong Ngày Hội Ngộ!
+                </p>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+                  12.07.2026
+                </p>
+              </div>
             </div>
+
+            {/* Bảng Vàng Đóng Góp Tài Trợ */}
+            <SponsorContributionsBlock onSelectMemory={setSelectedMemory} />
+
           </div>
         )}
 
@@ -1420,11 +2106,11 @@ export default function DangKyPage() {
           </button>
 
           <button 
-            onClick={() => setActiveTab('contacts')}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'contacts' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
+            onClick={() => setActiveTab('sponsor')}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'sponsor' ? 'text-primary scale-110' : 'text-on-surface-variant opacity-60'}`}
           >
-            <span className="material-symbols-outlined text-[24px]">people</span>
-            <span className="text-[10px] font-bold">Liên lạc</span>
+            <span className="material-symbols-outlined text-[24px]">volunteer_activism</span>
+            <span className="text-[10px] font-bold">Tài trợ</span>
           </button>
         </div>
       </nav>
@@ -1448,7 +2134,7 @@ export default function DangKyPage() {
             <p className="font-body text-sm text-on-surface-variant mt-2 text-center md:text-left">2026 Chuyến tàu thanh xuân - Niên khóa 2006-2026</p>
           </div>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a className="text-on-surface-variant hover:text-primary underline transition-opacity hover:opacity-80 text-sm" href="#">Ban liên lạc</a>
+            <button onClick={() => { setActiveTab('sponsor'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-on-surface-variant hover:text-primary underline transition-opacity hover:opacity-80 text-sm text-left">Tài trợ</button>
             <a className="text-on-surface-variant hover:text-primary underline transition-opacity hover:opacity-80 text-sm" href="#">Lịch trình</a>
             <a className="text-on-surface-variant hover:text-primary underline transition-opacity hover:opacity-80 text-sm" href="#">Hỗ trợ</a>
           </div>
