@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
-type Tab = 'overview' | 'transactions' | 'tasks' | 'users' | 'settings' | 'appearance' | 'registrations' | 'reports';
+type Tab = 'overview' | 'transactions' | 'tasks' | 'users' | 'settings' | 'appearance' | 'registrations' | 'sponsors' | 'reports';
 type TransactionType = 'IN' | 'OUT';
 
 interface Registration {
@@ -20,6 +20,7 @@ interface Registration {
   memory?: string;
   amount?: number;
   receipt_url?: string;
+  source?: string;
   created_at: string;
 }
 
@@ -128,6 +129,7 @@ export default function DashboardPage() {
   // Registrations
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [regSearch, setRegSearch] = useState('');
+  const [sponsorSearch, setSponsorSearch] = useState('');
 
 
   useEffect(() => {
@@ -289,6 +291,43 @@ export default function DashboardPage() {
       }
     }
     setEditingTransaction(null);
+  };
+
+  const SPONSOR_THRESHOLD = 2000000;
+
+  const handleExportSponsors = () => {
+    const sponsors = registrations.filter(r => r.source === 'sponsor' || (r.amount || 0) > SPONSOR_THRESHOLD);
+    if (sponsors.length === 0) {
+      addNotification('Kh\u00f4ng c\u00f3 d\u1eef li\u1ec7u t\u00e0i tr\u1ee3 \u0111\u1ec3 xu\u1ea5t', 'warning');
+      return;
+    }
+    const headers = ['STT', 'H\u1ecd v\u00e0 t\u00ean', 'S\u1ed1 \u0111i\u1ec7n tho\u1ea1i', 'L\u1edbp C', 'L\u1edbp B', 'S\u1ed1 ti\u1ec1n t\u00e0i tr\u1ee3', 'Ngu\u1ed3n', 'Ng\u00e0y \u0111\u00f3ng g\u00f3p'];
+    const rows = sponsors
+      .sort((a, b) => (b.amount || 0) - (a.amount || 0))
+      .map((r, i) => [
+        i + 1,
+        r.name,
+        r.phone,
+        r.class_c || '',
+        r.class_b || '',
+        r.amount || 0,
+        r.source === 'sponsor' ? 'Form t\u00e0i tr\u1ee3 tr\u1ef1c tuy\u1ebfn' : 'Form \u0111\u0103ng k\u00fd tham d\u1ef1',
+        new Date(r.created_at).toLocaleString('vi-VN')
+      ]);
+    let csvContent = '\uFEFF';
+    csvContent += headers.join(',') + '\n';
+    rows.forEach(row => {
+      csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Danh_sach_tai_tro_BinhSon_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addNotification('\u0110\u00e3 t\u1ea3i xu\u1ed1ng danh s\u00e1ch t\u00e0i tr\u1ee3', 'success');
   };
 
   const handleExportRegistrations = () => {
@@ -719,6 +758,7 @@ export default function DashboardPage() {
           <NavItem icon={<LayoutDashboard size={20} />} label="Tổng quan" active={activeTab === 'overview'} onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ReceiptText size={20} />} label="Thu - Chi" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ClipboardList size={20} />} label="Đăng Ký" active={activeTab === 'registrations'} onClick={() => { setActiveTab('registrations'); setIsSidebarOpen(false); }} badge={registrations.filter(r => r.will_attend === 'yes').length} />
+          <NavItem icon={<QrCode size={20} />} label="Tài Trợ" active={activeTab === 'sponsors'} onClick={() => { setActiveTab('sponsors'); setIsSidebarOpen(false); }} badge={registrations.filter(r => r.source === 'sponsor' || (r.amount || 0) > 2000000).length} />
           <NavItem icon={<FileBarChart size={20} />} label="Báo cáo" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
           <NavItem icon={<ListTodo size={20} />} label="Công việc" active={activeTab === 'tasks'} onClick={() => { setActiveTab('tasks'); setIsSidebarOpen(false); }} />
           <NavItem icon={<Users size={20} />} label="Quản trị viên" active={activeTab === 'users'} onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} />
@@ -748,6 +788,7 @@ export default function DashboardPage() {
                 {activeTab === 'overview' && 'Trang tổng quan'}
                 {activeTab === 'transactions' && 'Quản lý Thu - Chi'}
                 {activeTab === 'registrations' && 'Đăng Ký Tham Dự'}
+                {activeTab === 'sponsors' && 'Đóng Góp Tài Trợ'}
                 {activeTab === 'reports' && 'Báo cáo trực quan'}
                 {activeTab === 'tasks' && 'Tiến độ công việc'}
                 {activeTab === 'users' && 'Quản trị viên'}
@@ -1430,6 +1471,385 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+
+          {activeTab === 'sponsors' && (() => {
+            // Hiển thị:
+            // 1) source = 'sponsor' (đăng ký từ form Đóng Góp Tài Trợ Trực Tuyến)
+            // 2) amount > 2,000,000 (đăng ký tham dự có đóng góp lớn)
+            const sponsorList = registrations
+              .filter(r => r.source === 'sponsor' || (r.amount || 0) > 2000000)
+              .sort((a, b) => (b.amount || 0) - (a.amount || 0));
+            const filteredSponsors = sponsorList.filter(r => {
+              const q = sponsorSearch.toLowerCase();
+              return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+            });
+            const totalAmount = sponsorList.reduce((s, r) => s + (r.amount || 0), 0);
+            const maxAmount = sponsorList.length > 0 ? (sponsorList[0].amount || 0) : 0;
+            return (
+              <div className="flex-1 space-y-4 flex flex-col">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 shrink-0">
+                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">Tổng tài trợ</p>
+                      <p className="text-xl font-black text-amber-700">{(totalAmount / 1000000).toFixed(1)}M đ</p>
+                    </div>
+                    <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
+                      <ArrowUpRight size={20} />
+                    </div>
+                  </div>
+                  <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Số nhà tài trợ</p>
+                      <p className="text-xl font-black text-emerald-700">{sponsorList.length} người</p>
+                    </div>
+                    <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                      <Users size={20} />
+                    </div>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Cao nhất</p>
+                      <p className="text-xl font-black text-blue-700">{(maxAmount / 1000000).toFixed(1)}M đ</p>
+                    </div>
+                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                      <Shield size={20} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                  <div className="p-4 lg:p-5 border-b border-slate-100 bg-amber-50/40">
+                    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block"></span>
+                          Danh sách nhà tài trợ
+                        </h3>
+                        <p className="text-[11px] text-slate-500 mt-1">Ghi nhận từ form Tài Trợ và form Đăng ký (đóng góp &gt; 2.000.000đ)</p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div className="relative flex-1">
+                          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            placeholder="Tìm nhà tài trợ..."
+                            value={sponsorSearch}
+                            onChange={e => setSponsorSearch(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 xl:w-64"
+                          />
+                        </div>
+                        <button
+                          onClick={handleExportSponsors}
+                          className="flex items-center justify-center px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-amber-600 transition whitespace-nowrap"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          <span className="hidden sm:inline">Xuất Excel</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto">
+                    {/* Desktop Table */}
+                    <div className="hidden md:block">
+                      <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-50 sticky top-0 z-10 text-[10px] font-bold text-slate-500 border-b border-slate-100 tracking-wider uppercase">
+                          <tr>
+                            <th className="px-4 py-4">STT</th>
+                            <th className="px-4 py-4">Họ và tên</th>
+                            <th className="px-4 py-4">Số điện thoại</th>
+                            <th className="px-4 py-4">Lớp</th>
+                            <th className="px-4 py-4">Tham dự</th>
+                            <th className="px-4 py-4 text-right">Số tiền tài trợ</th>
+                            <th className="px-4 py-4 text-center">Nguồn</th>
+                            <th className="px-4 py-4 text-center">Biên lai</th>
+                            <th className="px-4 py-4">Ngày đóng góp</th>
+                            <th className="px-4 py-4 text-right">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 bg-white">
+                          {filteredSponsors.map((r, index) => (
+                            <tr key={r.id} className="hover:bg-amber-50/40 transition-colors group">
+                              <td className="px-6 py-4">
+                                <span className="w-7 h-7 rounded-full bg-amber-100 text-amber-700 font-black text-xs flex items-center justify-center">{index + 1}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-xs shrink-0">{r.name.charAt(0).toUpperCase()}</div>
+                                  <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{r.name}</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 font-mono text-sm text-slate-600 whitespace-nowrap">{r.phone}</td>
+                              <td className="px-6 py-4 text-sm text-slate-600">
+                                <div className="flex flex-col">
+                                  {r.class_c && <span className="font-bold text-blue-600">Lớp C: {r.class_c}</span>}
+                                  {r.class_b && <span className="text-xs text-slate-500">Lớp B: {r.class_b}</span>}
+                                  {!r.class_c && !r.class_b && <span className="italic text-slate-300">—</span>}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                {r.will_attend === 'yes'
+                                  ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase whitespace-nowrap">Có về ✓</span>
+                                  : <span className="text-[10px] px-2.5 py-1 bg-rose-50 text-rose-600 rounded-md border border-rose-200 font-bold uppercase whitespace-nowrap">Không về</span>
+                                }
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="text-base font-black text-amber-600 whitespace-nowrap">+{(r.amount || 0).toLocaleString('vi-VN')}đ</span>
+                              </td>
+                              <td className="px-6 py-4 text-center">
+                                {r.source === 'sponsor' 
+                                  ? <span className="text-[10px] px-2.5 py-1 bg-amber-50 text-amber-700 rounded-md border border-amber-200 font-bold whitespace-nowrap">Form Tài trợ</span>
+                                  : <span className="text-[10px] px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 font-bold whitespace-nowrap">Đăng ký tham dự</span>
+                                }
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                {regUploadingId === r.id ? (
+                                  <div className="flex justify-center"><div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" /></div>
+                                ) : r.receipt_url ? (
+                                  <button
+                                    onClick={() => setPreviewReceiptUrl(r.receipt_url!)}
+                                    className="relative inline-block group"
+                                    title="Xem biên lai"
+                                  >
+                                    <img
+                                      src={r.receipt_url}
+                                      alt="Biên lai"
+                                      className="w-10 h-10 object-cover rounded-lg border border-amber-200 group-hover:ring-2 group-hover:ring-amber-400 transition shadow-sm"
+                                    />
+                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                                      <Check size={9} className="text-white" />
+                                    </span>
+                                  </button>
+                                ) : (
+                                  <label className="cursor-pointer inline-flex flex-col items-center justify-center w-10 h-10 border-2 border-dashed border-amber-300 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition group" title="Upload biên lai">
+                                    <Upload size={13} className="text-amber-400 group-hover:text-amber-600" />
+                                    <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUploadReceiptInDashboard(e.target.files[0], r.id); }} />
+                                  </label>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-xs text-slate-400 whitespace-nowrap">
+                                {new Date(r.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button onClick={() => setViewingRegistration(r)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"><Eye size={15} /></button>
+                                  <button onClick={() => setEditingRegistration(r)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"><Edit2 size={15} /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile List */}
+                    <div className="md:hidden divide-y divide-slate-100">
+                      {filteredSponsors.map((r, index) => (
+                        <div key={r.id} className="p-4 space-y-3 bg-white active:bg-amber-50/30 transition-colors">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-black text-xs flex items-center justify-center shrink-0">{index + 1}</div>
+                              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 font-bold text-sm shrink-0">
+                                {r.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-900 text-sm leading-snug">{r.name}</p>
+                                <p className="text-xs text-slate-500 font-mono mt-0.5">{r.phone}</p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-1.5">
+                              <span className="text-sm font-black text-amber-600">+{(r.amount || 0).toLocaleString('vi-VN')}đ</span>
+                              {r.will_attend === 'yes'
+                                ? <span className="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-bold uppercase">Có về ✓</span>
+                                : <span className="text-[9px] px-2 py-0.5 bg-rose-50 text-rose-600 rounded border border-rose-100 font-bold uppercase">Vắng</span>
+                              }
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-xs py-2 px-3 bg-amber-50/60 rounded-lg">
+                            <div className="flex gap-4 items-center">
+                              <div className="flex flex-col">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Lớp C</span>
+                                <span className="font-bold text-blue-600">{r.class_c || '—'}</span>
+                              </div>
+                              <div className="flex flex-col border-l border-slate-200 pl-4">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Lớp B</span>
+                                <span className="font-semibold text-slate-600">{r.class_b || '—'}</span>
+                              </div>
+                              <div className="flex flex-col border-l border-slate-200 pl-4">
+                                {r.source === 'sponsor' 
+                                  ? <span className="text-[9px] px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md font-bold whitespace-nowrap">Tài trợ</span>
+                                  : <span className="text-[9px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md font-bold whitespace-nowrap">Đăng ký</span>
+                                }
+                              </div>
+                            </div>
+                            {r.receipt_url && (
+                              <button onClick={() => setPreviewReceiptUrl(r.receipt_url!)} className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100">
+                                <ReceiptText size={16} />
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-end gap-2 pt-1">
+                            <button onClick={() => setViewingRegistration(r)} className="flex-1 py-2 bg-slate-50 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 flex items-center justify-center gap-1.5">
+                              <Eye size={14} /> Chi tiết
+                            </button>
+                            <button onClick={() => setEditingRegistration(r)} className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold border border-blue-100 flex items-center justify-center gap-1.5">
+                              <Edit2 size={14} /> Sửa
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {sponsorList.length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                        <QrCode className="w-10 h-10 mb-3 text-slate-300" />
+                        <p className="text-sm font-medium">Chưa có thông tin tài trợ nào</p>
+                        <p className="text-[11px] text-slate-400 mt-1 text-center max-w-xs">Ghi nhận từ form Đóng góp tài trợ và các Đăng ký có số tiền {' > '} 2.000.000đ sẽ xuất hiện ở đây.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Reuse lightbox & modals from registrations */}
+                {previewReceiptUrl && (
+                  <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+                    onClick={() => setPreviewReceiptUrl(null)}
+                  >
+                    <div className="relative max-w-2xl w-full" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => setPreviewReceiptUrl(null)}
+                        className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1 text-sm font-medium"
+                      >
+                        <X size={18} /> Đóng
+                      </button>
+                      <img
+                        src={previewReceiptUrl}
+                        alt="Ảnh chuyển khoản"
+                        className="w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-white/20"
+                      />
+                    </div>
+                  </div>
+                )}
+                {editingRegistration && (
+                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+                      <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h3 className="font-bold text-slate-900 text-lg">Chỉnh sửa thông tin tài trợ</h3>
+                        <button onClick={() => setEditingRegistration(null)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400"><X size={18} /></button>
+                      </div>
+                      <div className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Họ và Tên *</label>
+                            <input type="text" value={editingRegistration.name} onChange={e => setEditingRegistration({ ...editingRegistration, name: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Nguyễn Văn A" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Số điện thoại *</label>
+                            <input type="text" value={editingRegistration.phone} onChange={e => setEditingRegistration({ ...editingRegistration, phone: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono" placeholder="0901234567" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Đóng góp (VNĐ)</label>
+                            <input type="number" value={editingRegistration.amount || 0} onChange={e => setEditingRegistration({ ...editingRegistration, amount: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Tham dự</label>
+                            <select value={editingRegistration.will_attend} onChange={e => setEditingRegistration({ ...editingRegistration, will_attend: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                              <option value="yes">Có về ✓</option>
+                              <option value="no">Không về</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6 pt-4 flex justify-end gap-3 border-t border-slate-100">
+                        <button onClick={() => setEditingRegistration(null)} className="px-5 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition">Hủy</button>
+                        <button
+                          onClick={() => {
+                            if (!editingRegistration.name || !editingRegistration.phone) { alert('Vui lòng nhập Họ tên và Số điện thoại!'); return; }
+                            handleSaveRegistration(editingRegistration);
+                          }}
+                          className="px-5 py-2 text-sm font-bold text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition flex items-center gap-2"
+                        >
+                          <Save size={15} />
+                          Lưu thay đổi
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {viewingRegistration && (
+                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
+                      <div className="p-6 bg-amber-50 border-b border-amber-100 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-lg">
+                            {viewingRegistration.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-slate-900 text-lg leading-none">{viewingRegistration.name}</h3>
+                            <p className="text-xs text-amber-600 font-bold mt-1">Nhà tài trợ • +{(viewingRegistration.amount || 0).toLocaleString('vi-VN')}đ</p>
+                          </div>
+                        </div>
+                        <button onClick={() => setViewingRegistration(null)} className="p-2 hover:bg-amber-100 rounded-lg text-slate-400 transition-colors"><X size={18} /></button>
+                      </div>
+                      <div className="p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Số điện thoại</p>
+                          <p className="text-sm font-mono text-slate-700">{viewingRegistration.phone}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trạng thái tham dự</p>
+                          {viewingRegistration.will_attend === 'yes'
+                            ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase">Có về ✓</span>
+                            : <span className="text-[10px] px-2.5 py-1 bg-rose-50 text-rose-600 rounded-md border border-rose-200 font-bold uppercase">Không về</span>
+                          }
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lớp cũ</p>
+                          <p className="text-sm text-slate-700">
+                            {viewingRegistration.class_c && `Lớp C: ${viewingRegistration.class_c}`}
+                            {viewingRegistration.class_c && viewingRegistration.class_b ? ' • ' : ''}
+                            {viewingRegistration.class_b && `Lớp B: ${viewingRegistration.class_b}`}
+                            {!viewingRegistration.class_c && !viewingRegistration.class_b && '—'}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Số tiền đóng góp</p>
+                          <p className="text-lg font-black text-amber-600">{(viewingRegistration.amount || 0).toLocaleString('vi-VN')}đ</p>
+                        </div>
+                        {viewingRegistration.memory && (
+                          <div className="sm:col-span-2 space-y-1 pt-2 border-t border-slate-50">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kỷ niệm chia sẻ</p>
+                            <p className="text-sm text-slate-600 leading-relaxed italic bg-slate-50 p-4 rounded-xl border border-slate-100">{viewingRegistration.memory}</p>
+                          </div>
+                        )}
+                        <div className="sm:col-span-2 space-y-1 pt-2 border-t border-slate-50">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Biên lai chuyển khoản</p>
+                          {viewingRegistration.receipt_url ? (
+                            <div className="mt-2">
+                              <img src={viewingRegistration.receipt_url} alt="Biên lai" className="w-full max-h-64 object-contain rounded-xl border border-slate-200 shadow-sm" />
+                              <a href={viewingRegistration.receipt_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center text-xs text-blue-600 hover:underline font-bold">
+                                <Download size={12} className="mr-1" /> Tải xuống bản gốc
+                              </a>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-slate-400 italic">Chưa cập nhật biên lai.</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="p-6 bg-amber-50 border-t border-amber-100 flex justify-between items-center shrink-0">
+                        <p className="text-[10px] text-slate-400">Đăng ký lúc: {new Date(viewingRegistration.created_at).toLocaleString('vi-VN')}</p>
+                        <button onClick={() => setViewingRegistration(null)} className="px-6 py-2 bg-amber-500 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-amber-600 transition-all">Đóng</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {activeTab === 'reports' && (
             <div className="flex-1 space-y-6">

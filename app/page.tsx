@@ -828,7 +828,8 @@ export default function DangKyPage() {
              will_attend: 'yes',
              memory: sponsorFormData.message,
              amount: donatedAmount > 0 ? donatedAmount : existingReg.amount,
-             receipt_url: uploadedReceiptUrl || existingReg.receipt_url
+             receipt_url: uploadedReceiptUrl || existingReg.receipt_url,
+             source: 'sponsor'
            })
            .eq('id', existingReg.id);
          if (updateErr) throw updateErr;
@@ -842,7 +843,8 @@ export default function DangKyPage() {
            will_attend: 'yes',
            memory: sponsorFormData.message,
            amount: donatedAmount,
-           receipt_url: uploadedReceiptUrl
+           receipt_url: uploadedReceiptUrl,
+           source: 'sponsor'
          }]);
          if (regError) throw regError;
       }
