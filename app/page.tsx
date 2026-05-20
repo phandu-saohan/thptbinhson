@@ -1644,12 +1644,12 @@ export default function DangKyPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 mb-3">
                 <span className="material-symbols-outlined text-[20px] text-primary shrink-0">volunteer_activism</span>
                 <span className="text-primary font-bold uppercase tracking-widest text-xs sm:text-sm text-center leading-relaxed">
-                  Vòng tay bằng hữu - Tri ân mái trường
+                  Chương trình: "20 NĂM - CHUYẾN TÀU THANH XUÂN"
                 </span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-headline text-primary tracking-tight">Thư Kêu Gọi Đóng Góp</h2>
+              <h2 className="text-4xl md:text-5xl font-headline text-primary tracking-tight">Thư Kêu Gọi Đồng Hành & Tài Trợ</h2>
               <p className="text-on-surface-variant mt-4 max-w-xl mx-auto font-medium text-slate-500">
-                Thân gửi các bạn cựu học sinh THPT Bình Sơn, Khóa 2003 - 2006
+                Thân gửi các bạn cựu học sinh THPT Bình Sơn niên khóa 2003 – 2006,
               </p>
             </div>
 
@@ -1660,24 +1660,33 @@ export default function DangKyPage() {
                 <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
                 
                 <p className="text-slate-700 leading-relaxed text-sm md:text-base">
-                  Mới ngày nào chúng ta còn là những cô cậu học trò bỡ ngỡ bước vào mái Trường <strong>THPT Bình Sơn</strong>, nơi lưu giữ biết bao kỷ niệm đẹp của tuổi thanh xuân. Những buổi sáng vội vàng đến lớp, những giờ học đầy ắp tiếng cười, mùa chia tay lưu luyến... tất cả đã trở thành ký ức không thể phai mờ.
+                  Hai mươi năm trước, chúng ta rời mái trường cấp 3 với những ước mơ còn rất non trẻ, những lời hẹn “sẽ gặp lại” tưởng như đơn giản nhưng lại kéo dài đến tận hôm nay.
                 </p>
 
                 <div className="border-l-4 border-primary pl-4 py-1 bg-primary/5 rounded-r-xl">
-                  <h4 className="text-lg font-bold text-primary font-title">Vậy mà đã 20 năm!</h4>
+                  <h4 className="text-lg font-bold text-primary font-title">Hai mươi năm</h4>
                   <p className="text-slate-600 text-sm mt-1">
-                    Hai mươi năm - mỗi người một hành trình, một vị trí, một thành công riêng. Nhưng dù hôm nay ta ở đâu, làm gì, thì ký ức về thầy cô, bạn bè và mái trường xưa vẫn luôn là phần trong trẻo nhất của cuộc đời.
+                    Mỗi người một hành trình, có người thành công nơi đất khách, có người vẫn đang miệt mài giữa những bộn bề cuộc sống thường nhật. Nhưng dù có đi đâu, điều quý giá nhất còn giữ lại được sau năm tháng chính là tình bạn, tình thầy trò và những ký ức không thể nào quên của một thời nông nổi.
                   </p>
                 </div>
 
                 <p className="text-slate-700 leading-relaxed text-sm md:text-base">
-                  Nhân dịp hội ngộ sau 20 năm, Ban Tổ chức phát động chương trình <span className="font-bold text-secondary">"Vòng tay bằng hữu - Tri ân mái trường"</span> với mong muốn ngày trở về không chỉ là cuộc gặp gỡ, mà còn là dịp để chúng ta cùng lan tỏa yêu thương và lòng biết ơn.
+                  Lần tới này, chúng ta sẽ cùng nhau viết lên một hành trình mới trong chương trình <span className="font-bold text-primary">“20 năm - Chuyến tàu Thanh xuân”</span>, đó không chỉ là một buổi họp mặt, mà thực sự trở thành một hành trình đầy cảm xúc, ý nghĩa và lan tỏa nhiều giá trị tốt đẹp. Nên bên cạnh sự đóng góp mức phí cố định để tổ chức ngày sự kiện chính thức, Ban tổ chức trân trọng kêu gọi sự đồng hành và tài trợ từ các anh chị, các bạn đang là chủ cơ sở kinh doanh, điều hành doanh nghiệp, cá nhân các bạn cựu học sinh mong muốn đóng góp nhiều hơn cho hoạt động của khóa.
                 </p>
 
-                <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3">
+                <p className="text-slate-700 leading-relaxed text-sm md:text-base">
+                  Mỗi sự đóng góp, dù lớn hay nhỏ, đều là một phần yêu thương gửi lại cho tuổi trẻ của chính chúng ta. Đó không chỉ là sự hỗ trợ về vật chất, mà còn là cách để mỗi người cùng góp tay viết tiếp tinh thần đoàn kết, sẻ chia và nghĩa tình của khóa 2003 – 2006. Mong rằng trên chuyến tàu trở về lần này, ngoài sự hiện diện đông đủ của bạn bè năm xưa, chúng ta còn có thể cùng nhau góp thêm thật nhiều yêu thương, thật nhiều sẻ chia để chuyến tàu ấy trở thành ký ức đẹp nhất của tuổi trưởng thành.
+                </p>
+
+                <div className="text-slate-800 text-sm md:text-base italic font-medium pt-2">
+                  Trân trọng và thân tình,<br/>
+                  <strong className="text-primary not-italic">Ban Tổ chức Hội khóa 20 năm THPT Bình Sơn 2003–2006</strong>
+                </div>
+
+                <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3 mt-4">
                   <span className="material-symbols-outlined text-emerald-600 mt-0.5 shrink-0">verified_user</span>
                   <p className="text-xs md:text-sm text-emerald-800 font-medium">
-                    Mọi khoản đóng góp sẽ được công khai, minh bạch và sử dụng đúng mục đích.
+                    Ban Tổ chức cam kết mọi nguồn tài trợ sẽ được sử dụng minh bạch, đúng mục đích và công khai rõ ràng.
                   </p>
                 </div>
               </div>
@@ -1695,24 +1704,27 @@ export default function DangKyPage() {
                 <div className="glass-card p-6 rounded-3xl border border-outline-variant/30 bg-surface/50 space-y-4">
                   <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary text-[20px]">contact_support</span>
-                    Ban Tổ chức Hỗ trợ
+                    Liên hệ tài trợ
                   </h4>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm border-b border-slate-100 pb-2">
-                      <span className="text-slate-500 font-medium">Bạn Long (Lớp C7)</span>
-                      <a href="tel:0822010880" className="font-bold text-primary hover:underline flex items-center gap-1">
+                    <div className="flex flex-col text-sm border-b border-slate-100 pb-2">
+                      <span className="text-slate-500 font-medium">Trưởng BTC: Phạm Đức Hiếu (Hiếu C4)</span>
+                      <a href="tel:0972612979" className="font-bold text-primary hover:underline flex items-center gap-1 mt-1">
                         <span className="material-symbols-outlined text-[16px]">call</span>
-                        0822.010.880
+                        0972.612.979
                       </a>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500 font-medium">Bạn Ly (Lớp C3)</span>
-                      <a href="tel:0915245504" className="font-bold text-primary hover:underline flex items-center gap-1">
+                    <div className="flex flex-col text-sm">
+                      <span className="text-slate-500 font-medium">Ban Tài Chính: Phương Thư (Thư C2)</span>
+                      <a href="tel:0962222989" className="font-bold text-primary hover:underline flex items-center gap-1 mt-1">
                         <span className="material-symbols-outlined text-[16px]">call</span>
-                        0915.245.504
+                        0962.222.989
                       </a>
                     </div>
                   </div>
+                  <p className="text-xs text-slate-400 italic mt-2">
+                    * Hoặc liên hệ thành viên Ban liên lạc của lớp mình.
+                  </p>
                 </div>
               </div>
             </div>
@@ -1720,16 +1732,16 @@ export default function DangKyPage() {
             {/* Funding Goals */}
             <div className="space-y-6">
               <div className="text-center">
-                <h3 className="text-2xl font-bold text-slate-800 font-title">Nội Dung Dự Kiến Đóng Góp</h3>
-                <p className="text-sm text-slate-500 mt-2">Các hoạt động và chương trình ý nghĩa của ngày hội khóa</p>
+                <h3 className="text-2xl font-bold text-slate-800 font-title">Nội Dung Dự Kiến</h3>
+                <p className="text-sm text-slate-500 mt-2">Mọi sự đóng góp đều là một phần yêu thương gửi lại cho tuổi trẻ</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { title: 'Học bổng vượt khó', desc: 'Trao học bổng cho học sinh có hoàn cảnh khó khăn tại trường.', icon: 'school', color: 'bg-blue-50 text-blue-600 border-blue-100' },
-                  { title: 'Quà tặng lưu niệm', desc: 'Gửi tặng nhà trường món quà lưu niệm ghi dấu ấn của Khóa 2003-2006 (Khóa 06).', icon: 'card_giftcard', color: 'bg-purple-50 text-purple-600 border-purple-100' },
                   { title: 'Tri ân thầy cô giáo', desc: 'Tri ân các thầy cô giáo cũ đã tận tình dạy dỗ và dìu dắt chúng ta năm xưa.', icon: 'favorite', color: 'bg-rose-50 text-rose-600 border-rose-100' },
-                  { title: 'Hoạt động chung', desc: 'Dự trù chi pháp thăm hỏi các bạn cựu học sinh và hoạt động chung của khóa.', icon: 'groups', color: 'bg-amber-50 text-amber-600 border-amber-100' },
+                  { title: 'Quỹ Khuyến học nhà trường', desc: 'Đóng góp Quỹ Khuyến học của nhà trường để tiếp sức cho học sinh.', icon: 'school', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+                  { title: 'Hỗ trợ bạn bè', desc: 'Hỗ trợ các bạn cùng khóa 2003-2006 có hoàn cảnh khó khăn.', icon: 'diversity_1', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+                  { title: 'Hoạt động bên lề', desc: 'Tổ chức các hoạt động bên lề khác của chương trình hội khóa.', icon: 'festival', color: 'bg-amber-50 text-amber-600 border-amber-100' },
                 ].map((item, idx) => (
                   <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 ${item.color}`}>
