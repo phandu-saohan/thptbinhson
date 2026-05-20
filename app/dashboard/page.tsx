@@ -393,6 +393,33 @@ export default function DashboardPage() {
 
   const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
   const [viewingRegistration, setViewingRegistration] = useState<Registration | null>(null);
+  const [regUploadingId, setRegUploadingId] = useState<string | null>(null);
+  const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
+
+  const handleUploadReceiptInDashboard = async (file: File, regId: string) => {
+    setRegUploadingId(regId);
+    const BUCKET = 'site-assets';
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `receipt-${regId}-${Date.now()}.${ext}`;
+      let uploadResult = await supabase.storage.from(BUCKET).upload(fileName, file, { upsert: true, contentType: file.type });
+      if (uploadResult.error && (uploadResult.error.message.toLowerCase().includes('bucket') || uploadResult.error.message.toLowerCase().includes('not found'))) {
+        const { error: createErr } = await supabase.storage.createBucket(BUCKET, { public: true, allowedMimeTypes: ['image/*'], fileSizeLimit: 10485760 });
+        if (createErr && !createErr.message.toLowerCase().includes('already exists')) throw createErr;
+        uploadResult = await supabase.storage.from(BUCKET).upload(fileName, file, { upsert: true, contentType: file.type });
+      }
+      if (uploadResult.error) throw uploadResult.error;
+      const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(uploadResult.data.path);
+      const { error: updateErr } = await supabase.from('registrations').update({ receipt_url: publicUrl }).eq('id', regId);
+      if (updateErr) throw updateErr;
+      setRegistrations(prev => prev.map(r => r.id === regId ? { ...r, receipt_url: publicUrl } : r));
+      addNotification('✅ Đã upload ảnh chuyển khoản thành công!', 'success');
+    } catch (e: any) {
+      addNotification('❌ Upload thất bại: ' + (e.message || ''), 'warning');
+    } finally {
+      setRegUploadingId(null);
+    }
+  };
 
   const handleSaveRegistration = async (reg: Registration) => {
     const isNew = !reg.id;
@@ -977,15 +1004,15 @@ export default function DashboardPage() {
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-slate-50 sticky top-0 z-10 text-[10px] font-bold text-slate-500 border-b border-slate-100 tracking-wider uppercase">
                       <tr>
-                        <th className="px-6 py-4">Họ và tên</th>
-                        <th className="px-6 py-4">Số điện thoại</th>
-                        <th className="px-6 py-4">Lớp</th>
-                        <th className="px-6 py-4">Tham dự</th>
-                        <th className="px-6 py-4 text-right">Đóng góp</th>
-                        <th className="px-6 py-4 text-center">Biên lai</th>
-                        <th className="px-6 py-4">Kỷ niệm</th>
-                        <th className="px-6 py-4">Ngày đăng ký</th>
-                        <th className="px-6 py-4 text-right">Thao tác</th>
+                        <th className="px-4 py-4">Họ và tên</th>
+                        <th className="px-4 py-4">Số điện thoại</th>
+                        <th className="px-4 py-4">Lớp</th>
+                        <th className="px-4 py-4">Tham dự</th>
+                        <th className="px-4 py-4 text-right">Đóng góp</th>
+                        <th className="px-4 py-4 text-center">Ảnh CK</th>
+                        <th className="px-4 py-4">Kỷ niệm</th>
+                        <th className="px-4 py-4">Ngày đăng ký</th>
+                        <th className="px-4 py-4 text-right">Thao tác</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
@@ -1022,13 +1049,29 @@ export default function DashboardPage() {
                                 : <span className="text-xs text-slate-300 italic">—</span>
                               }
                             </td>
-                            <td className="px-6 py-4 text-center">
-                              {r.receipt_url ? (
-                                <a href={r.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors" title="Xem biên lai">
-                                  <ReceiptText size={18} />
-                                </a>
+                            <td className="px-4 py-3 text-center">
+                              {regUploadingId === r.id ? (
+                                <div className="flex justify-center"><div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
+                              ) : r.receipt_url ? (
+                                <button
+                                  onClick={() => setPreviewReceiptUrl(r.receipt_url!)}
+                                  className="relative inline-block group"
+                                  title="Xem ảnh chuyển khoản"
+                                >
+                                  <img
+                                    src={r.receipt_url}
+                                    alt="Biên lai"
+                                    className="w-10 h-10 object-cover rounded-lg border border-slate-200 group-hover:ring-2 group-hover:ring-blue-400 transition shadow-sm"
+                                  />
+                                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                                    <Check size={9} className="text-white" />
+                                  </span>
+                                </button>
                               ) : (
-                                <span className="text-slate-300 italic">—</span>
+                                <label className="cursor-pointer inline-flex flex-col items-center justify-center w-10 h-10 border-2 border-dashed border-slate-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition group" title="Upload ảnh CK">
+                                  <Upload size={13} className="text-slate-400 group-hover:text-blue-500" />
+                                  <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUploadReceiptInDashboard(e.target.files[0], r.id); }} />
+                                </label>
                               )}
                             </td>
                             <td className="px-6 py-4 text-sm text-slate-500 max-w-[150px] truncate">{r.memory || <span className="italic text-slate-300">—</span>}</td>
@@ -1215,6 +1258,47 @@ export default function DashboardPage() {
                           placeholder="Kỷ niệm đáng nhớ..."
                         />
                       </div>
+                      {/* Upload ảnh chuyển khoản trong modal */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Ảnh chuyển khoản</label>
+                        {editingRegistration.receipt_url ? (
+                          <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                            <button onClick={() => setPreviewReceiptUrl(editingRegistration.receipt_url!)} className="shrink-0">
+                              <img src={editingRegistration.receipt_url} alt="Biên lai" className="w-14 h-14 object-cover rounded-lg border border-emerald-300 shadow-sm hover:ring-2 hover:ring-blue-400 transition" />
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-emerald-700 flex items-center gap-1"><Check size={12} /> Đã có ảnh chuyển khoản</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5 truncate">{editingRegistration.receipt_url}</p>
+                            </div>
+                            <label className="cursor-pointer text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1.5 hover:bg-blue-100 transition whitespace-nowrap">
+                              Đổi ảnh
+                              <input type="file" accept="image/*" className="hidden" onChange={e => {
+                                if (e.target.files?.[0] && editingRegistration.id) {
+                                  handleUploadReceiptInDashboard(e.target.files[0], editingRegistration.id);
+                                } else if (e.target.files?.[0]) {
+                                  // Nếu chưa save reg (id rỗng), tạm lưu preview
+                                  const url = URL.createObjectURL(e.target.files[0]);
+                                  setEditingRegistration({ ...editingRegistration, receipt_url: url });
+                                }
+                              }} />
+                            </label>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
+                            <Upload size={22} className="text-slate-400 group-hover:text-blue-500 mb-1 transition" />
+                            <span className="text-xs text-slate-500 font-medium group-hover:text-blue-600">Tải lên ảnh biên lai / chuyển khoản</span>
+                            <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WebP — tối đa 10MB</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={e => {
+                              if (e.target.files?.[0] && editingRegistration.id) {
+                                handleUploadReceiptInDashboard(e.target.files[0], editingRegistration.id);
+                              } else if (e.target.files?.[0]) {
+                                const url = URL.createObjectURL(e.target.files[0]);
+                                setEditingRegistration({ ...editingRegistration, receipt_url: url });
+                              }
+                            }} />
+                          </label>
+                        )}
+                      </div>
                     </div>
                     <div className="p-6 pt-4 flex justify-end gap-3 border-t border-slate-100">
                       <button
@@ -1235,6 +1319,36 @@ export default function DashboardPage() {
                         {editingRegistration.id ? 'Lưu thay đổi' : 'Thêm đăng ký'}
                       </button>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Lightbox xem ảnh chuyển khoản */}
+              {previewReceiptUrl && (
+                <div
+                  className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+                  onClick={() => setPreviewReceiptUrl(null)}
+                >
+                  <div className="relative max-w-2xl w-full" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => setPreviewReceiptUrl(null)}
+                      className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1 text-sm font-medium"
+                    >
+                      <X size={18} /> Đóng
+                    </button>
+                    <img
+                      src={previewReceiptUrl}
+                      alt="Ảnh chuyển khoản"
+                      className="w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-white/20"
+                    />
+                    <a
+                      href={previewReceiptUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 flex items-center justify-center gap-2 text-white/60 hover:text-white text-xs font-medium transition"
+                    >
+                      <Upload size={13} className="rotate-180" /> Mở ảnh gốc
+                    </a>
                   </div>
                 </div>
               )}
