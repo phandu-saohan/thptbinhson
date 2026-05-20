@@ -575,7 +575,7 @@ export default function DangKyPage() {
   const [sponsorFormData, setSponsorFormData] = useState({ name: '', phone: '', message: '', classC: '', classB: '' });
   const [sponsorReceiptFile, setSponsorReceiptFile] = useState<File | null>(null);
   const [sponsorReceiptPreview, setSponsorReceiptPreview] = useState<string | null>(null);
-  const [sponsorDonationAmount, setSponsorDonationAmount] = useState('2000000');
+  const [sponsorDonationAmount, setSponsorDonationAmount] = useState('1000000');
   const [sponsorSubmitted, setSponsorSubmitted] = useState(false);
   const [sponsorAiScanning, setSponsorAiScanning] = useState(false);
   const sponsorFileInputRef = useRef<HTMLInputElement>(null);
@@ -598,9 +598,9 @@ export default function DangKyPage() {
   const [letterOpening, setLetterOpening] = useState('Gửi những người bạn đã đi cùng nhau một đoạn thanh xuân,');
   const [bankName, setBankName] = useState('Ngân hàng Techcombank');
   const [bankAccount, setBankAccount] = useState('1902 3345 8880 12');
-  const [bankHolder, setBankHolder] = useState('LE QUOC HUY');
-  const [bankId2, setBankId2] = useState('TCB');
-  const [bankNo2, setBankNo2] = useState('19023345888012');
+  const [bankHolder, setBankHolder] = useState('NGUYEN THI PHUONG THU');
+  const [bankId2, setBankId2] = useState('VCB');
+  const [bankNo2, setBankNo2] = useState('7962222989');
   const [donationAmount, setDonationAmount] = useState('1000000');
 
 
