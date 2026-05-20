@@ -729,6 +729,7 @@ export default function DangKyPage() {
 
       // 2.5 Kiểm tra và tạo dòng bên bảng sponsors nếu tiền >= 2tr
       if (donatedAmount >= 2000000) {
+        const sponsorAmount = donatedAmount - 1000000;
         // Kiểm tra xem đã có bên sponsors chưa để upsert (tránh trùng)
         const { data: existingSponsor } = await supabase
           .from('sponsors')
@@ -741,7 +742,7 @@ export default function DangKyPage() {
             name: formData.name,
             class_c: formData.classC,
             class_b: formData.classB,
-            amount: donatedAmount,
+            amount: sponsorAmount,
             receipt_url: uploadedReceiptUrl,
             source: 'registration'
           }).eq('id', existingSponsor.id);
@@ -751,7 +752,7 @@ export default function DangKyPage() {
             class_c: formData.classC,
             class_b: formData.classB,
             phone: formData.phone,
-            amount: donatedAmount,
+            amount: sponsorAmount,
             receipt_url: uploadedReceiptUrl,
             source: 'registration'
           }]);
