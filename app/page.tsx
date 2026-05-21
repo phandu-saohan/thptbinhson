@@ -587,6 +587,14 @@ export default function DangKyPage() {
 
 
   useEffect(() => {
+    // Check URL hash for direct tab linking
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash.replace('#', '');
+      if (['home', 'plan', 'finance', 'sponsor', 'ticket', 'memories'].includes(hash)) {
+        setActiveTab(hash as any);
+      }
+    }
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > window.innerHeight * 0.5);
     };

@@ -18,6 +18,7 @@ interface Registration {
   class_b?: string;
   will_attend: string;
   memory?: string;
+  note?: string;
   amount?: number;
   receipt_url?: string;
   source?: string;
@@ -472,6 +473,7 @@ export default function DashboardPage() {
       class_b: reg.class_b || '',
       will_attend: reg.will_attend,
       memory: reg.memory || '',
+      note: reg.note || '',
       amount: reg.amount || 0,
     };
     if (!isNew) {
@@ -538,6 +540,7 @@ export default function DashboardPage() {
       class_c: reg.class_c || '',
       class_b: reg.class_b || '',
       amount: reg.amount || 0,
+      note: reg.note || '',
       source: reg.source || 'admin',
     };
     if (!isNew) {
@@ -1627,6 +1630,7 @@ export default function DashboardPage() {
                             <th className="px-4 py-4">Lớp</th>
                             <th className="px-4 py-4 text-right">Số tiền tài trợ</th>
                             <th className="px-4 py-4 text-center">Nguồn</th>
+                            <th className="px-4 py-4 text-center">Ghi chú</th>
                             <th className="px-4 py-4 text-center">Biên lai</th>
                             <th className="px-4 py-4">Ngày đóng góp</th>
                             <th className="px-4 py-4 text-right">Thao tác</th>
@@ -1660,6 +1664,15 @@ export default function DashboardPage() {
                                   ? <span className="text-[10px] px-2.5 py-1 bg-amber-50 text-amber-700 rounded-md border border-amber-200 font-bold whitespace-nowrap">Form Tài trợ</span>
                                   : <span className="text-[10px] px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 font-bold whitespace-nowrap">Đăng ký tham dự</span>
                                 }
+                              </td>
+                              <td className="px-6 py-4">
+                                {r.note ? (
+                                  <div className="text-[11px] text-slate-500 whitespace-pre-wrap max-w-[150px] leading-snug">
+                                    {r.note}
+                                  </div>
+                                ) : (
+                                  <span className="italic text-slate-300 text-xs">—</span>
+                                )}
                               </td>
                               <td className="px-4 py-3 text-center">
                                 {regUploadingId === r.id ? (
@@ -1809,6 +1822,15 @@ export default function DashboardPage() {
                             <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Đóng góp (VNĐ)</label>
                             <input type="number" value={editingRegistration.amount || 0} onChange={e => setEditingRegistration({ ...editingRegistration, amount: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none" />
                           </div>
+                        </div>
+                        <div className="mt-4">
+                          <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Ghi chú luồng tiền</label>
+                          <textarea 
+                            value={editingRegistration.note || ''} 
+                            onChange={e => setEditingRegistration({ ...editingRegistration, note: e.target.value })} 
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none h-20 resize-none"
+                            placeholder="Ghi chú thêm thông tin luồng tiền, lịch sử tài trợ..."
+                          />
                         </div>
                       </div>
                       <div className="p-6 pt-4 flex justify-end gap-3 border-t border-slate-100">
