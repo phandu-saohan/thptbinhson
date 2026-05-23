@@ -16,6 +16,7 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
   const [searchQuery, setSearchQuery] = React.useState('');
   const [classCFilter, setClassCFilter] = React.useState('');
   const [classBFilter, setClassBFilter] = React.useState('');
+  const [attendanceFilter, setAttendanceFilter] = React.useState('');
 
 
   React.useEffect(() => {
@@ -49,7 +50,8 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
                           (t.memory && t.memory.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesClassC = classCFilter === '' || classC === classCFilter;
     const matchesClassB = classBFilter === '' || classB === classBFilter;
-    return matchesSearch && matchesClassC && matchesClassB;
+    const matchesAttendance = attendanceFilter === '' || t.will_attend === attendanceFilter;
+    return matchesSearch && matchesClassC && matchesClassB && matchesAttendance;
   });
 
   const attending = incomes.filter(r => r.will_attend === 'yes').length;
@@ -106,6 +108,15 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
             {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
               <option key={cls} value={cls}>{cls}</option>
             ))}
+          </select>
+          <select
+            value={attendanceFilter}
+            onChange={(e) => setAttendanceFilter(e.target.value)}
+            className="w-full md:w-32 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm appearance-none cursor-pointer"
+          >
+            <option value="">Tham dự (Tất cả)</option>
+            <option value="yes">Sẽ về</option>
+            <option value="no">Vắng</option>
           </select>
         </div>
       </div>

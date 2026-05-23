@@ -130,6 +130,7 @@ export default function DashboardPage() {
   // Registrations
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [regSearch, setRegSearch] = useState('');
+  const [regAttendanceFilter, setRegAttendanceFilter] = useState('');
   
   // Sponsors
   const [sponsors, setSponsors] = useState<Registration[]>([]);
@@ -1092,6 +1093,15 @@ export default function DashboardPage() {
                         className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 xl:w-64"
                       />
                     </div>
+                    <select
+                      value={regAttendanceFilter}
+                      onChange={e => setRegAttendanceFilter(e.target.value)}
+                      className="px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      <option value="">Trạng thái (Tất cả)</option>
+                      <option value="yes">Có về ✓</option>
+                      <option value="no">Vắng</option>
+                    </select>
                     <div className="flex gap-2">
                       <button
                         onClick={handleExportRegistrations}
@@ -1132,7 +1142,9 @@ export default function DashboardPage() {
                       {registrations
                         .filter(r => {
                           const q = regSearch.toLowerCase();
-                          return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+                          const matchesSearch = r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+                          const matchesAttendance = regAttendanceFilter === '' || r.will_attend === regAttendanceFilter;
+                          return matchesSearch && matchesAttendance;
                         })
                         .map(r => (
                           <tr key={r.id} className="hover:bg-slate-50/80 transition-colors group">
@@ -1214,7 +1226,9 @@ export default function DashboardPage() {
                    {registrations
                      .filter(r => {
                        const q = regSearch.toLowerCase();
-                       return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+                       const matchesSearch = r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+                       const matchesAttendance = regAttendanceFilter === '' || r.will_attend === regAttendanceFilter;
+                       return matchesSearch && matchesAttendance;
                      })
                      .map(r => (
                        <div key={r.id} className="p-4 space-y-3 bg-white active:bg-slate-50 transition-colors">
@@ -1751,6 +1765,7 @@ export default function DashboardPage() {
                       {filteredSponsors.map((r, index) => (
                         <div key={r.id} className="p-4 space-y-3 bg-white active:bg-amber-50/30 transition-colors">
                           <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-3">
                               <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-black text-xs flex items-center justify-center shrink-0">{index + 1}</div>
                               <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 font-bold text-sm shrink-0">
                                 {r.name.charAt(0).toUpperCase()}
