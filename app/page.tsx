@@ -181,7 +181,7 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
                           ? (
                             <div className="flex flex-col items-end gap-1">
                               <span className="font-extrabold text-emerald-600 text-sm sm:text-base">Tổng đóng góp: {r.amount.toLocaleString('vi-VN')}đ</span>
-                              <span className="text-[10px] text-slate-500">Đăng ký tham dự: 1.000.000đ</span>
+                              <span className="text-[10px] text-slate-500">Đăng ký tham dự: {Math.min(r.amount, 1000000).toLocaleString('vi-VN')}đ</span>
                               {(r.amount - 1000000) > 0 && (
                                 <span className="text-xs sm:text-sm font-bold text-amber-600">Đóng góp thêm: {(r.amount - 1000000).toLocaleString('vi-VN')}đ</span>
                               )}
@@ -258,7 +258,7 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
                           <div className="h-[1px] bg-slate-200/60 border-dashed" />
                           <div className="flex justify-between items-center">
                             <span className="text-[10px] text-slate-400">Đăng ký tham dự:</span>
-                            <span className="text-[10px] text-slate-500 font-medium">1.000.000đ</span>
+                            <span className="text-[10px] text-slate-500 font-medium">{Math.min(r.amount, 1000000).toLocaleString('vi-VN')}đ</span>
                           </div>
                           {(r.amount - 1000000) > 0 && (
                             <div className="flex justify-between items-center bg-amber-50/50 p-1 px-1.5 rounded-lg border border-amber-100/50">
