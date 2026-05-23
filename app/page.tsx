@@ -167,7 +167,15 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
                       </td>
                       <td className="px-6 py-3 text-right">
                         {r.amount && r.amount > 0
-                          ? <span className="font-bold text-emerald-600 text-sm">+{r.amount.toLocaleString('vi-VN')}đ</span>
+                          ? (
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="font-extrabold text-emerald-600 text-sm sm:text-base">Tổng đóng góp: {r.amount.toLocaleString('vi-VN')}đ</span>
+                              <span className="text-[10px] text-slate-500">Đăng ký tham dự: 1.000.000đ</span>
+                              {(r.amount - 1000000) > 0 && (
+                                <span className="text-xs sm:text-sm font-bold text-amber-600">Đóng góp thêm: {(r.amount - 1000000).toLocaleString('vi-VN')}đ</span>
+                              )}
+                            </div>
+                          )
                           : <span className="text-slate-300 text-sm">—</span>
                         }
                       </td>
@@ -191,39 +199,77 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
                   return (
                     <div key={idx} className="p-4 hover:bg-slate-50 transition-colors">
                       <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0 mt-1">
                             {cleanName.charAt(0).toUpperCase()}
                           </div>
-                          <div className="min-w-0">
-                            <p className="font-bold text-slate-800 text-sm truncate">{cleanName}</p>
-                            <p className="text-[10px] text-slate-500 font-medium">
-                              {classC ? `Lớp C: ${classC}` : ''} {classC && classB ? '•' : ''} {classB ? `Lớp B: ${classB}` : ''}
-                              {!classC && !classB ? 'Hành khách' : ''}
-                            </p>
-                            {r.memory && (
-                              <p 
-                                className="mt-1 text-[11px] text-slate-600 line-clamp-2 italic cursor-pointer hover:text-primary transition-colors leading-relaxed"
-                                onClick={() => onSelectMemory({ name: cleanName, memory: r.memory! })}
-                              >
-                                "{r.memory}"
-                              </p>
-                            )}
+                          <div className="min-w-0 flex flex-col items-start gap-1">
+                            <p className="font-extrabold text-slate-800 text-base">{cleanName}</p>
+                            <div className="flex items-center gap-2">
+                              {r.will_attend === 'yes'
+                                ? <span className="text-[9px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase tracking-wider inline-block">Sẽ về</span>
+                                : <span className="text-[9px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold uppercase tracking-wider inline-block">Vắng</span>
+                              }
+                              <span className="text-[9px] text-slate-400">
+                                {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' })}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1 shrink-0">
-                          {r.amount && r.amount > 0 && (
-                            <p className="font-bold text-emerald-600 text-sm mb-1">+{r.amount.toLocaleString('vi-VN')}đ</p>
+
+                        {/* Class badges aligned to the far right */}
+                        <div className="flex flex-col gap-0.5 items-end shrink-0 ml-2 mt-1">
+                          {classC && (
+                            <span className="text-[9px] leading-none bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                              Lớp C: {classC}
+                            </span>
                           )}
-                          {r.will_attend === 'yes'
-                            ? <span className="text-[9px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase tracking-wider">Sẽ về</span>
-                            : <span className="text-[9px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold uppercase tracking-wider">Vắng</span>
-                          }
-                          <span className="text-[10px] text-slate-400">
-                            {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' })}
-                          </span>
+                          {classB && (
+                            <span className="text-[9px] leading-none bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                              Lớp B: {classB}
+                            </span>
+                          )}
+                          {!classC && !classB && (
+                            <span className="text-[9px] leading-none bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                              Hành khách
+                            </span>
+                          )}
                         </div>
                       </div>
+
+                      {/* Financial info block below profile details - Optimized for Mobile */}
+                      {r.amount && r.amount > 0 ? (
+                        <div className="mt-2.5 p-2.5 bg-slate-50/80 rounded-xl border border-slate-100 flex flex-col gap-1.5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[11px] text-slate-500 font-medium">Tổng đóng góp:</span>
+                            <span className="font-extrabold text-emerald-600 text-sm sm:text-base">{r.amount.toLocaleString('vi-VN')}đ</span>
+                          </div>
+                          <div className="h-[1px] bg-slate-200/60 border-dashed" />
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-slate-400">Đăng ký tham dự:</span>
+                            <span className="text-[10px] text-slate-500 font-medium">1.000.000đ</span>
+                          </div>
+                          {(r.amount - 1000000) > 0 && (
+                            <div className="flex justify-between items-center bg-amber-50/50 p-1 px-1.5 rounded-lg border border-amber-100/50">
+                              <span className="text-[10px] text-amber-700 font-medium">Đóng góp thêm:</span>
+                              <span className="text-xs sm:text-sm font-bold text-amber-600">{(r.amount - 1000000).toLocaleString('vi-VN')}đ</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-slate-300 text-[10px] sm:text-xs">— Không có đóng góp —</div>
+                      )}
+
+                      {r.memory && (
+                        <div className="mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100/50">
+                          <p 
+                            className="text-[11px] text-slate-600 italic cursor-pointer hover:text-primary transition-colors leading-relaxed"
+                            onClick={() => onSelectMemory({ name: cleanName, memory: r.memory! })}
+                          >
+                            "{r.memory}"
+                          </p>
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -562,6 +608,42 @@ export default function DangKyPage() {
   const [sponsorAiScanning, setSponsorAiScanning] = useState(false);
   const sponsorFileInputRef = useRef<HTMLInputElement>(null);
 
+  // List of registered members for dropdown in Sponsor form
+  const [registeredList, setRegisteredList] = useState<{ id: string; name: string; phone: string; class_c?: string; class_b?: string }[]>([]);
+  const [sponsorSearchQuery, setSponsorSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchRegistered = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('registrations')
+          .select('id, name, phone, class_c, class_b')
+          .order('name', { ascending: true });
+        if (!error && data) {
+          setRegisteredList(data);
+        }
+      } catch (err) {
+        console.error('Error fetching registered members:', err);
+      }
+    };
+    fetchRegistered();
+  }, [activeTab]);
+
+  // Click outside to close custom searchable dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // Appearance State — Media
   const [logoImage, setLogoImage] = useState('/logo.png');
   const [heroVideo, setHeroVideo] = useState('https://assets.mixkit.co/videos/preview/mixkit-sun-shining-through-the-leaves-of-a-tree-in-the-8238-large.mp4');
@@ -716,7 +798,9 @@ export default function DangKyPage() {
              will_attend: formData.willAttend,
              memory: formData.memory,
              amount: donatedAmount > 0 ? donatedAmount : existingReg.amount,
-             receipt_url: uploadedReceiptUrl || existingReg.receipt_url
+             receipt_url: uploadedReceiptUrl || existingReg.receipt_url,
+             donation_amount: donatedAmount > 0 ? Math.max(0, donatedAmount - 1000000) : Math.max(0, (existingReg.amount || 0) - 1000000),
+             donation_receipt_url: uploadedReceiptUrl || existingReg.receipt_url
            })
            .eq('id', existingReg.id);
          if (updateErr) throw updateErr;
@@ -730,7 +814,9 @@ export default function DangKyPage() {
            will_attend: formData.willAttend,
            memory: formData.memory,
            amount: donatedAmount,
-           receipt_url: uploadedReceiptUrl
+           receipt_url: uploadedReceiptUrl,
+           donation_amount: Math.max(0, donatedAmount - 1000000),
+           donation_receipt_url: uploadedReceiptUrl
          }]);
          if (regError) throw regError;
       }
@@ -880,6 +966,32 @@ export default function DangKyPage() {
            source: 'sponsor_form'
          }]);
          if (regError) throw regError;
+      }
+
+      // Cập nhật bảng registrations (Số tiền đóng góp cộng dồn và Hình chuyển khoản)
+      const { data: existingReg } = await supabase
+        .from('registrations')
+        .select('id, amount, donation_amount, donation_receipt_url')
+        .eq('phone', sponsorFormData.phone)
+        .eq('name', sponsorFormData.name)
+        .maybeSingle();
+
+      if (existingReg) {
+         const currentAmount = existingReg.amount || 0;
+         const currentDonation = existingReg.donation_amount || 0;
+         
+         const newDonation = currentDonation + donatedAmount;
+         const newAmount = currentAmount + donatedAmount;
+
+         const { error: updateRegErr } = await supabase
+           .from('registrations')
+           .update({ 
+             donation_amount: newDonation,
+             donation_receipt_url: uploadedReceiptUrl || existingReg.donation_receipt_url,
+             amount: newAmount
+           })
+           .eq('id', existingReg.id);
+         if (updateRegErr) throw updateRegErr;
       }
 
       // 3. Ghi nhận khoản thu
@@ -1851,60 +1963,138 @@ export default function DangKyPage() {
                     </h4>
                     
                     <div className="space-y-4">
-                      <div>
-                        <label htmlFor="sponsor-name" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Họ và tên *</label>
-                        <input
-                          type="text"
-                          id="sponsor-name"
-                          required
-                          value={sponsorFormData.name}
-                          onChange={(e) => setSponsorFormData({...sponsorFormData, name: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body placeholder-slate-400"
-                          placeholder="VD: Nguyễn Văn A"
-                        />
+                      <div className="relative" ref={dropdownRef}>
+                        <label htmlFor="sponsor-search-input" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Họ và tên (Tìm và chọn thành viên đã đăng ký) *</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none material-symbols-outlined text-slate-400 text-[20px]">search</span>
+                          <input
+                            type="text"
+                            id="sponsor-search-input"
+                            placeholder="Nhập tên hoặc lớp để tìm kiếm..."
+                            value={sponsorSearchQuery}
+                            onFocus={() => {
+                              setIsDropdownOpen(true);
+                              if (sponsorFormData.name) {
+                                setSponsorSearchQuery(sponsorFormData.name);
+                              }
+                            }}
+                            onChange={(e) => {
+                              setSponsorSearchQuery(e.target.value);
+                              setIsDropdownOpen(true);
+                            }}
+                            className="w-full pl-11 pr-10 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body placeholder-slate-400 font-bold text-sm"
+                          />
+                          {sponsorFormData.name && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSponsorFormData({
+                                  ...sponsorFormData,
+                                  name: '',
+                                  phone: '',
+                                  classC: '',
+                                  classB: ''
+                                });
+                                setSponsorSearchQuery('');
+                                setIsDropdownOpen(false);
+                              }}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 transition-colors p-1"
+                              title="Xóa lựa chọn"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">close</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Floating Dropdown List */}
+                        {isDropdownOpen && (
+                          <div className="absolute z-30 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white rounded-xl border border-slate-200 shadow-xl divide-y divide-slate-50">
+                            {(() => {
+                              const query = sponsorSearchQuery.toLowerCase().trim();
+                              const filtered = registeredList.filter(r => {
+                                const nameMatch = r.name.toLowerCase().includes(query);
+                                const phoneMatch = r.phone && r.phone.includes(query);
+                                const classCMatch = r.class_c && r.class_c.toLowerCase().includes(query);
+                                const classBMatch = r.class_b && r.class_b.toLowerCase().includes(query);
+                                return nameMatch || phoneMatch || classCMatch || classBMatch;
+                              });
+
+                              if (filtered.length === 0) {
+                                return (
+                                  <div className="p-4 text-center text-xs text-slate-400 font-medium">
+                                    Không tìm thấy thành viên nào trùng khớp
+                                  </div>
+                                );
+                              }
+
+                              return filtered.map((r, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => {
+                                    setSponsorFormData({
+                                      ...sponsorFormData,
+                                      name: r.name,
+                                      phone: r.phone,
+                                      classC: r.class_c || '',
+                                      classB: r.class_b || ''
+                                    });
+                                    setSponsorSearchQuery(r.name);
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-between gap-3"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-slate-800 text-sm leading-snug">{r.name}</p>
+                                    <p className="text-[10px] text-slate-400 font-mono mt-0.5">{r.phone ? `${r.phone.slice(0,4)}***${r.phone.slice(-3)}` : ''}</p>
+                                  </div>
+                                  <div className="flex flex-col gap-0.5 items-end shrink-0">
+                                    {r.class_c && (
+                                      <span className="text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100/50 px-1.5 py-0.5 rounded leading-none">
+                                        Lớp C: {r.class_c}
+                                      </span>
+                                    )}
+                                    {r.class_b && (
+                                      <span className="text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100/50 px-1.5 py-0.5 rounded leading-none">
+                                        Lớp B: {r.class_b}
+                                      </span>
+                                    )}
+                                  </div>
+                                </button>
+                              ));
+                            })()}
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="sponsor-classC" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Lớp C</label>
-                          <select
-                            id="sponsor-classC"
-                            value={sponsorFormData.classC}
-                            onChange={(e) => setSponsorFormData({...sponsorFormData, classC: e.target.value})}
-                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body cursor-pointer appearance-none"
-                          >
-                            <option value="">Chọn lớp</option>
-                            {Array.from({ length: 13 }, (_, i) => `C${i + 1}`).map(cls => (
-                              <option key={cls} value={cls}>{cls}</option>
-                            ))}
-                          </select>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Lớp C (Tự động)</label>
+                          <input
+                            type="text"
+                            disabled
+                            value={sponsorFormData.classC || '—'}
+                            className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 font-body cursor-not-allowed font-bold"
+                          />
                         </div>
                         <div>
-                          <label htmlFor="sponsor-classB" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Lớp B</label>
-                          <select
-                            id="sponsor-classB"
-                            value={sponsorFormData.classB}
-                            onChange={(e) => setSponsorFormData({...sponsorFormData, classB: e.target.value})}
-                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body cursor-pointer appearance-none"
-                          >
-                            <option value="">Chọn lớp</option>
-                            {Array.from({ length: 15 }, (_, i) => `B${i + 1}`).map(cls => (
-                              <option key={cls} value={cls}>{cls}</option>
-                            ))}
-                          </select>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Lớp B (Tự động)</label>
+                          <input
+                            type="text"
+                            disabled
+                            value={sponsorFormData.classB || '—'}
+                            className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 font-body cursor-not-allowed font-bold"
+                          />
                         </div>
                       </div>
 
                       <div>
-                        <label htmlFor="sponsor-phone" className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Số điện thoại *</label>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Số điện thoại (Tự động)</label>
                         <input
-                          type="tel"
-                          id="sponsor-phone"
-                          required
-                          value={sponsorFormData.phone}
-                          onChange={(e) => setSponsorFormData({...sponsorFormData, phone: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-slate-800 font-body placeholder-slate-400"
-                          placeholder="VD: 0912 345 678"
+                          type="text"
+                          disabled
+                          value={sponsorFormData.phone ? `${sponsorFormData.phone.slice(0,4)}***${sponsorFormData.phone.slice(-3)}` : '—'}
+                          className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 font-body cursor-not-allowed font-bold"
                         />
                       </div>
 

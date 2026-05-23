@@ -1157,10 +1157,15 @@ export default function DashboardPage() {
                               }
                             </td>
                             <td className="px-6 py-4 text-right">
-                              {r.amount && r.amount > 0
-                                ? <span className="text-sm font-black text-emerald-700 whitespace-nowrap">+{r.amount.toLocaleString('vi-VN')}đ</span>
-                                : <span className="text-xs text-slate-300 italic">—</span>
-                              }
+                              {r.amount && r.amount > 0 ? (
+                                <div className="flex flex-col items-end gap-1">
+                                  <span className="text-sm sm:text-base font-black text-emerald-700 whitespace-nowrap">Tổng đóng góp: {r.amount.toLocaleString('vi-VN')}đ</span>
+                                  <span className="text-[10px] text-slate-500 whitespace-nowrap">Đăng ký tham dự: 1.000.000đ</span>
+                                  {(r.amount - 1000000) > 0 && (
+                                    <span className="text-xs sm:text-sm font-bold text-amber-600 whitespace-nowrap">Đóng góp thêm: {(r.amount - 1000000).toLocaleString('vi-VN')}đ</span>
+                                  )}
+                                </div>
+                              ) : <span className="text-xs text-slate-300 italic">—</span>}
                             </td>
                             <td className="px-4 py-3 text-center">
                               {regUploadingId === r.id ? (
@@ -1204,55 +1209,82 @@ export default function DashboardPage() {
                   </table>
                 </div>
 
-                {/* Mobile List View */}
-                <div className="md:hidden divide-y divide-slate-100">
-                  {registrations
-                    .filter(r => {
-                      const q = regSearch.toLowerCase();
-                      return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
-                    })
-                    .map(r => (
-                      <div key={r.id} className="p-4 space-y-3 bg-white active:bg-slate-50 transition-colors">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-sm shrink-0">
-                              {r.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="font-bold text-slate-900 text-sm leading-snug">{r.name}</p>
-                              <p className="text-xs text-slate-500 font-mono mt-0.5">{r.phone}</p>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end gap-1.5">
-                            {r.will_attend === 'yes'
-                              ? <span className="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-bold uppercase">Có về ✓</span>
-                              : <span className="text-[9px] px-2 py-0.5 bg-rose-50 text-rose-600 rounded border border-rose-100 font-bold uppercase">Vắng</span>
-                            }
-                            {r.amount && r.amount > 0 && (
-                              <span className="text-xs font-black text-emerald-600">+{r.amount.toLocaleString('vi-VN')}đ</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs py-2 px-3 bg-slate-50 rounded-lg">
-                           <div className="flex gap-4">
-                              <div className="flex flex-col">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Lớp C</span>
-                                <span className="font-bold text-blue-600">{r.class_c || '—'}</span>
-                              </div>
-                              <div className="flex flex-col border-l border-slate-200 pl-4">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Lớp B</span>
-                                <span className="font-semibold text-slate-600">{r.class_b || '—'}</span>
-                              </div>
+                 {/* Mobile List View */}
+                 <div className="md:hidden divide-y divide-slate-100">
+                   {registrations
+                     .filter(r => {
+                       const q = regSearch.toLowerCase();
+                       return r.name.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q);
+                     })
+                     .map(r => (
+                       <div key={r.id} className="p-4 space-y-3 bg-white active:bg-slate-50 transition-colors">
+                         <div className="flex items-start justify-between gap-3">
+                           <div className="flex items-start gap-3 min-w-0">
+                             <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-sm shrink-0 mt-0.5">
+                               {r.name.charAt(0).toUpperCase()}
+                             </div>
+                             <div className="flex flex-col gap-1 min-w-0">
+                               <p className="font-extrabold text-slate-900 text-base leading-snug">{r.name}</p>
+                               <div className="flex items-center gap-2 flex-wrap">
+                                 <p className="text-xs text-slate-500 font-mono">{r.phone}</p>
+                                 {r.will_attend === 'yes'
+                                   ? <span className="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-bold uppercase">Có về ✓</span>
+                                   : <span className="text-[9px] px-2 py-0.5 bg-rose-50 text-rose-600 rounded border border-rose-100 font-bold uppercase">Vắng</span>
+                                 }
+                               </div>
+                             </div>
                            </div>
-                           <div className="flex items-center gap-2">
+                           
+                           {/* Class badges & Receipt aligned to the far right */}
+                           <div className="flex flex-col gap-1 items-end shrink-0 ml-2">
+                             <div className="flex flex-col gap-0.5 items-end">
+                               {r.class_c && (
+                                 <span className="text-[9px] leading-none bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                                   Lớp C: {r.class_c}
+                                 </span>
+                                )}
+                               {r.class_b && (
+                                 <span className="text-[9px] leading-none bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                                   Lớp B: {r.class_b}
+                                 </span>
+                                )}
+                               {!r.class_c && !r.class_b && (
+                                 <span className="text-[9px] leading-none bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                                   Hành khách
+                                 </span>
+                                )}
+                             </div>
                              {r.receipt_url && (
-                               <a href={r.receipt_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
-                                 <ReceiptText size={16} />
+                               <a href={r.receipt_url} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 inline-block mt-0.5">
+                                 <ReceiptText size={14} />
                                </a>
                              )}
                            </div>
-                        </div>
+                         </div>
+
+                         {/* Financial info block below profile details - Optimized for Mobile */}
+                         {r.amount && r.amount > 0 ? (
+                           <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-100 flex flex-col gap-1.5">
+                             <div className="flex justify-between items-center">
+                               <span className="text-[11px] text-slate-500 font-medium">Tổng đóng góp:</span>
+                               <span className="font-extrabold text-emerald-600 text-sm sm:text-base">{r.amount.toLocaleString('vi-VN')}đ</span>
+                             </div>
+                             <div className="h-[1px] bg-slate-200/60 border-dashed" />
+                             <div className="flex justify-between items-center">
+                               <span className="text-[10px] text-slate-400">Đăng ký tham dự:</span>
+                               <span className="text-[10px] text-slate-500 font-medium">1.000.000đ</span>
+                             </div>
+                             {(r.amount - 1000000) > 0 && (
+                               <div className="flex justify-between items-center bg-amber-50/50 p-1 px-1.5 rounded-lg border border-amber-100/50">
+                                 <span className="text-[10px] text-amber-700 font-medium">Đóng góp thêm:</span>
+                                 <span className="text-xs sm:text-sm font-bold text-amber-600">{(r.amount - 1000000).toLocaleString('vi-VN')}đ</span>
+                               </div>
+                             )}
+                           </div>
+                         ) : (
+                           <div className="text-slate-300 text-[10px] sm:text-xs italic">— Không có đóng góp —</div>
+                         )}
+
 
                         <div className="flex items-center justify-end gap-2 pt-1">
                           <button onClick={() => setViewingRegistration(r)} className="flex-1 py-2 bg-slate-50 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 flex items-center justify-center gap-1.5">
@@ -1719,7 +1751,6 @@ export default function DashboardPage() {
                       {filteredSponsors.map((r, index) => (
                         <div key={r.id} className="p-4 space-y-3 bg-white active:bg-amber-50/30 transition-colors">
                           <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-black text-xs flex items-center justify-center shrink-0">{index + 1}</div>
                               <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 font-bold text-sm shrink-0">
                                 {r.name.charAt(0).toUpperCase()}
