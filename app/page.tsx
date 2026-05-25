@@ -628,6 +628,18 @@ export default function DangKyPage() {
     // Direct link to "Mong ước kỷ niệm xưa" direct MP3
     const audio = new Audio("https://cldup.com/8ogyw5uhR6.mp3");
     audio.loop = true;
+
+    // Bỏ qua nhạc dạo (Intro), bắt đầu từ giây thứ 26 ngay khi ca sĩ cất lời hát
+    const handleMetadata = () => {
+      audio.currentTime = 26;
+    };
+
+    if (audio.readyState >= 1) {
+      handleMetadata();
+    } else {
+      audio.addEventListener('loadedmetadata', handleMetadata);
+    }
+
     audioRef.current = audio;
 
     const playAudio = () => {
@@ -649,23 +661,33 @@ export default function DangKyPage() {
     };
     audio.addEventListener('canplaythrough', handleCanPlay);
 
-    // Also trigger play on the first user interaction anywhere on the screen
+    // Also trigger play on the first user interaction anywhere on the screen (including scrolling or moving mouse)
     const handleFirstInteraction = () => {
       if (audio.paused) {
         playAudio();
       }
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('touchstart', handleFirstInteraction);
+      document.removeEventListener('scroll', handleFirstInteraction);
+      document.removeEventListener('mousemove', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
     };
 
     document.addEventListener('click', handleFirstInteraction);
     document.addEventListener('touchstart', handleFirstInteraction);
+    document.addEventListener('scroll', handleFirstInteraction);
+    document.addEventListener('mousemove', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
 
     return () => {
       audio.pause();
       audio.removeEventListener('canplaythrough', handleCanPlay);
+      audio.removeEventListener('loadedmetadata', handleMetadata);
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('touchstart', handleFirstInteraction);
+      document.removeEventListener('scroll', handleFirstInteraction);
+      document.removeEventListener('mousemove', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
     };
   }, []);
 
