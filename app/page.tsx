@@ -628,6 +628,7 @@ export default function DangKyPage() {
     // Direct link to "Mong ước kỷ niệm xưa" direct MP3
     const audio = new Audio("https://cldup.com/8ogyw5uhR6.mp3");
     audio.loop = true;
+    audio.muted = true; // Bắt đầu ở chế độ MUTED để trình duyệt luôn cho phép tự động chạy (autoplay)
 
     // Bỏ qua nhạc dạo (Intro), bắt đầu từ giây thứ 18 ngay khi ca sĩ cất lời hát
     const handleMetadata = () => {
@@ -642,52 +643,47 @@ export default function DangKyPage() {
 
     audioRef.current = audio;
 
-    const playAudio = () => {
-      audio.play()
-        .then(() => {
-          setIsPlaying(true);
-          setShowMusicTooltip(false);
-        })
-        .catch((err) => {
-          console.log("Autoplay blocked, showing tooltip for manual play.", err);
-          setShowMusicTooltip(true);
-        });
-    };
+    // Chạy nhạc ngay lập tức (ở chế độ Muted) - 100% Trình duyệt sẽ cho phép chạy!
+    audio.play()
+      .then(() => {
+        setIsPlaying(true);
+        setShowMusicTooltip(true); // Gợi ý người dùng chạm để mở tiếng
+      })
+      .catch((err) => {
+        console.log("Muted autoplay blocked, fallback to interaction trigger.", err);
+      });
 
-    // Try to play immediately when loaded
-    const handleCanPlay = () => {
-      playAudio();
-      audio.removeEventListener('canplaythrough', handleCanPlay);
-    };
-    audio.addEventListener('canplaythrough', handleCanPlay);
-
-    // Also trigger play on the first user interaction anywhere on the screen (including scrolling or moving mouse)
-    const handleFirstInteraction = () => {
-      if (audio.paused) {
-        playAudio();
+    // Khi người dùng thực hiện bất kỳ tương tác nào (cuộn trang, di chuột, chạm màn hình)
+    // Hệ thống sẽ lập tức mở tiếng (UNMUTE) mà họ không cần bấm vào nút nhạc.
+    const handleUnmuteInteraction = () => {
+      if (audio.muted) {
+        audio.muted = false; // Mở tiếng
+        if (audio.paused) {
+          audio.play().catch(e => console.log("Play failed on unmute:", e));
+        }
+        setShowMusicTooltip(false);
       }
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
-      document.removeEventListener('scroll', handleFirstInteraction);
-      document.removeEventListener('mousemove', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
+      removeListeners();
     };
 
-    document.addEventListener('click', handleFirstInteraction);
-    document.addEventListener('touchstart', handleFirstInteraction);
-    document.addEventListener('scroll', handleFirstInteraction);
-    document.addEventListener('mousemove', handleFirstInteraction);
-    document.addEventListener('keydown', handleFirstInteraction);
+    const removeListeners = () => {
+      document.removeEventListener('click', handleUnmuteInteraction);
+      document.removeEventListener('touchstart', handleUnmuteInteraction);
+      document.removeEventListener('scroll', handleUnmuteInteraction);
+      document.removeEventListener('mousemove', handleUnmuteInteraction);
+      document.removeEventListener('keydown', handleUnmuteInteraction);
+    };
+
+    document.addEventListener('click', handleUnmuteInteraction);
+    document.addEventListener('touchstart', handleUnmuteInteraction);
+    document.addEventListener('scroll', handleUnmuteInteraction);
+    document.addEventListener('mousemove', handleUnmuteInteraction);
+    document.addEventListener('keydown', handleUnmuteInteraction);
 
     return () => {
       audio.pause();
-      audio.removeEventListener('canplaythrough', handleCanPlay);
       audio.removeEventListener('loadedmetadata', handleMetadata);
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
-      document.removeEventListener('scroll', handleFirstInteraction);
-      document.removeEventListener('mousemove', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
+      removeListeners();
     };
   }, []);
 
@@ -697,6 +693,7 @@ export default function DangKyPage() {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      audioRef.current.muted = false; // Đảm bảo bỏ tắt tiếng khi người dùng chủ động click play
       audioRef.current.play()
         .then(() => {
           setIsPlaying(true);
