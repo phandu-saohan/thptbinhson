@@ -474,8 +474,8 @@ export default function DashboardPage() {
       class_b: reg.class_b || '',
       will_attend: reg.will_attend,
       memory: reg.memory || '',
-      note: reg.note || '',
       amount: reg.amount || 0,
+      receipt_url: reg.receipt_url || '',
     };
     if (!isNew) {
       const { error } = await supabase.from('registrations').update(reqData).eq('id', reg.id);
