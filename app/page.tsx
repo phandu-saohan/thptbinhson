@@ -629,9 +629,9 @@ export default function DangKyPage() {
     const audio = new Audio("https://cldup.com/8ogyw5uhR6.mp3");
     audio.loop = true;
 
-    // Bỏ qua nhạc dạo (Intro), bắt đầu từ giây thứ 20 ngay khi ca sĩ cất lời hát
+    // Bỏ qua nhạc dạo (Intro), bắt đầu từ giây thứ 18 ngay khi ca sĩ cất lời hát
     const handleMetadata = () => {
-      audio.currentTime = 20;
+      audio.currentTime = 18;
     };
 
     if (audio.readyState >= 1) {
