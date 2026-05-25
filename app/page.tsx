@@ -622,7 +622,22 @@ export default function DangKyPage() {
   // Audio state for background music "Mong ước kỷ niệm xưa"
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMusicTooltip, setShowMusicTooltip] = useState(false);
+  const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const enterSite = () => {
+    setShowWelcomeOverlay(false);
+    if (audioRef.current) {
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          setShowMusicTooltip(false);
+        })
+        .catch((err) => {
+          console.error("Play failed on enter button:", err);
+        });
+    }
+  };
 
   useEffect(() => {
     // Direct link to "Mong ước kỷ niệm xưa" direct MP3
@@ -2533,6 +2548,46 @@ export default function DangKyPage() {
             <span className="material-symbols-outlined text-lg">music_note</span>
           )}
         </button>
+      </div>
+
+      {/* Welcome Entrance Screen for Autoplay Bypass */}
+      <div className={`fixed inset-0 z-[99999] bg-slate-950/98 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none transition-all duration-1000 ease-out ${
+        showWelcomeOverlay ? 'opacity-100' : 'opacity-0 pointer-events-none scale-105'
+      }`}>
+        {/* Animated decorative glowing elements */}
+        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.15)_0%,transparent_70%)]" />
+        
+        <div className="relative z-10 max-w-lg mx-auto flex flex-col items-center space-y-6">
+          {/* Golden glowing school icon */}
+          <div className="w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/10 animate-pulse mb-2">
+            <span className="material-symbols-outlined text-4xl text-amber-400">school</span>
+          </div>
+          
+          <div className="space-y-2">
+            <span className="text-amber-400 text-xs font-bold uppercase tracking-[0.25em]">THPT Bình Sơn • Khóa 2003 - 2006</span>
+            <h2 className="text-3xl md:text-5xl font-black text-white font-display tracking-tight leading-tight">
+              CHUYẾN TÀU<br />THANH XUÂN
+            </h2>
+          </div>
+          
+          <p className="text-slate-400 text-sm italic font-medium max-w-sm font-sans relative px-6 leading-relaxed">
+            <span className="material-symbols-outlined absolute left-0 top-0 text-slate-600 text-lg">format_quote</span>
+            Thời gian trôi qua mau, chỉ còn lại những kỷ niệm...
+            <span className="material-symbols-outlined absolute right-0 bottom-0 text-slate-600 text-lg rotate-180">format_quote</span>
+          </p>
+
+          <button
+            onClick={enterSite}
+            className="group relative overflow-hidden bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-slate-950 px-10 py-4 rounded-full font-black tracking-widest text-sm uppercase shadow-2xl shadow-amber-500/20 active:scale-95 hover:scale-105 hover:shadow-amber-500/40 transition-all duration-300 pointer-events-auto cursor-pointer border border-amber-300/30 flex items-center gap-2 mt-4"
+          >
+            Bước Vào Hội Khóa
+            <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">train</span>
+          </button>
+          
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-2">
+            Bật âm thanh để nghe nhạc kỷ niệm
+          </p>
+        </div>
       </div>
 
       {/* Embedded Style Block for Music Wave & Slowly Spinning Vinyl Animation */}
