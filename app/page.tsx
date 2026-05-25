@@ -619,6 +619,71 @@ export default function DangKyPage() {
   const [sponsorAiScanning, setSponsorAiScanning] = useState(false);
   const sponsorFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Audio state for background music "Mong ước kỷ niệm xưa"
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showMusicTooltip, setShowMusicTooltip] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Direct link to "Mong ước kỷ niệm xưa" direct MP3
+    const audio = new Audio("https://cldup.com/8ogyw5uhR6.mp3");
+    audio.loop = true;
+    audioRef.current = audio;
+
+    const playAudio = () => {
+      audio.play()
+        .then(() => {
+          setIsPlaying(true);
+          setShowMusicTooltip(false);
+        })
+        .catch((err) => {
+          console.log("Autoplay blocked, showing tooltip for manual play.", err);
+          setShowMusicTooltip(true);
+        });
+    };
+
+    // Try to play immediately when loaded
+    const handleCanPlay = () => {
+      playAudio();
+      audio.removeEventListener('canplaythrough', handleCanPlay);
+    };
+    audio.addEventListener('canplaythrough', handleCanPlay);
+
+    // Also trigger play on the first user interaction anywhere on the screen
+    const handleFirstInteraction = () => {
+      if (audio.paused) {
+        playAudio();
+      }
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('touchstart', handleFirstInteraction);
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener('canplaythrough', handleCanPlay);
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+  }, []);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          setShowMusicTooltip(false);
+        })
+        .catch((err) => console.error("Play failed:", err));
+    }
+  };
+
   // List of registered members for dropdown in Sponsor form
   const [registeredList, setRegisteredList] = useState<{ id: string; name: string; phone: string; class_c?: string; class_b?: string }[]>([]);
   const [sponsorSearchQuery, setSponsorSearchQuery] = useState('');
@@ -2416,6 +2481,52 @@ export default function DangKyPage() {
           </div>
         </div>
       )}
+
+      {/* Floating Music Button */}
+      <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-2 pointer-events-none">
+        {showMusicTooltip && (
+          <div 
+            onClick={togglePlay}
+            className="bg-slate-900/90 text-white text-[11px] font-bold py-2 px-4 rounded-2xl shadow-2xl border border-white/10 animate-bounce pointer-events-auto cursor-pointer flex items-center gap-1.5 backdrop-blur-md"
+          >
+            <span className="animate-pulse">🎵</span> Chạm để bật nhạc kỷ niệm!
+          </div>
+        )}
+        <button
+          onClick={togglePlay}
+          className={`w-12 h-12 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 pointer-events-auto border-2 border-white/80 active:scale-95 hover:shadow-primary/30 ${
+            isPlaying 
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white animate-spin-slow shadow-emerald-500/20' 
+              : 'bg-gradient-to-r from-primary to-primary-fixed text-white hover:scale-105 shadow-primary/20'
+          }`}
+          title={isPlaying ? "Tạm dừng nhạc" : "Bật nhạc kỷ niệm xưa"}
+        >
+          {isPlaying ? (
+            <div className="flex gap-0.5 items-end justify-center h-4 w-4">
+              <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate]" />
+              <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.2s] h-3" />
+              <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.4s] h-2" />
+            </div>
+          ) : (
+            <span className="material-symbols-outlined text-lg">music_note</span>
+          )}
+        </button>
+      </div>
+
+      {/* Embedded Style Block for Music Wave & Slowly Spinning Vinyl Animation */}
+      <style jsx global>{`
+        @keyframes music-wave {
+          0% { height: 4px; }
+          100% { height: 16px; }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 12s linear infinite;
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
