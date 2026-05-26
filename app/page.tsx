@@ -1245,7 +1245,29 @@ export default function DangKyPage() {
         </label>
 
         <div className="relative z-10 max-w-5xl w-full flex flex-col items-center">
-          <div className="flex flex-col items-center mb-4 md:mb-6">
+          <div className="flex items-center justify-center gap-4 mb-4 md:mb-6">
+            {/* Music Button for Mobile (Hidden on Desktop) */}
+            <button
+              onClick={togglePlay}
+              type="button"
+              className={`md:hidden w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-all duration-500 border-2 border-white/60 active:scale-95 shrink-0 ${
+                isPlaying 
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white animate-spin-slow' 
+                  : 'bg-white/20 backdrop-blur-md text-white'
+              }`}
+              title={isPlaying ? "Tạm dừng nhạc" : "Bật nhạc kỷ niệm xưa"}
+            >
+              {isPlaying ? (
+                <div className="flex gap-0.5 items-end justify-center h-4 w-4">
+                  <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate]" />
+                  <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.2s] h-3" />
+                  <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.4s] h-2" />
+                </div>
+              ) : (
+                <span className="material-symbols-outlined text-lg">music_note</span>
+              )}
+            </button>
+
             <label className="relative group/logo cursor-pointer block">
               <Image
                 src={logoImage}
@@ -2502,7 +2524,7 @@ export default function DangKyPage() {
       )}
 
       {/* Floating Music Button */}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-2 pointer-events-none">
+      <div className="hidden md:flex fixed bottom-6 right-6 z-[100] flex-col items-end gap-2 pointer-events-none">
         {showMusicTooltip && (
           <div 
             onClick={togglePlay}
