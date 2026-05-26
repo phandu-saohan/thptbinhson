@@ -1339,7 +1339,30 @@ export default function DangKyPage() {
                 
                 {/* Letter Header */}
                 <div className="text-center space-y-4">
-                  <span className="material-symbols-outlined text-primary text-5xl mb-2 opacity-50">history_edu</span>
+                  {/* Premium Music Button replacing the static history_edu icon */}
+                  <div className="flex justify-center mb-2">
+                    <button
+                      onClick={togglePlay}
+                      type="button"
+                      className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl border-4 transition-all duration-500 active:scale-95 cursor-pointer shrink-0 select-none ${
+                        isPlaying 
+                          ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 border-emerald-300 shadow-emerald-500/20 animate-spin-slow' 
+                          : 'bg-white hover:bg-slate-50 border-slate-200 shadow-slate-200/50 hover:scale-105'
+                      }`}
+                      title={isPlaying ? "Tạm dừng nhạc" : "Bật nhạc kỷ niệm xưa"}
+                    >
+                      {isPlaying ? (
+                        <div className="flex gap-0.5 items-end justify-center h-5 w-5">
+                          <span className="w-0.75 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate]" />
+                          <span className="w-0.75 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.2s] h-4" />
+                          <span className="w-0.75 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.4s] h-3" />
+                          <span className="w-0.75 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.1s] h-5" />
+                        </div>
+                      ) : (
+                        <span className="material-symbols-outlined text-3xl text-primary">music_note</span>
+                      )}
+                    </button>
+                  </div>
                   <h3 className="font-headline text-2xl md:text-4xl text-primary italic leading-tight">
                     "Gửi những người bạn đã đi cùng nhau một đoạn thanh xuân,"
                   </h3>
