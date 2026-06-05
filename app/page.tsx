@@ -63,9 +63,9 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
     return matchesSearch && matchesClassC && matchesClassB && matchesAttendance && matchesShirtSize;
   });
 
-  const attending = incomes.filter(r => r.will_attend === 'yes').length;
-  const hasShirtSize = incomes.filter(r => r.will_attend === 'yes' && r.shirt_size && r.shirt_size.trim() !== '').length;
-  const noShirtSize = incomes.filter(r => r.will_attend === 'yes' && (!r.shirt_size || r.shirt_size.trim() === '')).length;
+  const attending = filteredIncomes.filter(r => r.will_attend === 'yes').length;
+  const hasShirtSize = filteredIncomes.filter(r => r.will_attend === 'yes' && r.shirt_size && r.shirt_size.trim() !== '').length;
+  const noShirtSize = filteredIncomes.filter(r => r.will_attend === 'yes' && (!r.shirt_size || r.shirt_size.trim() === '')).length;
   const totalIncome = incomes.reduce((s, r) => s + (r.amount || 0), 0);
 
   return (
