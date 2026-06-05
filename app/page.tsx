@@ -1272,13 +1272,6 @@ export default function DangKyPage() {
               <span className="material-symbols-outlined text-[18px]">volunteer_activism</span>
               Tài trợ
             </button>
-            <button 
-              onClick={() => setActiveTab('shirt')}
-              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'shirt' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
-            >
-              <span className="material-symbols-outlined text-[18px]">apparel</span>
-              Chọn size áo
-            </button>
           </nav>
 
           {/* Login Button */}
@@ -1339,9 +1332,9 @@ export default function DangKyPage() {
           </p>
           <div className="mt-6 md:mt-8 grid grid-cols-2 md:flex md:flex-row items-center gap-3 md:gap-4 w-full md:w-auto max-w-sm md:max-w-none px-2 md:px-0">
             {/* 1. Ngày tháng */}
-            <div className="inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md px-4 py-3 md:px-8 md:py-4 rounded-full border border-white/30 shadow-2xl md:animate-bounce-slow w-full md:w-auto h-full min-h-[46px] md:min-h-none">
-              <span className="material-symbols-outlined text-white text-base md:text-2xl">calendar_month</span>
-              <span className="text-white text-[11px] md:text-lg lg:text-2xl font-black tracking-wide md:tracking-widest drop-shadow-md whitespace-nowrap">12/07/2026</span>
+            <div className="inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md px-4 py-3 md:px-5 md:py-2.5 rounded-full border border-white/30 shadow-2xl md:animate-bounce-slow w-full md:w-auto h-full min-h-[46px] md:min-h-none">
+              <span className="material-symbols-outlined text-white text-base md:text-lg">calendar_month</span>
+              <span className="text-white text-[11px] md:text-sm lg:text-base font-black tracking-wide md:tracking-wider drop-shadow-md whitespace-nowrap">12/07/2026</span>
             </div>
 
             {/* 2. Đăng ký */}
@@ -1352,9 +1345,9 @@ export default function DangKyPage() {
                   document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
               }}
-              className="w-full md:w-auto bg-white text-primary px-4 py-3 md:px-8 md:py-4 rounded-full font-black text-[11px] md:text-lg shadow-2xl hover:bg-primary-fixed-dim hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-2 group border-2 border-white/50 min-h-[46px] md:min-h-none"
+              className="w-full md:w-auto bg-white text-primary px-4 py-3 md:px-5 md:py-2.5 rounded-full font-black text-[11px] md:text-sm shadow-2xl hover:bg-primary-fixed-dim hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-1.5 group border-2 border-white/50 min-h-[46px] md:min-h-none"
             >
-              <span className="material-symbols-outlined text-sm md:text-xl font-bold group-hover:rotate-12 transition-transform">edit_note</span>
+              <span className="material-symbols-outlined text-sm md:text-base font-bold group-hover:rotate-12 transition-transform">edit_note</span>
               ĐĂNG KÝ
             </button>
 
@@ -1366,9 +1359,9 @@ export default function DangKyPage() {
                   document.getElementById('content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
               }}
-              className="w-full md:w-auto bg-primary/80 backdrop-blur-md text-white px-4 py-3 md:px-8 md:py-4 rounded-full font-black text-[11px] md:text-lg shadow-2xl hover:bg-primary hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-2 group border-2 border-white/20 min-h-[46px] md:min-h-none"
+              className="w-full md:w-auto bg-primary/80 backdrop-blur-md text-white px-4 py-3 md:px-5 md:py-2.5 rounded-full font-black text-[11px] md:text-sm shadow-2xl hover:bg-primary hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-1.5 group border-2 border-white/20 min-h-[46px] md:min-h-none"
             >
-              <span className="material-symbols-outlined text-sm md:text-xl font-bold group-hover:-rotate-12 transition-transform">map</span>
+              <span className="material-symbols-outlined text-sm md:text-base font-bold group-hover:-rotate-12 transition-transform">map</span>
               KẾ HOẠCH
             </button>
 
@@ -1380,9 +1373,9 @@ export default function DangKyPage() {
                   document.getElementById('content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
               }}
-              className="w-full md:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-3 md:px-8 md:py-4 rounded-full font-black text-[11px] md:text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-2 group border-2 border-white/30 min-h-[46px] md:min-h-none"
+              className="w-full md:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-3 md:px-5 md:py-2.5 rounded-full font-black text-[11px] md:text-sm shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-1.5 group border-2 border-white/30 min-h-[46px] md:min-h-none"
             >
-              <span className="material-symbols-outlined text-sm md:text-xl font-bold group-hover:scale-110 transition-transform">apparel</span>
+              <span className="material-symbols-outlined text-sm md:text-base font-bold group-hover:scale-110 transition-transform">apparel</span>
               CHỌN SIZE ÁO
             </button>
           </div>
