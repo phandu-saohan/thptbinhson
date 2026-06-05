@@ -1337,52 +1337,54 @@ export default function DangKyPage() {
           <p className="font-display text-lg md:text-3xl text-white/90 mb-4 md:mb-6 drop-shadow text-center font-medium tracking-wide">
             Kỷ niệm 20 năm ngày ra trường
           </p>
-          <div className="mt-4 md:mt-8 flex flex-col md:flex-row items-center gap-4 md:gap-6">
-            <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-md px-6 py-2 md:px-10 md:py-3 rounded-full border border-white/30 shadow-2xl animate-bounce-slow">
-              <span className="material-symbols-outlined text-white text-lg md:text-2xl">calendar_month</span>
-              <span className="text-white text-lg md:text-3xl font-black tracking-widest drop-shadow-md">NGÀY 12/07/2026</span>
+          <div className="mt-6 md:mt-8 grid grid-cols-2 md:flex md:flex-row items-center gap-3 md:gap-4 w-full md:w-auto max-w-sm md:max-w-none px-2 md:px-0">
+            {/* 1. Ngày tháng */}
+            <div className="inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md px-4 py-3 md:px-8 md:py-4 rounded-full border border-white/30 shadow-2xl md:animate-bounce-slow w-full md:w-auto h-full min-h-[46px] md:min-h-none">
+              <span className="material-symbols-outlined text-white text-base md:text-2xl">calendar_month</span>
+              <span className="text-white text-[11px] md:text-lg lg:text-2xl font-black tracking-wide md:tracking-widest drop-shadow-md whitespace-nowrap">12/07/2026</span>
             </div>
-            
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-              <button 
-                onClick={() => {
-                  setActiveTab('home');
-                  setTimeout(() => {
-                    document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 100);
-                }}
-                className="w-full sm:w-auto bg-white text-primary px-6 py-3 md:px-8 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:bg-primary-fixed-dim hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group border-2 border-white/50"
-              >
-                <span className="material-symbols-outlined font-bold group-hover:rotate-12 transition-transform">edit_note</span>
-                ĐĂNG KÝ
-              </button>
 
-              <button 
-                onClick={() => {
-                  setActiveTab('plan');
-                  setTimeout(() => {
-                    document.getElementById('content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 100);
-                }}
-                className="w-full sm:w-auto bg-primary/80 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:bg-primary hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group border-2 border-white/20"
-              >
-                <span className="material-symbols-outlined font-bold group-hover:-rotate-12 transition-transform">map</span>
-                KẾ HOẠCH
-              </button>
+            {/* 2. Đăng ký */}
+            <button 
+              onClick={() => {
+                setActiveTab('home');
+                setTimeout(() => {
+                  document.getElementById('registration-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+              }}
+              className="w-full md:w-auto bg-white text-primary px-4 py-3 md:px-8 md:py-4 rounded-full font-black text-[11px] md:text-lg shadow-2xl hover:bg-primary-fixed-dim hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-2 group border-2 border-white/50 min-h-[46px] md:min-h-none"
+            >
+              <span className="material-symbols-outlined text-sm md:text-xl font-bold group-hover:rotate-12 transition-transform">edit_note</span>
+              ĐĂNG KÝ
+            </button>
 
-              <button 
-                onClick={() => {
-                  setActiveTab('shirt');
-                  setTimeout(() => {
-                    document.getElementById('content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 100);
-                }}
-                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group border-2 border-white/30"
-              >
-                <span className="material-symbols-outlined font-bold group-hover:scale-110 transition-transform">apparel</span>
-                SIZE ÁO
-              </button>
-            </div>
+            {/* 3. Kế hoạch */}
+            <button 
+              onClick={() => {
+                setActiveTab('plan');
+                setTimeout(() => {
+                  document.getElementById('content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+              }}
+              className="w-full md:w-auto bg-primary/80 backdrop-blur-md text-white px-4 py-3 md:px-8 md:py-4 rounded-full font-black text-[11px] md:text-lg shadow-2xl hover:bg-primary hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-2 group border-2 border-white/20 min-h-[46px] md:min-h-none"
+            >
+              <span className="material-symbols-outlined text-sm md:text-xl font-bold group-hover:-rotate-12 transition-transform">map</span>
+              KẾ HOẠCH
+            </button>
+
+            {/* 4. Chọn size áo */}
+            <button 
+              onClick={() => {
+                setActiveTab('shirt');
+                setTimeout(() => {
+                  document.getElementById('content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+              }}
+              className="w-full md:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-3 md:px-8 md:py-4 rounded-full font-black text-[11px] md:text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-2 group border-2 border-white/30 min-h-[46px] md:min-h-none"
+            >
+              <span className="material-symbols-outlined text-sm md:text-xl font-bold group-hover:scale-110 transition-transform">apparel</span>
+              CHỌN SIZE ÁO
+            </button>
           </div>
         </div>
       </section>
