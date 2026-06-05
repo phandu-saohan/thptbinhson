@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 // ── FinanceStatisticsBlock: Block thống kê thu chi (bao gồm Danh sách đăng ký) ──
 function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:string;memory:string}) => void }) {
-  const [incomes, setIncomes] = React.useState<{name:string;phone:string;will_attend:string;amount?:number;created_at:string;memory?:string;class_c?:string;class_b?:string}[]>([]);
+  const [incomes, setIncomes] = React.useState<{name:string;phone:string;will_attend:string;amount?:number;created_at:string;memory?:string;class_c?:string;class_b?:string;shirt_size?:string}[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [classCFilter, setClassCFilter] = React.useState('');
@@ -138,13 +138,14 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
                   <th className="px-6 py-3 text-center">Lớp C</th>
                   <th className="px-6 py-3 text-center">Lớp B</th>
                   <th className="px-6 py-3 text-center">Tham dự</th>
+                  <th className="px-6 py-3 text-center">Size áo</th>
                   <th className="px-6 py-3 text-right">Đóng góp</th>
                   <th className="px-6 py-3 hidden lg:table-cell">Thời gian</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredIncomes.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-12 text-slate-400">Chưa có dữ liệu</td></tr>
+                  <tr><td colSpan={7} className="text-center py-12 text-slate-400">Chưa có dữ liệu</td></tr>
                 ) : (
                   filteredIncomes.map((r, idx) => {
                     const { cleanName, classC, classB } = getClasses(r);
@@ -175,6 +176,15 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
                           ? <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold">Sẽ về</span>
                           : <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold">Vắng</span>
                         }
+                      </td>
+                      <td className="px-6 py-3 text-center text-sm text-slate-600 font-medium">
+                        {r.shirt_size ? (
+                          <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg font-bold text-xs uppercase">
+                            {r.shirt_size}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 text-xs italic">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-3 text-right">
                         {r.amount && r.amount > 0
@@ -221,6 +231,11 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
                                 ? <span className="text-[9px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase tracking-wider inline-block">Sẽ về</span>
                                 : <span className="text-[9px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold uppercase tracking-wider inline-block">Vắng</span>
                               }
+                              {r.shirt_size && (
+                                <span className="text-[9px] px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/50 rounded-full font-bold uppercase tracking-wider inline-block">
+                                  Size: {r.shirt_size}
+                                </span>
+                              )}
                               <span className="text-[9px] text-slate-400">
                                 {new Date(r.created_at).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' })}
                               </span>
@@ -599,7 +614,7 @@ export default function DangKyPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [selectedMemory, setSelectedMemory] = useState<{name:string;memory:string} | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'sponsor' | 'ticket' | 'memories'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'sponsor' | 'ticket' | 'memories' | 'shirt'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Receipt upload & AI scan state
@@ -704,33 +719,47 @@ export default function DangKyPage() {
   };
 
   // List of registered members for dropdown in Sponsor form
-  const [registeredList, setRegisteredList] = useState<{ id: string; name: string; phone: string; class_c?: string; class_b?: string }[]>([]);
+  const [registeredList, setRegisteredList] = useState<{ id: string; name: string; phone: string; class_c?: string; class_b?: string; shirt_size?: string }[]>([]);
   const [sponsorSearchQuery, setSponsorSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchRegistered = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('registrations')
-          .select('id, name, phone, class_c, class_b')
-          .order('name', { ascending: true });
-        if (!error && data) {
-          setRegisteredList(data);
-        }
-      } catch (err) {
-        console.error('Error fetching registered members:', err);
+  // Shirt Size Form State
+  const [shirtSearchQuery, setShirtSearchQuery] = useState('');
+  const [isShirtDropdownOpen, setIsShirtDropdownOpen] = useState(false);
+  const [selectedShirtRegistrant, setSelectedShirtRegistrant] = useState<{ id: string; name: string; phone: string; class_c?: string; class_b?: string; shirt_size?: string } | null>(null);
+  const [selectedShirtSize, setSelectedShirtSize] = useState('');
+  const [shirtSubmitting, setShirtSubmitting] = useState(false);
+  const [shirtSuccess, setShirtSuccess] = useState(false);
+  const [shirtError, setShirtError] = useState<string | null>(null);
+  const shirtDropdownRef = useRef<HTMLDivElement>(null);
+
+  const fetchRegistered = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('registrations')
+        .select('id, name, phone, class_c, class_b, shirt_size')
+        .order('name', { ascending: true });
+      if (!error && data) {
+        setRegisteredList(data);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching registered members:', err);
+    }
+  };
+
+  useEffect(() => {
     fetchRegistered();
   }, [activeTab]);
 
-  // Click outside to close custom searchable dropdown
+  // Click outside to close custom searchable dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (shirtDropdownRef.current && !shirtDropdownRef.current.contains(event.target as Node)) {
+        setIsShirtDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -738,6 +767,40 @@ export default function DangKyPage() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handleShirtSizeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedShirtRegistrant) {
+      setShirtError("Vui lòng chọn thành viên trong danh sách!");
+      return;
+    }
+    if (!selectedShirtSize) {
+      setShirtError("Vui lòng chọn size áo của bạn!");
+      return;
+    }
+
+    setShirtSubmitting(true);
+    setShirtError(null);
+    setShirtSuccess(false);
+
+    try {
+      const { error } = await supabase
+        .from('registrations')
+        .update({ shirt_size: selectedShirtSize })
+        .eq('id', selectedShirtRegistrant.id);
+
+      if (error) throw error;
+
+      setShirtSuccess(true);
+      // Reload the data
+      await fetchRegistered();
+    } catch (err: any) {
+      console.error("Lỗi cập nhật size áo:", err);
+      setShirtError(err.message || "Đã xảy ra lỗi khi lưu thông tin. Vui lòng thử lại!");
+    } finally {
+      setShirtSubmitting(false);
+    }
+  };
 
   // Appearance State — Media
   const [logoImage, setLogoImage] = useState('/logo.png');
@@ -767,7 +830,7 @@ export default function DangKyPage() {
     // Check URL hash for direct tab linking
     if (typeof window !== 'undefined' && window.location.hash) {
       const hash = window.location.hash.replace('#', '');
-      if (['home', 'plan', 'finance', 'sponsor', 'ticket', 'memories'].includes(hash)) {
+      if (['home', 'plan', 'finance', 'sponsor', 'ticket', 'memories', 'shirt'].includes(hash)) {
         setActiveTab(hash as any);
       }
     }
@@ -1209,6 +1272,13 @@ export default function DangKyPage() {
               <span className="material-symbols-outlined text-[18px]">volunteer_activism</span>
               Tài trợ
             </button>
+            <button 
+              onClick={() => setActiveTab('shirt')}
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'shirt' ? 'bg-primary text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-primary hover:bg-primary/5 scale-95 hover:scale-100'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">apparel</span>
+              Chọn size áo
+            </button>
           </nav>
 
           {/* Login Button */}
@@ -1298,6 +1368,19 @@ export default function DangKyPage() {
               >
                 <span className="material-symbols-outlined font-bold group-hover:-rotate-12 transition-transform">map</span>
                 KẾ HOẠCH
+              </button>
+
+              <button 
+                onClick={() => {
+                  setActiveTab('shirt');
+                  setTimeout(() => {
+                    document.getElementById('content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                }}
+                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black text-sm md:text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group border-2 border-white/30"
+              >
+                <span className="material-symbols-outlined font-bold group-hover:scale-110 transition-transform">apparel</span>
+                SIZE ÁO
               </button>
             </div>
           </div>
@@ -2395,6 +2478,291 @@ export default function DangKyPage() {
         {/* Tab 6: Tạo Vé Chuyến Tàu */}
         {activeTab === 'ticket' && (
           <TicketGenerator />
+        )}
+
+        {/* Tab 7: Chọn Size Áo */}
+        {activeTab === 'shirt' && (
+          <div className="animate-in fade-in duration-700 max-w-6xl mx-auto space-y-8 mb-16">
+            <div className="text-center mb-8">
+              <span className="text-primary font-bold uppercase tracking-widest text-sm mb-3 block">
+                Đồng phục hội khóa
+              </span>
+              <h2 className="text-3xl md:text-4xl font-headline text-primary tracking-tight">
+                Đăng Ký Size Áo Polo
+              </h2>
+              <p className="text-on-surface-variant mt-2 max-w-lg mx-auto text-xs sm:text-sm">
+                Hãy lựa chọn size áo phù hợp để Ban Tổ Chức chuẩn bị trang phục đồng phục đẹp nhất cho ngày hội ngộ!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Cột trái: Hướng dẫn chọn size theo hình */}
+              <div className="lg:col-span-6 bg-white border border-outline-variant/30 rounded-3xl p-6 shadow-xl relative overflow-hidden flex flex-col items-center">
+                <h3 className="font-title text-xl text-primary mb-4 flex items-center gap-2 self-start">
+                  <span className="material-symbols-outlined">straighten</span>
+                  Bảng thông số chọn size áo
+                </h3>
+                <div className="relative w-full overflow-hidden rounded-2xl border border-slate-100 group shadow-md bg-slate-50">
+                  <img 
+                    src="/size-guide.jpg" 
+                    alt="Bảng size áo Polo" 
+                    className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-102" 
+                  />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                    <span className="bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
+                      <span className="material-symbols-outlined text-xs">zoom_in</span>
+                      Bảng size chuẩn Polo
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 leading-relaxed w-full">
+                  <p className="font-bold mb-1 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">info</span>
+                    LƯU Ý KHI CHỌN SIZE ÁO:
+                  </p>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>Ưu tiên chọn theo cân nặng để mặc thoải mái nhất.</li>
+                    <li>Nếu thích mặc rộng hoặc thoải mái, hoặc số đo nằm giữa 2 size, nên tăng lên 1 size.</li>
+                    <li>Phông áo Polo co giãn thoải mái, form chuẩn dáng cho cả Nam và Nữ.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Cột phải: Form chọn size áo */}
+              <div className="lg:col-span-6 bg-white border border-outline-variant/30 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+                <h3 className="font-title text-xl text-primary mb-6 flex items-center gap-2">
+                  <span className="material-symbols-outlined">person_add</span>
+                  Đăng ký thông tin size áo
+                </h3>
+
+                {shirtSuccess ? (
+                  <div className="text-center py-10 space-y-4 animate-in zoom-in-95 duration-500">
+                    <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-md">
+                      <span className="material-symbols-outlined text-3xl font-bold">check</span>
+                    </div>
+                    <h4 className="text-xl font-bold text-slate-800">Đăng ký thành công!</h4>
+                    <p className="text-slate-600 text-sm max-w-sm mx-auto">
+                      Size áo của thành viên <span className="font-bold text-primary">{selectedShirtRegistrant?.name}</span> đã được cập nhật thành công thành <span className="font-bold text-emerald-600 uppercase bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">{selectedShirtSize}</span>.
+                    </p>
+                    <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+                      <button
+                        onClick={() => {
+                          setShirtSuccess(false);
+                          setSelectedShirtRegistrant(null);
+                          setShirtSearchQuery('');
+                          setSelectedShirtSize('');
+                        }}
+                        className="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-sm shadow-md hover:scale-105 active:scale-95 transition-all"
+                      >
+                        Đăng ký cho người khác
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('finance')}
+                        className="px-6 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-all"
+                      >
+                        Xem danh sách thành viên
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleShirtSizeSubmit} className="space-y-6">
+                    {/* Trường 1: Nhập tên (Searchable Dropdown) */}
+                    <div className="space-y-2 relative" ref={shirtDropdownRef}>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Họ và Tên Thành Viên
+                      </label>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                          search
+                        </span>
+                        <input
+                          type="text"
+                          value={shirtSearchQuery}
+                          onChange={(e) => {
+                            setShirtSearchQuery(e.target.value);
+                            setIsShirtDropdownOpen(true);
+                            if (selectedShirtRegistrant) {
+                              setSelectedShirtRegistrant(null);
+                              setSelectedShirtSize('');
+                            }
+                          }}
+                          onFocus={() => setIsShirtDropdownOpen(true)}
+                          placeholder="Nhập tên để tìm kiếm nhanh..."
+                          className="w-full pl-11 pr-10 py-3 md:py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-medium transition-all"
+                        />
+                        {shirtSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShirtSearchQuery('');
+                              setSelectedShirtRegistrant(null);
+                              setSelectedShirtSize('');
+                              setIsShirtDropdownOpen(false);
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-xs">close</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Dropdown list */}
+                      {isShirtDropdownOpen && (
+                        <div className="absolute z-[120] left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-xl divide-y divide-slate-50">
+                          {registeredList.filter(reg =>
+                            reg.name.toLowerCase().includes(shirtSearchQuery.toLowerCase())
+                          ).length === 0 ? (
+                            <div className="p-4 text-center text-slate-400 text-xs font-medium">
+                              Không tìm thấy thành viên "{shirtSearchQuery}" nào. Vui lòng kiểm tra lại họ tên!
+                            </div>
+                          ) : (
+                            registeredList
+                              .filter(reg =>
+                                reg.name.toLowerCase().includes(shirtSearchQuery.toLowerCase())
+                              )
+                              .map((reg) => (
+                                <button
+                                  key={reg.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedShirtRegistrant(reg);
+                                    setShirtSearchQuery(`${reg.name}${reg.class_c ? ` (C${reg.class_c.replace('C', '')})` : ''}${reg.class_b ? ` (B${reg.class_b.replace('B', '')})` : ''}`);
+                                    setIsShirtDropdownOpen(false);
+                                    if (reg.shirt_size) {
+                                      setSelectedShirtSize(reg.shirt_size);
+                                    } else {
+                                      setSelectedShirtSize('');
+                                    }
+                                  }}
+                                  className="w-full text-left p-3 hover:bg-primary/5 hover:text-primary transition-all text-xs sm:text-sm font-medium flex items-center justify-between"
+                                >
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-slate-800">{reg.name}</span>
+                                    <span className="text-[10px] text-slate-500">
+                                      SĐT: {reg.phone.slice(0, 4)}***{reg.phone.slice(-3)} | Lớp: {reg.class_c || '-'}/{reg.class_b || '-'}
+                                    </span>
+                                  </div>
+                                  {reg.shirt_size ? (
+                                    <span className="text-[9px] px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/50 rounded-full font-bold uppercase">
+                                      Size: {reg.shirt_size}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] px-2 py-0.5 bg-slate-100 text-slate-400 rounded-full">
+                                      Chưa chọn size
+                                    </span>
+                                  )}
+                                </button>
+                              ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Trường 2: Chọn size áo (Grid size Nam và Nữ) */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          Chọn size áo của bạn
+                        </label>
+                        {selectedShirtSize && (
+                          <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200/50 px-2.5 py-0.5 rounded-full uppercase">
+                            Đang chọn: {selectedShirtSize}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Bảng Nam */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-extrabold text-blue-700 flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-lg w-fit border border-blue-100">
+                          <span className="material-symbols-outlined text-sm">man</span>
+                          SIZE CHO NAM
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            { name: 'Nam S', spec: '1m50-1m60 | 45-50kg' },
+                            { name: 'Nam M', spec: '1m60-1m65 | 51-57kg' },
+                            { name: 'Nam L', spec: '1m65-1m70 | 58-65kg' },
+                            { name: 'Nam XL', spec: '1m70-1m75 | 66-73kg' },
+                            { name: 'Nam XXL', spec: '1m75-1m80 | 74-80kg' },
+                            { name: 'Nam XXXL', spec: '1m80-1m85 | 86-92kg' },
+                            { name: 'Nam XXXXL', spec: '> 1m85 | > 90kg' },
+                          ].map((size) => (
+                            <button
+                              key={size.name}
+                              type="button"
+                              onClick={() => setSelectedShirtSize(size.name)}
+                              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 ${
+                                selectedShirtSize === size.name
+                                  ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20 scale-102 font-bold'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/30'
+                              }`}
+                            >
+                              <span className="text-sm font-extrabold">{size.name.replace('Nam ', '')}</span>
+                              <span className="text-[8px] opacity-75">{size.spec}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Bảng Nữ */}
+                      <div className="space-y-2 pt-2">
+                        <span className="text-xs font-extrabold text-pink-700 flex items-center gap-1 bg-pink-50 px-2.5 py-1 rounded-lg w-fit border border-pink-100">
+                          <span className="material-symbols-outlined text-sm">woman</span>
+                          SIZE CHO NỮ
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {[
+                            { name: 'Nữ S', spec: '< 1m50 | < 45kg' },
+                            { name: 'Nữ M', spec: '1m50-1m56 | 43-48kg' },
+                            { name: 'Nữ L', spec: '1m57-1m62 | 49-55kg' },
+                            { name: 'Nữ XL', spec: '1m63-1m68 | 55-62kg' },
+                            { name: 'Nữ XXL', spec: '1m69-1m74 | 63-70kg' },
+                            { name: 'Nữ XXXL', spec: '> 1m75 | 71-78kg' },
+                          ].map((size) => (
+                            <button
+                              key={size.name}
+                              type="button"
+                              onClick={() => setSelectedShirtSize(size.name)}
+                              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 ${
+                                selectedShirtSize === size.name
+                                  ? 'bg-pink-600 border-pink-600 text-white shadow-md shadow-pink-500/20 scale-102 font-bold'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:border-pink-400 hover:bg-pink-50/30'
+                              }`}
+                            >
+                              <span className="text-sm font-extrabold">{size.name.replace('Nữ ', '')}</span>
+                              <span className="text-[8px] opacity-75">{size.spec}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {shirtError && (
+                      <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-2xl flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm shrink-0">error</span>
+                        <span>{shirtError}</span>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={shirtSubmitting}
+                      className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-2xl shadow-xl shadow-amber-500/10 active:scale-98 transition-all flex items-center justify-center gap-2 text-sm sm:text-base border border-amber-400"
+                    >
+                      {shirtSubmitting ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined">save</span>
+                          XÁC NHẬN CHỌN SIZE
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
         )}
 
       </div>

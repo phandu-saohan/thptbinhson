@@ -22,6 +22,7 @@ interface Registration {
   amount?: number;
   receipt_url?: string;
   source?: string;
+  shirt_size?: string;
   created_at: string;
 }
 
@@ -1131,6 +1132,7 @@ export default function DashboardPage() {
                         <th className="px-4 py-4">Số điện thoại</th>
                         <th className="px-4 py-4">Lớp</th>
                         <th className="px-4 py-4">Tham dự</th>
+                        <th className="px-4 py-4 text-center">Size áo</th>
                         <th className="px-4 py-4 text-right">Đóng góp</th>
                         <th className="px-4 py-4 text-center">Ảnh CK</th>
                         <th className="px-4 py-4">Kỷ niệm</th>
@@ -1167,6 +1169,15 @@ export default function DashboardPage() {
                                 ? <span className="text-[10px] px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200 font-bold uppercase whitespace-nowrap">Có về ✓</span>
                                 : <span className="text-[10px] px-2.5 py-1 bg-rose-50 text-rose-600 rounded-md border border-rose-200 font-bold uppercase whitespace-nowrap">Không về</span>
                               }
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {r.shirt_size ? (
+                                <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md font-bold text-xs uppercase whitespace-nowrap">
+                                  {r.shirt_size}
+                                </span>
+                              ) : (
+                                <span className="text-slate-300 text-xs italic">—</span>
+                              )}
                             </td>
                             <td className="px-6 py-4 text-right">
                               {r.amount && r.amount > 0 ? (
@@ -1242,9 +1253,14 @@ export default function DashboardPage() {
                                <div className="flex items-center gap-2 flex-wrap">
                                  <p className="text-xs text-slate-500 font-mono">{r.phone}</p>
                                  {r.will_attend === 'yes'
-                                   ? <span className="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-bold uppercase">Có về ✓</span>
-                                   : <span className="text-[9px] px-2 py-0.5 bg-rose-50 text-rose-600 rounded border border-rose-100 font-bold uppercase">Vắng</span>
-                                 }
+                                    ? <span className="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-bold uppercase">Có về ✓</span>
+                                    : <span className="text-[9px] px-2 py-0.5 bg-rose-50 text-rose-600 rounded border border-rose-100 font-bold uppercase">Vắng</span>
+                                  }
+                                  {r.shirt_size && (
+                                    <span className="text-[9px] px-2 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-200 font-bold uppercase">
+                                      Size: {r.shirt_size}
+                                    </span>
+                                  )}
                                </div>
                              </div>
                            </div>
