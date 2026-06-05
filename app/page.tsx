@@ -17,6 +17,7 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
   const [classCFilter, setClassCFilter] = React.useState('');
   const [classBFilter, setClassBFilter] = React.useState('');
   const [attendanceFilter, setAttendanceFilter] = React.useState('');
+  const [shirtSizeFilter, setShirtSizeFilter] = React.useState('');
 
 
   React.useEffect(() => {
@@ -51,23 +52,46 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
     const matchesClassC = classCFilter === '' || classC === classCFilter;
     const matchesClassB = classBFilter === '' || classB === classBFilter;
     const matchesAttendance = attendanceFilter === '' || t.will_attend === attendanceFilter;
-    return matchesSearch && matchesClassC && matchesClassB && matchesAttendance;
+    
+    let matchesShirtSize = true;
+    if (shirtSizeFilter === 'selected') {
+      matchesShirtSize = !!(t.shirt_size && t.shirt_size.trim() !== '');
+    } else if (shirtSizeFilter === 'not_selected') {
+      matchesShirtSize = !(t.shirt_size && t.shirt_size.trim() !== '');
+    }
+    
+    return matchesSearch && matchesClassC && matchesClassB && matchesAttendance && matchesShirtSize;
   });
 
   const attending = incomes.filter(r => r.will_attend === 'yes').length;
+  const hasShirtSize = incomes.filter(r => r.will_attend === 'yes' && r.shirt_size && r.shirt_size.trim() !== '').length;
+  const noShirtSize = incomes.filter(r => r.will_attend === 'yes' && (!r.shirt_size || r.shirt_size.trim() === '')).length;
   const totalIncome = incomes.reduce((s, r) => s + (r.amount || 0), 0);
 
   return (
     <div className="mt-6 md:mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
 
       {/* Summary row */}
-      <div className="border-b border-slate-100">
-        <div className="p-4 md:p-8 text-center">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Hành khách đã xác nhận</p>
-          <p className="text-3xl md:text-5xl font-black tracking-tight text-primary flex items-center justify-center gap-3">
-            {attending}
-            <span className="text-sm md:text-base text-slate-400 font-bold uppercase tracking-wider">Thành viên sẽ về</span>
-          </p>
+      <div className="border-b border-slate-100 bg-slate-50/50 p-4 md:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm text-center flex flex-col justify-center">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Thành viên sẽ về</p>
+            <p className="text-2xl md:text-3xl font-black text-primary">{attending}</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm text-center flex flex-col justify-center">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đã chọn size áo</p>
+            <p className="text-2xl md:text-3xl font-black text-emerald-600 flex items-center justify-center gap-1.5">
+              {hasShirtSize}
+              <span className="text-xs font-bold text-slate-400">({attending > 0 ? Math.round(hasShirtSize / attending * 100) : 0}%)</span>
+            </p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm text-center flex flex-col justify-center">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Chưa chọn size áo</p>
+            <p className="text-2xl md:text-3xl font-black text-amber-600 flex items-center justify-center gap-1.5">
+              {noShirtSize}
+              <span className="text-xs font-bold text-slate-400">({attending > 0 ? Math.round(noShirtSize / attending * 100) : 0}%)</span>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -117,6 +141,15 @@ function FinanceStatisticsBlock({ onSelectMemory }: { onSelectMemory: (m: {name:
             <option value="">Tham dự (Tất cả)</option>
             <option value="yes">Sẽ về</option>
             <option value="no">Vắng</option>
+          </select>
+          <select
+            value={shirtSizeFilter}
+            onChange={(e) => setShirtSizeFilter(e.target.value)}
+            className="w-full md:w-36 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm appearance-none cursor-pointer font-medium"
+          >
+            <option value="">Size áo (Tất cả)</option>
+            <option value="selected">Đã chọn size áo</option>
+            <option value="not_selected">Chưa chọn size áo</option>
           </select>
         </div>
       </div>
