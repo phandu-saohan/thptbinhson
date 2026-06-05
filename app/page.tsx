@@ -2693,7 +2693,7 @@ export default function DangKyPage() {
                               }`}
                             >
                               <span className="text-sm font-extrabold">{size.name.replace('Nam ', '')}</span>
-                              <span className="text-[8px] opacity-75">{size.spec}</span>
+                              <span className="text-[11px] font-bold opacity-90">{size.spec}</span>
                             </button>
                           ))}
                         </div>
@@ -2725,7 +2725,7 @@ export default function DangKyPage() {
                               }`}
                             >
                               <span className="text-sm font-extrabold">{size.name.replace('Nữ ', '')}</span>
-                              <span className="text-[8px] opacity-75">{size.spec}</span>
+                              <span className="text-[11px] font-bold opacity-90">{size.spec}</span>
                             </button>
                           ))}
                         </div>
