@@ -342,13 +342,14 @@ export default function DashboardPage() {
       return;
     }
 
-    const headers = ['Họ và tên', 'Số điện thoại', 'Lớp C', 'Lớp B', 'Tham dự', 'Đóng góp', 'Kỷ niệm', 'Ngày đăng ký'];
+    const headers = ['Họ và tên', 'Số điện thoại', 'Lớp C', 'Lớp B', 'Tham dự', 'Size áo', 'Đóng góp', 'Kỷ niệm', 'Ngày đăng ký'];
     const rows = registrations.map(r => [
       r.name,
       r.phone,
       r.class_c || '',
       r.class_b || '',
       r.will_attend === 'yes' ? 'Có về' : 'Không về',
+      r.shirt_size || '',
       r.amount || 0,
       (r.memory || '').replace(/\n/g, ' '),
       new Date(r.created_at).toLocaleString('vi-VN')
