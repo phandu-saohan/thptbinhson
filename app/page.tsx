@@ -1281,13 +1281,6 @@ export default function DangKyPage() {
               <span className="material-symbols-outlined text-[18px]">volunteer_activism</span>
               Tài trợ
             </button>
-            <button 
-              onClick={() => setActiveTab('vannghe')}
-              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'vannghe' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-purple-600 hover:bg-purple-50 scale-95 hover:scale-100'}`}
-            >
-              <span className="material-symbols-outlined text-[18px]">mic</span>
-              Văn Nghệ
-            </button>
           </nav>
 
           {/* Login Button */}
@@ -1395,6 +1388,15 @@ export default function DangKyPage() {
             >
               <span className="material-symbols-outlined text-sm md:text-base font-bold group-hover:scale-110 transition-transform">apparel</span>
               CHỌN SIZE ÁO
+            </button>
+
+            {/* 5. Văn Nghệ */}
+            <button 
+              onClick={() => setActiveTab('vannghe')}
+              className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white px-4 py-3 md:px-5 md:py-2.5 rounded-full font-black text-[11px] md:text-sm shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 md:gap-1.5 group border-2 border-white/30 min-h-[46px] md:min-h-none"
+            >
+              <span className="material-symbols-outlined text-sm md:text-base font-bold group-hover:scale-110 transition-transform">mic</span>
+              VĂN NGHỆ
             </button>
           </div>
         </div>
