@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import TicketGenerator from '@/components/TicketGenerator';
 import MemoriesGalleryBlock from '@/components/MemoriesGalleryBlock';
+import VanNgheBlock from '@/components/VanNgheBlock';
 
 
 import { supabase } from '@/lib/supabaseClient';
@@ -647,7 +648,7 @@ export default function DangKyPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', willAttend: 'yes', memory: '', classC: '', classB: '' });
   const [selectedMemory, setSelectedMemory] = useState<{name:string;memory:string} | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'sponsor' | 'ticket' | 'memories' | 'shirt'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'plan' | 'finance' | 'sponsor' | 'ticket' | 'memories' | 'shirt' | 'vannghe'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Receipt upload & AI scan state
@@ -863,7 +864,7 @@ export default function DangKyPage() {
     // Check URL hash for direct tab linking
     if (typeof window !== 'undefined' && window.location.hash) {
       const hash = window.location.hash.replace('#', '');
-      if (['home', 'plan', 'finance', 'sponsor', 'ticket', 'memories', 'shirt'].includes(hash)) {
+      if (['home', 'plan', 'finance', 'sponsor', 'ticket', 'memories', 'shirt', 'vannghe'].includes(hash)) {
         setActiveTab(hash as any);
       }
     }
@@ -1278,6 +1279,13 @@ export default function DangKyPage() {
             >
               <span className="material-symbols-outlined text-[18px]">volunteer_activism</span>
               Tài trợ
+            </button>
+            <button 
+              onClick={() => setActiveTab('vannghe')}
+              className={`font-bold transition-all duration-300 px-6 py-2 rounded-full text-sm flex items-center gap-2 ${activeTab === 'vannghe' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md scale-100' : 'text-on-surface-variant hover:text-purple-600 hover:bg-purple-50 scale-95 hover:scale-100'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">mic</span>
+              Văn Nghệ
             </button>
           </nav>
 
@@ -2482,6 +2490,11 @@ export default function DangKyPage() {
           <TicketGenerator />
         )}
 
+        {/* Tab 8: Giao Lưu Văn Nghệ */}
+        {activeTab === 'vannghe' && (
+          <VanNgheBlock />
+        )}
+
         {/* Tab 7: Chọn Size Áo */}
         {activeTab === 'shirt' && (
           <div className="animate-in fade-in duration-700 max-w-6xl mx-auto space-y-8 mb-16">
@@ -2821,6 +2834,14 @@ export default function DangKyPage() {
           >
             <span className="material-symbols-outlined text-[24px]">volunteer_activism</span>
             <span className="text-[10px] font-bold">Tài trợ</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('vannghe')}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'vannghe' ? 'scale-110' : 'text-on-surface-variant opacity-60'}`}
+            style={activeTab === 'vannghe' ? { color: '#a855f7' } : {}}
+          >
+            <span className="material-symbols-outlined text-[24px]">mic</span>
+            <span className="text-[10px] font-bold">Văn Nghệ</span>
           </button>
         </div>
       </nav>
