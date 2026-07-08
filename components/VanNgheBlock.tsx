@@ -276,8 +276,8 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
   );
 }
 
-// ── Main VanNgheBlock ──────────────────────────────────────────────────────
-export default function VanNgheBlock() {
+// ── Main VanNgheBlock ──────────────────────────────────────────
+export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () => void }) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -344,21 +344,17 @@ export default function VanNgheBlock() {
   const getMedalEmoji = (idx: number) => ['🥇', '🥈', '🥉'][idx] ?? `#${idx + 1}`;
 
   return (
-    <div className="animate-in fade-in duration-700 min-h-screen">
-      {/* Header */}
-      <div className="text-center mb-6 md:mb-10 relative">
-        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 px-4 py-1.5 rounded-full mb-3">
-          <span className="text-purple-600 font-bold text-xs uppercase tracking-widest">Sân khấu đêm nay</span>
+    <div className="animate-in fade-in duration-700">
+      {/* Register Button — compact top bar */}
+      <div className="flex items-center justify-between mb-6 md:mb-8">
+        <div>
+          <p className="text-white/60 text-sm">
+            <span className="font-black text-white text-lg">{waitingQueue.length}</span> bài chờ · <span className="font-black text-pink-300 text-lg">{doneList.length}</span> bài đã hát
+          </p>
         </div>
-        <h2 className="text-3xl md:text-5xl font-headline text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 tracking-tight">
-          🎤 Giao Lưu Văn Nghệ
-        </h2>
-        <p className="text-slate-500 mt-2 text-sm md:text-base">Đăng ký biểu diễn & bình chọn bài hát yêu thích</p>
-
-        {/* Nút đăng ký nổi bật */}
         <button
           onClick={() => setShowModal(true)}
-          className="mt-5 inline-flex items-center gap-2.5 bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 text-white font-black px-8 py-3.5 rounded-full shadow-2xl shadow-pink-500/40 hover:shadow-pink-500/60 hover:scale-105 active:scale-95 transition-all text-base"
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 text-white font-black px-5 py-2.5 rounded-full shadow-xl shadow-pink-500/40 hover:shadow-pink-500/60 hover:scale-105 active:scale-95 transition-all text-sm"
         >
           <span className="material-symbols-outlined text-[22px]">mic</span>
           Đăng ký bài hát
@@ -367,8 +363,9 @@ export default function VanNgheBlock() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-10 h-10 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <div className="w-12 h-12 border-4 border-pink-400 border-t-transparent rounded-full animate-spin" />
+          <p className="text-white/50 text-sm">Đang tải dữ liệu...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-8 items-start">
@@ -379,17 +376,17 @@ export default function VanNgheBlock() {
               <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center shadow-md">
                 <span className="material-symbols-outlined text-white text-[18px]">queue_music</span>
               </div>
-              <h3 className="font-black text-lg text-slate-800">Hàng chờ biểu diễn</h3>
-              <span className="ml-auto bg-orange-100 text-orange-600 font-black text-xs px-3 py-1 rounded-full border border-orange-200">
+              <h3 className="font-black text-lg text-white">Hàng chờ biểu diễn</h3>
+              <span className="ml-auto bg-orange-500/20 text-orange-300 font-black text-xs px-3 py-1 rounded-full border border-orange-500/30">
                 {waitingQueue.length} bài
               </span>
             </div>
 
             {waitingQueue.length === 0 ? (
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-dashed border-purple-200 rounded-3xl p-10 text-center">
+              <div className="bg-white/5 border-2 border-dashed border-white/20 rounded-3xl p-10 text-center">
                 <span className="text-5xl block mb-3">🎤</span>
-                <p className="text-slate-500 font-medium">Chưa có ai đăng ký</p>
-                <p className="text-slate-400 text-sm mt-1">Hãy là người đầu tiên lên sân khấu!</p>
+                <p className="text-white/70 font-medium">Chưa có ai đăng ký</p>
+                <p className="text-white/40 text-sm mt-1">Hãy là người đầu tiên lên sân khấu!</p>
                 <button
                   onClick={() => setShowModal(true)}
                   className="mt-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold px-6 py-2.5 rounded-full text-sm hover:scale-105 active:scale-95 transition-all shadow-lg"
@@ -453,17 +450,17 @@ export default function VanNgheBlock() {
               <div className="w-8 h-8 bg-gradient-to-br from-rose-400 to-pink-600 rounded-full flex items-center justify-center shadow-md">
                 <span className="text-white text-base">❤️</span>
               </div>
-              <h3 className="font-black text-lg text-slate-800">Bảng xếp hạng</h3>
-              <span className="ml-auto bg-rose-100 text-rose-600 font-black text-xs px-3 py-1 rounded-full border border-rose-200">
+              <h3 className="font-black text-lg text-white">Bảng xếp hạng</h3>
+              <span className="ml-auto bg-rose-500/20 text-rose-300 font-black text-xs px-3 py-1 rounded-full border border-rose-500/30">
                 {doneList.length} bài
               </span>
             </div>
 
             {doneList.length === 0 ? (
-              <div className="bg-gradient-to-br from-rose-50 to-pink-50 border-2 border-dashed border-rose-200 rounded-3xl p-10 text-center">
+              <div className="bg-white/5 border-2 border-dashed border-white/20 rounded-3xl p-10 text-center">
                 <span className="text-5xl block mb-3">🏆</span>
-                <p className="text-slate-500 font-medium">Chưa có bài hát nào kết thúc</p>
-                <p className="text-slate-400 text-sm mt-1">Bình chọn ngay sau khi màn trình diễn kết thúc!</p>
+                <p className="text-white/70 font-medium">Chưa có bài hát nào kết thúc</p>
+                <p className="text-white/40 text-sm mt-1">Bình chọn ngay sau khi màn trình diễn kết thúc!</p>
               </div>
             ) : (
               <div className="space-y-3">

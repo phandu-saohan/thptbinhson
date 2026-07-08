@@ -1237,7 +1237,8 @@ export default function DangKyPage() {
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
-      {/* TopAppBar */}
+      {/* TopAppBar — ẩn khi xem Văn Nghệ full screen */}
+      {activeTab !== 'vannghe' && (
       <header className="bg-surface/80 backdrop-blur-2xl border-b border-outline-variant/20 shadow-sm top-0 z-50 sticky transition-all duration-300">
         <div className="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 w-full max-w-7xl mx-auto">
           {/* Logo & Brand */}
@@ -1300,8 +1301,10 @@ export default function DangKyPage() {
           </a>
         </div>
       </header>
+      )}
 
-      {/* Hero Section: Edge-to-edge */}
+      {/* Hero Section: Edge-to-edge — ẩn khi xem Văn Nghệ */}
+      {activeTab !== 'vannghe' && (
       <section className="relative w-full overflow-hidden min-h-[420px] md:min-h-[530px] flex items-center justify-center text-center p-4 md:p-8 group">
         <div className="absolute inset-0 z-0">
           <Image 
@@ -1396,6 +1399,33 @@ export default function DangKyPage() {
           </div>
         </div>
       </section>
+      )}
+
+      {/* Văn Nghệ Full Screen */}
+      {activeTab === 'vannghe' && (
+        <div className="fixed inset-0 z-40 bg-gradient-to-br from-purple-950 via-purple-900 to-pink-900 overflow-y-auto pb-20 md:pb-0">
+          {/* Mini nav bar */}
+          <div className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-purple-700/50 px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🎤</span>
+              <div>
+                <h2 className="text-white font-black text-base leading-tight">Giao Lưu Văn Nghệ</h2>
+                <p className="text-purple-300 text-[11px]">THPT Bình Sơn — Hội khóa 2003–2006</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setActiveTab('home')}
+              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+            >
+              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+              Trang chủ
+            </button>
+          </div>
+          <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto">
+            <VanNgheBlock onNavigateHome={() => setActiveTab('home')} />
+          </div>
+        </div>
+      )}
 
       <main className="max-w-container-max mx-auto px-3 md:px-margin-desktop py-4 md:py-stack-lg">
 
@@ -2846,7 +2876,8 @@ export default function DangKyPage() {
         </div>
       </nav>
 
-      {/* Floating Action Button for Tạo Vé */}
+      {/* Floating Action Button for Tạo Vé — ẩn khi xem Văn Nghệ */}
+      {activeTab !== 'vannghe' && (
       <button 
         onClick={() => setActiveTab('ticket')}
         id="fab-ticket-btn"
@@ -2855,9 +2886,11 @@ export default function DangKyPage() {
         <span className="material-symbols-outlined text-[22px]">confirmation_number</span>
         <span className="text-[8px] font-bold leading-none uppercase">Vé</span>
       </button>
+      )}
 
 
-      {/* Footer */}
+      {/* Footer — ẩn khi xem Văn Nghệ */}
+      {activeTab !== 'vannghe' && (
       <footer className="bg-surface-container-high border-t border-outline-variant mt-20 pb-20 md:pb-0">
         <div className="flex flex-col md:flex-row justify-between items-center gap-stack-md px-margin-mobile md:px-margin-desktop py-stack-lg w-full max-w-container-max mx-auto">
           <div className="flex flex-col items-center md:items-start">
@@ -2871,6 +2904,7 @@ export default function DangKyPage() {
           </div>
         </div>
       </footer>
+      )}
 
       {/* Memory Detail Modal */}
       {selectedMemory && (
