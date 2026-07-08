@@ -1,5 +1,5 @@
 -- ============================================================
--- MIGRATION: Bảng Giao Lưu Văn Nghệ
+-- MIGRATION: Bảng Giao Lưu Văn Nghệ (idempotent - chạy nhiều lần không lỗi)
 -- Chạy trong Supabase SQL Editor
 -- ============================================================
 
@@ -29,7 +29,15 @@ CREATE TABLE IF NOT EXISTS public.vannghe_hearts (
 ALTER TABLE public.vannghe_songs  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vannghe_hearts ENABLE ROW LEVEL SECURITY;
 
--- Policies: public read/insert, auth update/delete
+-- Xóa policies cũ nếu đã tồn tại (tránh lỗi duplicate)
+DROP POLICY IF EXISTS "vannghe_songs_select_public" ON public.vannghe_songs;
+DROP POLICY IF EXISTS "vannghe_songs_insert_public" ON public.vannghe_songs;
+DROP POLICY IF EXISTS "vannghe_songs_update_auth"   ON public.vannghe_songs;
+DROP POLICY IF EXISTS "vannghe_songs_delete_auth"   ON public.vannghe_songs;
+DROP POLICY IF EXISTS "vannghe_hearts_select_public" ON public.vannghe_hearts;
+DROP POLICY IF EXISTS "vannghe_hearts_insert_public" ON public.vannghe_hearts;
+
+-- Tạo lại policies
 CREATE POLICY "vannghe_songs_select_public"
   ON public.vannghe_songs FOR SELECT USING (true);
 
@@ -48,9 +56,18 @@ CREATE POLICY "vannghe_hearts_select_public"
 CREATE POLICY "vannghe_hearts_insert_public"
   ON public.vannghe_hearts FOR INSERT WITH CHECK (true);
 
--- Realtime
-ALTER PUBLICATION supabase_realtime ADD TABLE public.vannghe_songs;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.vannghe_hearts;
+-- Realtime (bỏ qua nếu đã thêm rồi)
+DO $$
+BEGIN
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.vannghe_songs;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.vannghe_hearts;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+END $$;
 
 -- Index
 CREATE INDEX IF NOT EXISTS idx_vannghe_songs_status     ON public.vannghe_songs (status);
