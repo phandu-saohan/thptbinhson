@@ -304,9 +304,9 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
 
   useEffect(() => {
     fetchSongs();
-    // Realtime subscription
+    // Dùng tên channel unique để tránh lỗi StrictMode double-invoke
     const channel = supabase
-      .channel('vannghe-realtime')
+      .channel(`vannghe-realtime-${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'vannghe_songs' }, () => fetchSongs())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
