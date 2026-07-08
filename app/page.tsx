@@ -5,6 +5,7 @@ import Image from 'next/image';
 import TicketGenerator from '@/components/TicketGenerator';
 import MemoriesGalleryBlock from '@/components/MemoriesGalleryBlock';
 import VanNgheBlock from '@/components/VanNgheBlock';
+import VanNgheQR from '@/components/VanNgheQR';
 
 
 import { supabase } from '@/lib/supabaseClient';
@@ -1407,7 +1408,7 @@ export default function DangKyPage() {
       {activeTab === 'vannghe' && (
         <div className="fixed inset-0 z-40 bg-gradient-to-br from-purple-950 via-purple-900 to-pink-900 overflow-y-auto pb-20 md:pb-0">
           {/* Mini nav bar */}
-          <div className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-purple-700/50 px-4 py-3 flex items-center justify-between">
+          <div className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-purple-700/50 px-4 py-3 flex items-center justify-between relative">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🎤</span>
               <div>
@@ -1415,13 +1416,16 @@ export default function DangKyPage() {
                 <p className="text-purple-300 text-[11px]">THPT Bình Sơn — Hội khóa 2003–2006</p>
               </div>
             </div>
-            <button
-              onClick={() => setActiveTab('home')}
-              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
-            >
-              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-              Trang chủ
-            </button>
+            <div className="flex items-center gap-2">
+              <VanNgheQR />
+              <button
+                onClick={() => setActiveTab('home')}
+                className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+              >
+                <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+                Trang chủ
+              </button>
+            </div>
           </div>
           <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto">
             <VanNgheBlock onNavigateHome={() => setActiveTab('home')} />
