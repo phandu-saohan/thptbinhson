@@ -304,12 +304,9 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
 
   useEffect(() => {
     fetchSongs();
-    // Dùng tên channel unique để tránh lỗi StrictMode double-invoke
-    const channel = supabase
-      .channel(`vannghe-realtime-${Date.now()}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'vannghe_songs' }, () => fetchSongs())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    // Dùng polling thay cho Realtime để tránh lỗi channel conflict trong StrictMode
+    const timer = setInterval(fetchSongs, 5000);
+    return () => clearInterval(timer);
   }, [fetchSongs]);
 
   const handleHeart = async (song: Song) => {
