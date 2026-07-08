@@ -335,6 +335,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   const [showModal, setShowModal] = useState(false);
   const [likedSongs, setLikedSongs] = useState<Set<string>>(new Set());
   const [heartingId, setHeartingId] = useState<string | null>(null);
+  const [markingDoneId, setMarkingDoneId] = useState<string | null>(null);
 
   // Load danh sách bài hát
   const fetchSongs = useCallback(async () => {
@@ -376,6 +377,20 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
       }
     } finally {
       setHeartingId(null);
+    }
+  };
+
+  const handleMarkDone = async (song: Song) => {
+    if (markingDoneId) return;
+    setMarkingDoneId(song.id);
+    try {
+      await supabase
+        .from('vannghe_songs')
+        .update({ status: 'done' })
+        .eq('id', song.id);
+      fetchSongs();
+    } finally {
+      setMarkingDoneId(null);
     }
   };
 
@@ -481,11 +496,26 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                         </div>
                       </div>
 
-                      {idx === 0 && (
-                        <span className="shrink-0 text-[10px] font-black text-orange-500 bg-orange-50 border border-orange-200 px-2 py-1 rounded-full animate-pulse">
-                          ĐANG HÁT
-                        </span>
-                      )}
+                      {/* Badge ĐANG HÁT + nút XONG cho bài đầu */}
+                      {idx === 0 ? (
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                          <span className="text-[10px] font-black text-orange-500 bg-orange-50 border border-orange-200 px-2 py-1 rounded-full animate-pulse">
+                            ĐANG HÁT
+                          </span>
+                          <button
+                            onClick={() => handleMarkDone(song)}
+                            disabled={markingDoneId === song.id}
+                            className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-[11px] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:scale-100"
+                          >
+                            {markingDoneId === song.id ? (
+                              <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                            )}
+                            Xong
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 ))}
