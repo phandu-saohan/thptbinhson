@@ -38,6 +38,18 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Xử lý upload ảnh từ thư viện
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setAvatarDataUrl(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    // Reset input để có thể chọn lại cùng file
+    e.target.value = '';
+  };
 
   // Mở camera trước
   const openCamera = async () => {
@@ -153,7 +165,7 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Avatar / Camera */}
+          {/* Avatar / Camera / Upload */}
           <div className="flex flex-col items-center gap-3">
             {cameraMode ? (
               <div className="relative">
@@ -173,6 +185,13 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
                   <span className="material-symbols-outlined text-[20px]">photo_camera</span>
                   Chụp ảnh
                 </button>
+                <button
+                  type="button"
+                  onClick={() => { stream?.getTracks().forEach(t => t.stop()); setStream(null); setCameraMode(false); }}
+                  className="mt-2 w-full text-slate-400 text-xs font-medium text-center hover:text-slate-600 transition-colors"
+                >
+                  Hủy
+                </button>
               </div>
             ) : avatarDataUrl ? (
               <div className="flex flex-col items-center gap-2">
@@ -181,26 +200,59 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
                   alt="avatar"
                   className="w-28 h-28 rounded-full object-cover border-4 border-purple-400 shadow-xl"
                 />
-                <button
-                  type="button"
-                  onClick={retakePhoto}
-                  className="text-purple-600 text-sm font-bold underline flex items-center gap-1"
-                >
-                  <span className="material-symbols-outlined text-[16px]">refresh</span>
-                  Chụp lại
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={retakePhoto}
+                    className="text-purple-600 text-xs font-bold flex items-center gap-1 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-200 hover:bg-purple-100 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">photo_camera</span>
+                    Chụp lại
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-pink-600 text-xs font-bold flex items-center gap-1 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-200 hover:bg-pink-100 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">upload</span>
+                    Đổi ảnh
+                  </button>
+                </div>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={openCamera}
-                className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 border-2 border-dashed border-purple-400 flex flex-col items-center justify-center gap-1 hover:bg-purple-50 transition-colors group"
-              >
-                <span className="material-symbols-outlined text-3xl text-purple-500 group-hover:scale-110 transition-transform">photo_camera</span>
-                <span className="text-[11px] font-bold text-purple-500">Chụp selfie</span>
-              </button>
+              <div className="flex flex-col items-center gap-3 w-full">
+                <p className="text-[11px] text-slate-400 font-medium">Chọn ảnh đại diện (tùy chọn)</p>
+                <div className="flex gap-3">
+                  {/* Chụp selfie */}
+                  <button
+                    type="button"
+                    onClick={openCamera}
+                    className="flex flex-col items-center gap-2 w-28 h-28 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 border-2 border-dashed border-purple-300 justify-center hover:bg-purple-50 hover:border-purple-400 transition-all group"
+                  >
+                    <span className="material-symbols-outlined text-3xl text-purple-500 group-hover:scale-110 transition-transform">photo_camera</span>
+                    <span className="text-[11px] font-bold text-purple-600">Chụp selfie</span>
+                  </button>
+                  {/* Upload từ thư viện */}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex flex-col items-center gap-2 w-28 h-28 rounded-2xl bg-gradient-to-br from-pink-100 to-rose-100 border-2 border-dashed border-pink-300 justify-center hover:bg-pink-50 hover:border-pink-400 transition-all group"
+                  >
+                    <span className="material-symbols-outlined text-3xl text-pink-500 group-hover:scale-110 transition-transform">upload</span>
+                    <span className="text-[11px] font-bold text-pink-600">Tải ảnh lên</span>
+                  </button>
+                </div>
+              </div>
             )}
             <canvas ref={canvasRef} className="hidden" />
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
           </div>
 
           {/* Fields */}
