@@ -344,6 +344,9 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   const [heartingId, setHeartingId] = useState<string | null>(null);
   const [markingDoneId, setMarkingDoneId] = useState<string | null>(null);
   const [notePopupSong, setNotePopupSong] = useState<Song | null>(null);
+  const [activeView, setActiveView] = useState<'queue' | 'ranking'>('queue');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const NOTE_LIMIT = 60;
 
   // Load danh sách bài hát
@@ -403,6 +406,17 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
     }
   };
 
+  const handleDelete = async (songId: string) => {
+    setDeletingId(songId);
+    try {
+      await supabase.from('vannghe_songs').delete().eq('id', songId);
+      setConfirmDeleteId(null);
+      fetchSongs();
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const waitingQueue = songs.filter(s => s.status === 'waiting');
   const doneList = songs
     .filter(s => s.status === 'done')
@@ -418,11 +432,11 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
 
   return (
     <div className="animate-in fade-in duration-700">
-      {/* Register Button — compact top bar */}
-      <div className="flex items-center justify-between mb-6 md:mb-8">
+      {/* Top bar */}
+      <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-white/60 text-sm">
-            <span className="font-black text-white text-lg">{waitingQueue.length}</span> bài chờ · <span className="font-black text-pink-300 text-lg">{doneList.length}</span> bài đã hát
+            <span className="font-black text-white text-lg">{waitingQueue.length}</span> bài chờ · <span className="font-black text-pink-300 text-lg">{doneList.length}</span> bài đã hát
           </p>
         </div>
         <button
@@ -435,6 +449,38 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
         </button>
       </div>
 
+      {/* Mobile tab switcher */}
+      <div className="flex lg:hidden bg-white/10 rounded-2xl p-1 mb-5 gap-1">
+        <button
+          onClick={() => setActiveView('queue')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-sm transition-all ${
+            activeView === 'queue'
+              ? 'bg-white text-purple-700 shadow-md'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">queue_music</span>
+          Hàng chờ
+          <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-black ${
+            activeView === 'queue' ? 'bg-orange-100 text-orange-600' : 'bg-white/20 text-white'
+          }`}>{waitingQueue.length}</span>
+        </button>
+        <button
+          onClick={() => setActiveView('ranking')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-sm transition-all ${
+            activeView === 'ranking'
+              ? 'bg-white text-pink-700 shadow-md'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          <span className="text-base">❤️</span>
+          Bảng xếp hạng
+          <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-black ${
+            activeView === 'ranking' ? 'bg-pink-100 text-pink-600' : 'bg-white/20 text-white'
+          }`}>{doneList.length}</span>
+        </button>
+      </div>
+
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4">
           <div className="w-12 h-12 border-4 border-pink-400 border-t-transparent rounded-full animate-spin" />
@@ -444,7 +490,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-8 items-start">
 
           {/* ── CỘT TRÁI: Hàng chờ biểu diễn ── */}
-          <div>
+          <div className={activeView === 'ranking' ? 'hidden lg:block' : ''}>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center shadow-md">
                 <span className="material-symbols-outlined text-white text-[18px]">queue_music</span>
@@ -511,20 +557,75 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                           <span className="text-[10px] font-black text-orange-500 bg-orange-50 border border-orange-200 px-2 py-1 rounded-full animate-pulse">
                             ĐANG HÁT
                           </span>
-                          <button
-                            onClick={() => handleMarkDone(song)}
-                            disabled={markingDoneId === song.id}
-                            className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-[11px] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:scale-100"
-                          >
-                            {markingDoneId === song.id ? (
-                              <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => handleMarkDone(song)}
+                              disabled={markingDoneId === song.id}
+                              className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-[11px] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:scale-100"
+                            >
+                              {markingDoneId === song.id ? (
+                                <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                              )}
+                              Xong
+                            </button>
+                            {confirmDeleteId === song.id ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleDelete(song.id)}
+                                  disabled={deletingId === song.id}
+                                  className="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-full transition-all"
+                                >
+                                  Xóa
+                                </button>
+                                <button
+                                  onClick={() => setConfirmDeleteId(null)}
+                                  className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[10px] px-2 py-1.5 rounded-full transition-all"
+                                >
+                                  Hủy
+                                </button>
+                              </div>
                             ) : (
-                              <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                              <button
+                                onClick={() => setConfirmDeleteId(song.id)}
+                                className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all shrink-0"
+                                title="Xóa đăng ký"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">delete</span>
+                              </button>
                             )}
-                            Xong
-                          </button>
+                          </div>
                         </div>
-                      ) : null}
+                      ) : (
+                        <div className="shrink-0 flex items-center gap-1.5">
+                          {confirmDeleteId === song.id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleDelete(song.id)}
+                                disabled={deletingId === song.id}
+                                className="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-full transition-all"
+                              >
+                                Xóa
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[10px] px-2 py-1.5 rounded-full transition-all"
+                              >
+                                Hủy
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteId(song.id)}
+                              className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all"
+                              title="Xóa đăng ký"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Lời nhắn — hiển thị để MC đọc */}
@@ -573,7 +674,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
           </div>
 
           {/* ── CỘT PHẢI: Bài hát đã biểu diễn & bình chọn ── */}
-          <div>
+          <div className={activeView === 'queue' ? 'hidden lg:block' : ''}>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-rose-400 to-pink-600 rounded-full flex items-center justify-center shadow-md">
                 <span className="text-white text-base">❤️</span>
@@ -632,23 +733,51 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                           </div>
                         </div>
 
-                        {/* Heart button */}
-                        <div className="flex flex-col items-center shrink-0">
-                          <button
-                            onClick={() => handleHeart(song)}
-                            disabled={isLiked || isHearting}
-                            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-md text-xl ${
-                              isLiked
-                                ? 'bg-rose-500 text-white scale-95 shadow-rose-300'
-                                : 'bg-white border-2 border-rose-300 text-rose-400 hover:bg-rose-500 hover:text-white hover:scale-110 hover:shadow-rose-300 active:scale-90'
-                            } ${isHearting ? 'animate-bounce' : ''}`}
-                            title={isLiked ? 'Đã bình chọn' : 'Bấm tim yêu thích'}
-                          >
-                            {isLiked ? '❤️' : '🤍'}
-                          </button>
-                          <span className="text-xs font-black text-rose-500 mt-1">
-                            {song.heart_count.toLocaleString()}
-                          </span>
+                        {/* Actions: Delete + Heart */}
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          {confirmDeleteId === song.id ? (
+                            <div className="flex flex-col items-center gap-1 bg-red-50 border border-red-100 rounded-xl p-1.5 animate-in fade-in duration-200">
+                              <button
+                                onClick={() => handleDelete(song.id)}
+                                disabled={deletingId === song.id}
+                                className="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] px-2.5 py-1 rounded-full transition-all"
+                              >
+                                Xóa
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[10px] px-2.5 py-1 rounded-full transition-all"
+                              >
+                                Hủy
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteId(song.id)}
+                              className="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all border border-red-50/50"
+                              title="Xóa bài hát"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          )}
+
+                          <div className="flex flex-col items-center">
+                            <button
+                              onClick={() => handleHeart(song)}
+                              disabled={isLiked || isHearting}
+                              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 shadow-md text-lg ${
+                                isLiked
+                                  ? 'bg-rose-500 text-white scale-95 shadow-rose-300'
+                                  : 'bg-white border-2 border-rose-300 text-rose-400 hover:bg-rose-500 hover:text-white hover:scale-110 hover:shadow-rose-300 active:scale-90'
+                              } ${isHearting ? 'animate-bounce' : ''}`}
+                              title={isLiked ? 'Đã bình chọn' : 'Bấm tim yêu thích'}
+                            >
+                              {isLiked ? '❤️' : '🤍'}
+                            </button>
+                            <span className="text-xs font-black text-rose-500 mt-1">
+                              {song.heart_count.toLocaleString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
