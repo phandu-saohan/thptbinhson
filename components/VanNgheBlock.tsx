@@ -343,6 +343,8 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   const [likedSongs, setLikedSongs] = useState<Set<string>>(new Set());
   const [heartingId, setHeartingId] = useState<string | null>(null);
   const [markingDoneId, setMarkingDoneId] = useState<string | null>(null);
+  const [notePopupSong, setNotePopupSong] = useState<Song | null>(null);
+  const NOTE_LIMIT = 60;
 
   // Load danh sách bài hát
   const fetchSongs = useCallback(async () => {
@@ -530,15 +532,37 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                       idx === 0 ? (
                         <div className="mt-3 flex items-start gap-2 bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200 rounded-xl px-3 py-2.5">
                           <span className="text-orange-400 text-base shrink-0 mt-0.5">💬</span>
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <p className="text-[10px] font-black text-orange-400 uppercase tracking-wider mb-0.5">Lời nhắn</p>
-                            <p className="text-orange-700 text-sm font-semibold leading-snug italic">"{song.note}"</p>
+                            {song.note.length > NOTE_LIMIT ? (
+                              <>
+                                <p className="text-orange-700 text-sm font-semibold leading-snug italic">
+                                  "{song.note.slice(0, NOTE_LIMIT)}..."
+                                </p>
+                                <button
+                                  onClick={() => setNotePopupSong(song)}
+                                  className="mt-1 text-[11px] font-black text-orange-500 underline hover:text-orange-700 transition-colors"
+                                >Xem đầy đủ ↗</button>
+                              </>
+                            ) : (
+                              <p className="text-orange-700 text-sm font-semibold leading-snug italic">"{song.note}"</p>
+                            )}
                           </div>
                         </div>
                       ) : (
                         <div className="mt-2 flex items-start gap-1.5 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2">
                           <span className="text-slate-300 text-sm shrink-0 mt-0.5">💬</span>
-                          <p className="text-slate-500 text-xs italic leading-snug">"{song.note}"</p>
+                          {song.note.length > NOTE_LIMIT ? (
+                            <div className="flex-1 min-w-0">
+                              <p className="text-slate-500 text-xs italic leading-snug truncate">"{song.note.slice(0, NOTE_LIMIT)}..."</p>
+                              <button
+                                onClick={() => setNotePopupSong(song)}
+                                className="text-[10px] font-bold text-purple-500 underline hover:text-purple-700 transition-colors mt-0.5"
+                              >Xem thêm</button>
+                            </div>
+                          ) : (
+                            <p className="text-slate-500 text-xs italic leading-snug">"{song.note}"</p>
+                          )}
                         </div>
                       )
                     )}
@@ -646,6 +670,55 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
           }}
           existingSongs={songs}
         />
+      )}
+
+      {/* Note Popup — xem lời nhắn đầy đủ */}
+      {notePopupSong && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center px-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setNotePopupSong(null)}
+          />
+          {/* Card */}
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm animate-in zoom-in-95 fade-in duration-200 overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 px-5 py-4 text-white">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-black text-base leading-tight truncate">🎵 {notePopupSong.song_title}</p>
+                  <p className="text-white/80 text-xs mt-0.5">{notePopupSong.singer_name}
+                    {notePopupSong.class_name && <span className="ml-1 opacity-70">· {notePopupSong.class_name}</span>}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setNotePopupSong(null)}
+                  className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+            </div>
+            {/* Body */}
+            <div className="px-5 py-5">
+              <p className="text-[11px] font-black text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                <span>💬</span> Lời nhắn của người biểu diễn
+              </p>
+              <blockquote className="text-slate-700 text-base font-medium leading-relaxed italic border-l-4 border-orange-300 pl-4">
+                "{notePopupSong.note}"
+              </blockquote>
+            </div>
+            {/* Footer */}
+            <div className="px-5 pb-5">
+              <button
+                onClick={() => setNotePopupSong(null)}
+                className="w-full bg-gradient-to-r from-orange-400 to-pink-500 text-white font-black py-2.5 rounded-2xl hover:scale-[1.02] active:scale-95 transition-all text-sm shadow-lg"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
