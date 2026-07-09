@@ -376,6 +376,8 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   const [editingSong, setEditingSong] = useState<Song | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [requeuingId, setRequeuingId] = useState<string | null>(null);
   const NOTE_LIMIT = 60;
 
@@ -437,10 +439,16 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   };
 
   const handleDelete = async (songId: string) => {
+    if (deletePassword !== '88888888') {
+      setDeleteError('Sai mật khẩu!');
+      return;
+    }
     setDeletingId(songId);
+    setDeleteError(null);
     try {
       await supabase.from('vannghe_songs').delete().eq('id', songId);
       setConfirmDeleteId(null);
+      setDeletePassword('');
       fetchSongs();
     } finally {
       setDeletingId(null);
@@ -615,20 +623,36 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                               Xong
                             </button>
                             {confirmDeleteId === song.id ? (
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => handleDelete(song.id)}
-                                  disabled={deletingId === song.id}
-                                  className="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-full transition-all"
-                                >
-                                  Xóa
-                                </button>
-                                <button
-                                  onClick={() => setConfirmDeleteId(null)}
-                                  className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[10px] px-2 py-1.5 rounded-full transition-all"
-                                >
-                                  Hủy
-                                </button>
+                              <div className="flex flex-col items-end gap-1 bg-red-50 border border-red-100 rounded-xl p-1.5 animate-in fade-in duration-200">
+                                <input
+                                  type="password"
+                                  placeholder="Mật khẩu..."
+                                  value={deletePassword}
+                                  onChange={(e) => setDeletePassword(e.target.value)}
+                                  className="px-2 py-0.5 text-[11px] border border-red-300 rounded focus:outline-none focus:ring-1 focus:ring-red-400 w-20 text-slate-800"
+                                />
+                                {deleteError && (
+                                  <span className="text-[9px] text-red-600 font-bold">{deleteError}</span>
+                                )}
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleDelete(song.id)}
+                                    disabled={deletingId === song.id}
+                                    className="bg-red-500 hover:bg-red-600 text-white font-bold text-[9px] px-2 py-0.5 rounded transition-all"
+                                  >
+                                    Xác nhận
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setConfirmDeleteId(null);
+                                      setDeletePassword('');
+                                      setDeleteError(null);
+                                    }}
+                                    className="bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold text-[9px] px-2 py-0.5 rounded transition-all"
+                                  >
+                                    Hủy
+                                  </button>
+                                </div>
                               </div>
                             ) : (
                               <div className="flex items-center gap-1">
@@ -653,20 +677,36 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                       ) : (
                         <div className="shrink-0 flex items-center gap-1.5">
                           {confirmDeleteId === song.id ? (
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleDelete(song.id)}
-                                disabled={deletingId === song.id}
-                                className="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-full transition-all"
-                              >
-                                Xóa
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteId(null)}
-                                className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[10px] px-2 py-1.5 rounded-full transition-all"
-                              >
-                                Hủy
-                              </button>
+                            <div className="flex flex-col items-end gap-1 bg-red-50 border border-red-100 rounded-xl p-1.5 animate-in fade-in duration-200">
+                              <input
+                                type="password"
+                                placeholder="Mật khẩu..."
+                                value={deletePassword}
+                                onChange={(e) => setDeletePassword(e.target.value)}
+                                className="px-2 py-0.5 text-[11px] border border-red-300 rounded focus:outline-none focus:ring-1 focus:ring-red-400 w-20 text-slate-800"
+                              />
+                              {deleteError && (
+                                <span className="text-[9px] text-red-600 font-bold">{deleteError}</span>
+                              )}
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleDelete(song.id)}
+                                  disabled={deletingId === song.id}
+                                  className="bg-red-500 hover:bg-red-600 text-white font-bold text-[9px] px-2 py-0.5 rounded transition-all"
+                                >
+                                  Xác nhận
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setConfirmDeleteId(null);
+                                    setDeletePassword('');
+                                    setDeleteError(null);
+                                  }}
+                                  className="bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold text-[9px] px-2 py-0.5 rounded transition-all"
+                                >
+                                  Hủy
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1">
@@ -799,19 +839,35 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                         <div className="flex items-center gap-2.5 shrink-0">
                           {confirmDeleteId === song.id ? (
                             <div className="flex flex-col items-center gap-1 bg-red-50 border border-red-100 rounded-xl p-1.5 animate-in fade-in duration-200">
-                              <button
-                                onClick={() => handleDelete(song.id)}
-                                disabled={deletingId === song.id}
-                                className="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] px-2.5 py-1 rounded-full transition-all"
-                              >
-                                Xóa
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteId(null)}
-                                className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[10px] px-2.5 py-1 rounded-full transition-all"
-                              >
-                                Hủy
-                              </button>
+                              <input
+                                type="password"
+                                placeholder="Mật khẩu..."
+                                value={deletePassword}
+                                onChange={(e) => setDeletePassword(e.target.value)}
+                                className="px-2 py-0.5 text-[11px] border border-red-300 rounded focus:outline-none focus:ring-1 focus:ring-red-400 w-20 text-slate-800"
+                              />
+                              {deleteError && (
+                                <span className="text-[9px] text-red-600 font-bold">{deleteError}</span>
+                              )}
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleDelete(song.id)}
+                                  disabled={deletingId === song.id}
+                                  className="bg-red-500 hover:bg-red-600 text-white font-bold text-[9px] px-2 py-0.5 rounded transition-all"
+                                >
+                                  Xác nhận
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setConfirmDeleteId(null);
+                                    setDeletePassword('');
+                                    setDeleteError(null);
+                                  }}
+                                  className="bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold text-[9px] px-2 py-0.5 rounded transition-all"
+                                >
+                                  Hủy
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1">
