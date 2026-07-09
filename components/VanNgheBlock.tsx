@@ -591,57 +591,59 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                     {idx === 0 && (
                       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-pink-400 rounded-t-2xl" />
                     )}
-                    <div className="flex items-center gap-3">
-                      {/* Order number */}
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0 shadow-md ${idx === 0 ? 'bg-gradient-to-br from-orange-400 to-pink-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                        {idx === 0 ? <span className="material-symbols-outlined text-[18px]">mic</span> : idx + 1}
-                      </div>
-
-                      {/* Avatar */}
-                      {song.avatar_url ? (
-                        <img src={song.avatar_url} alt={song.singer_name} className="w-12 h-12 rounded-full object-cover border-2 border-purple-200 shadow-sm shrink-0" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 border-2 border-purple-200 flex items-center justify-center font-black text-purple-600 text-lg shrink-0">
-                          {song.singer_name.charAt(0).toUpperCase()}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        {/* Order number */}
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0 shadow-md ${idx === 0 ? 'bg-gradient-to-br from-orange-400 to-pink-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                          {idx === 0 ? <span className="material-symbols-outlined text-[18px]">mic</span> : idx + 1}
                         </div>
-                      )}
 
-                      {/* Info */}
-                      <div className="min-w-0 flex-1">
-                        <p className="font-black text-slate-800 text-sm leading-tight truncate">{song.singer_name}</p>
-                        <p className="font-bold text-purple-600 text-sm truncate">🎵 {song.song_title}</p>
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          {song.artist && <span className="text-[11px] text-slate-400 truncate">Ca sĩ: {song.artist}</span>}
-                          {song.class_name && (
-                            <span className="bg-purple-50 text-purple-600 font-bold text-[10px] px-2 py-0.5 rounded-full border border-purple-100">{song.class_name}</span>
-                          )}
+                        {/* Avatar */}
+                        {song.avatar_url ? (
+                          <img src={song.avatar_url} alt={song.singer_name} className="w-12 h-12 rounded-full object-cover border-2 border-purple-200 shadow-sm shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 border-2 border-purple-200 flex items-center justify-center font-black text-purple-600 text-lg shrink-0">
+                            {song.singer_name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+
+                        {/* Info */}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-black text-slate-800 text-sm leading-tight break-words">{song.singer_name}</p>
+                          <p className="font-bold text-purple-600 text-sm break-words">🎵 {song.song_title}</p>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            {song.artist && <span className="text-[11px] text-slate-400 break-words">Ca sĩ: {song.artist}</span>}
+                            {song.class_name && (
+                              <span className="bg-purple-50 text-purple-600 font-bold text-[10px] px-2 py-0.5 rounded-full border border-purple-100">{song.class_name}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       {/* Badge ĐANG HÁT + nút XONG cho bài đầu */}
                       {idx === 0 ? (
-                        <div className="flex flex-col items-end gap-2 shrink-0">
+                        <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-col sm:items-end sm:justify-start sm:shrink-0">
                           <span className="text-[10px] font-black text-orange-500 bg-orange-50 border border-orange-200 px-2 py-1 rounded-full animate-pulse">
                             ĐANG HÁT
                           </span>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center justify-end gap-1.5">
                             <button
                               onClick={() => handleMarkDone(song)}
                               disabled={markingDoneId === song.id}
-                              className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-[11px] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:scale-100"
+                              className="inline-flex items-center justify-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-[10px] sm:text-[11px] px-2.5 py-1.5 rounded-full shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:scale-100"
                             >
                               {markingDoneId === song.id ? (
                                 <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                               ) : (
                                 <span className="material-symbols-outlined text-[14px]">check_circle</span>
                               )}
-                              Xong
+                              <span>Xong</span>
                             </button>
 
                             <button
                               onClick={() => handleSkip(song)}
                               disabled={skippingId === song.id}
-                              className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-[11px] px-3 py-1.5 rounded-full shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:scale-100 shrink-0"
+                              className="inline-flex items-center justify-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-[10px] sm:text-[11px] px-2.5 py-1.5 rounded-full shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:scale-100 shrink-0"
                               title="Bỏ qua (Đẩy xuống cuối hàng chờ)"
                             >
                               {skippingId === song.id ? (
@@ -649,7 +651,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                               ) : (
                                 <span className="material-symbols-outlined text-[14px]">skip_next</span>
                               )}
-                              Qua bài
+                              <span>Qua bài</span>
                             </button>
                             {confirmDeleteId === song.id ? (
                               <div className="flex items-center gap-1">
@@ -688,7 +690,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                           </div>
                         </div>
                       ) : (
-                        <div className="shrink-0 flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center justify-end gap-1.5 sm:shrink-0">
                           {confirmDeleteId === song.id ? (
                             <div className="flex items-center gap-1">
                               <button
@@ -803,37 +805,39 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                       {/* Gradient top stripe */}
                       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${getMedalColor(idx)} rounded-t-2xl`} />
 
-                      <div className="flex items-center gap-3">
-                        {/* Medal */}
-                        <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getMedalColor(idx)} flex items-center justify-center shadow-md shrink-0 text-lg`}>
-                          {typeof getMedalEmoji(idx) === 'string' && getMedalEmoji(idx).startsWith('#')
-                            ? <span className="text-white font-black text-xs">{getMedalEmoji(idx)}</span>
-                            : getMedalEmoji(idx)}
-                        </div>
-
-                        {/* Avatar */}
-                        {song.avatar_url ? (
-                          <img src={song.avatar_url} alt={song.singer_name} className="w-12 h-12 rounded-full object-cover border-2 border-rose-200 shadow-sm shrink-0" />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-200 to-pink-200 border-2 border-rose-200 flex items-center justify-center font-black text-rose-600 text-lg shrink-0">
-                            {song.singer_name.charAt(0).toUpperCase()}
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
+                          {/* Medal */}
+                          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getMedalColor(idx)} flex items-center justify-center shadow-md shrink-0 text-lg`}>
+                            {typeof getMedalEmoji(idx) === 'string' && getMedalEmoji(idx).startsWith('#')
+                              ? <span className="text-white font-black text-xs">{getMedalEmoji(idx)}</span>
+                              : getMedalEmoji(idx)}
                           </div>
-                        )}
 
-                        {/* Info */}
-                        <div className="min-w-0 flex-1">
-                          <p className="font-black text-slate-800 text-sm leading-tight truncate">{song.singer_name}</p>
-                          <p className="font-bold text-rose-500 text-sm truncate">🎵 {song.song_title}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            {song.artist && <span className="text-[11px] text-slate-400 truncate">Ca sĩ: {song.artist}</span>}
-                            {song.class_name && (
-                              <span className="bg-rose-50 text-rose-600 font-bold text-[10px] px-2 py-0.5 rounded-full border border-rose-100">{song.class_name}</span>
-                            )}
+                          {/* Avatar */}
+                          {song.avatar_url ? (
+                            <img src={song.avatar_url} alt={song.singer_name} className="w-12 h-12 rounded-full object-cover border-2 border-rose-200 shadow-sm shrink-0" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-200 to-pink-200 border-2 border-rose-200 flex items-center justify-center font-black text-rose-600 text-lg shrink-0">
+                              {song.singer_name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+
+                          {/* Info */}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-black text-slate-800 text-sm leading-tight break-words">{song.singer_name}</p>
+                            <p className="font-bold text-rose-500 text-sm break-words">🎵 {song.song_title}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              {song.artist && <span className="text-[11px] text-slate-400 break-words">Ca sĩ: {song.artist}</span>}
+                              {song.class_name && (
+                                <span className="bg-rose-50 text-rose-600 font-bold text-[10px] px-2 py-0.5 rounded-full border border-rose-100">{song.class_name}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
                         {/* Actions: Delete + Heart */}
-                        <div className="flex items-center gap-2.5 shrink-0">
+                        <div className="flex flex-wrap items-center justify-end gap-2 sm:shrink-0">
                           {confirmDeleteId === song.id ? (
                             <div className="flex items-center gap-1">
                               <button
