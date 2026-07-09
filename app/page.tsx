@@ -2820,7 +2820,8 @@ export default function DangKyPage() {
       </main>
 
 
-      {/* BottomNavBar */}
+      {/* BottomNavBar — ẩn khi xem Văn Nghệ full screen */}
+      {activeTab !== 'vannghe' && (
       <nav className="md:hidden bg-surface/95 backdrop-blur-lg border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(0,53,127,0.1)] bottom-0 rounded-t-xl z-50 fixed w-full">
         <div className="flex justify-between items-end w-full px-2 pb-safe relative">
           <button 
@@ -2881,6 +2882,7 @@ export default function DangKyPage() {
           </button>
         </div>
       </nav>
+      )}
 
       {/* Floating Action Button for Tạo Vé — ẩn khi xem Văn Nghệ */}
       {activeTab !== 'vannghe' && (

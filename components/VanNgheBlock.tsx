@@ -9,6 +9,7 @@ interface Song {
   artist: string;
   class_name: string;
   avatar_url?: string;
+  note?: string;
   status: 'waiting' | 'done';
   heart_count: number;
   created_at: string;
@@ -31,6 +32,7 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
   const [songTitle, setSongTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [className, setClassName] = useState('');
+  const [note, setNote] = useState('');
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +126,7 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
         song_title: songTitle.trim(),
         artist: artist.trim(),
         class_name: className.trim(),
+        note: note.trim() || null,
         avatar_url: uploadedUrl || null,
         status: 'waiting',
         heart_count: 0,
@@ -145,9 +148,12 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
         onClick={onClose}
       />
 
-      <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300 max-h-[95vh] overflow-y-auto">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 p-5 text-white">
+      {/* Modal container — hộp cố định, nội dung cuộn trong */}
+      <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300"
+        style={{ maxHeight: '92dvh' }}
+      >
+        {/* Header — sticky, không cuộn */}
+        <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 p-5 text-white shrink-0 rounded-t-3xl sm:rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-black tracking-tight flex items-center gap-2">
@@ -164,165 +170,125 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Avatar / Camera / Upload */}
-          <div className="flex flex-col items-center gap-3">
-            {cameraMode ? (
-              <div className="relative">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-48 h-48 rounded-full object-cover border-4 border-purple-400 shadow-xl"
-                  style={{ transform: 'scaleX(-1)' }}
-                />
-                <button
-                  type="button"
-                  onClick={capturePhoto}
-                  className="mt-3 w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-2.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
-                >
-                  <span className="material-symbols-outlined text-[20px]">photo_camera</span>
-                  Chụp ảnh
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { stream?.getTracks().forEach(t => t.stop()); setStream(null); setCameraMode(false); }}
-                  className="mt-2 w-full text-slate-400 text-xs font-medium text-center hover:text-slate-600 transition-colors"
-                >
-                  Hủy
-                </button>
-              </div>
-            ) : avatarDataUrl ? (
-              <div className="flex flex-col items-center gap-2">
-                <img
-                  src={avatarDataUrl}
-                  alt="avatar"
-                  className="w-28 h-28 rounded-full object-cover border-4 border-purple-400 shadow-xl"
-                />
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={retakePhoto}
-                    className="text-purple-600 text-xs font-bold flex items-center gap-1 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-200 hover:bg-purple-100 transition-colors"
+        {/* Body — cuộn được khi nội dung dài */}
+        <div className="overflow-y-auto flex-1">
+          <form onSubmit={handleSubmit} className="p-5 space-y-4 pb-8">
+
+            {/* Avatar / Camera / Upload */}
+            <div className="flex flex-col items-center gap-3">
+              {cameraMode ? (
+                <div className="relative w-full flex flex-col items-center">
+                  <video ref={videoRef} autoPlay playsInline muted
+                    className="w-48 h-48 rounded-full object-cover border-4 border-purple-400 shadow-xl"
+                    style={{ transform: 'scaleX(-1)' }}
+                  />
+                  <button type="button" onClick={capturePhoto}
+                    className="mt-3 w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-2.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
                   >
-                    <span className="material-symbols-outlined text-[14px]">photo_camera</span>
-                    Chụp lại
+                    <span className="material-symbols-outlined text-[20px]">photo_camera</span>Chụp ảnh
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="text-pink-600 text-xs font-bold flex items-center gap-1 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-200 hover:bg-pink-100 transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">upload</span>
-                    Đổi ảnh
-                  </button>
+                  <button type="button"
+                    onClick={() => { stream?.getTracks().forEach(t => t.stop()); setStream(null); setCameraMode(false); }}
+                    className="mt-2 text-slate-400 text-xs font-medium hover:text-slate-600 transition-colors"
+                  >Hủy</button>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-3 w-full">
-                <p className="text-[11px] text-slate-400 font-medium">Chọn ảnh đại diện (tùy chọn)</p>
-                <div className="flex gap-3">
-                  {/* Chụp selfie */}
-                  <button
-                    type="button"
-                    onClick={openCamera}
-                    className="flex flex-col items-center gap-2 w-28 h-28 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 border-2 border-dashed border-purple-300 justify-center hover:bg-purple-50 hover:border-purple-400 transition-all group"
-                  >
-                    <span className="material-symbols-outlined text-3xl text-purple-500 group-hover:scale-110 transition-transform">photo_camera</span>
-                    <span className="text-[11px] font-bold text-purple-600">Chụp selfie</span>
-                  </button>
-                  {/* Upload từ thư viện */}
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center gap-2 w-28 h-28 rounded-2xl bg-gradient-to-br from-pink-100 to-rose-100 border-2 border-dashed border-pink-300 justify-center hover:bg-pink-50 hover:border-pink-400 transition-all group"
-                  >
-                    <span className="material-symbols-outlined text-3xl text-pink-500 group-hover:scale-110 transition-transform">upload</span>
-                    <span className="text-[11px] font-bold text-pink-600">Tải ảnh lên</span>
-                  </button>
+              ) : avatarDataUrl ? (
+                <div className="flex flex-col items-center gap-2">
+                  <img src={avatarDataUrl} alt="avatar"
+                    className="w-28 h-28 rounded-full object-cover border-4 border-purple-400 shadow-xl"
+                  />
+                  <div className="flex items-center gap-3">
+                    <button type="button" onClick={retakePhoto}
+                      className="text-purple-600 text-xs font-bold flex items-center gap-1 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-200 hover:bg-purple-100 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">photo_camera</span>Chụp lại
+                    </button>
+                    <button type="button" onClick={() => fileInputRef.current?.click()}
+                      className="text-pink-600 text-xs font-bold flex items-center gap-1 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-200 hover:bg-pink-100 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">upload</span>Đổi ảnh
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3 w-full">
+                  <p className="text-[11px] text-slate-400 font-medium">Chọn ảnh đại diện (tùy chọn)</p>
+                  <div className="flex gap-3 justify-center">
+                    <button type="button" onClick={openCamera}
+                      className="flex flex-col items-center gap-2 w-28 h-28 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 border-2 border-dashed border-purple-300 justify-center hover:bg-purple-50 hover:border-purple-400 transition-all group"
+                    >
+                      <span className="material-symbols-outlined text-3xl text-purple-500 group-hover:scale-110 transition-transform">photo_camera</span>
+                      <span className="text-[11px] font-bold text-purple-600">Chụp selfie</span>
+                    </button>
+                    <button type="button" onClick={() => fileInputRef.current?.click()}
+                      className="flex flex-col items-center gap-2 w-28 h-28 rounded-2xl bg-gradient-to-br from-pink-100 to-rose-100 border-2 border-dashed border-pink-300 justify-center hover:bg-pink-50 hover:border-pink-400 transition-all group"
+                    >
+                      <span className="material-symbols-outlined text-3xl text-pink-500 group-hover:scale-110 transition-transform">upload</span>
+                      <span className="text-[11px] font-bold text-pink-600">Tải ảnh lên</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+              <canvas ref={canvasRef} className="hidden" />
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
+            </div>
+
+            {/* Các trường thông tin */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Tên của bạn *</label>
+                <input type="text" value={singerName} onChange={e => setSingerName(e.target.value)}
+                  placeholder="Nguyễn Văn A" required
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
+                />
               </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Tên bài hát *</label>
+                <input type="text" value={songTitle} onChange={e => setSongTitle(e.target.value)}
+                  placeholder="Ví dụ: Mong ước kỷ niệm xưa" required
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Tên ca sĩ gốc</label>
+                <input type="text" value={artist} onChange={e => setArtist(e.target.value)}
+                  placeholder="Ví dụ: Như Quỳnh"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Lớp</label>
+                <input type="text" value={className} onChange={e => setClassName(e.target.value)}
+                  placeholder="Ví dụ: C5 - B12"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                  💬 Lời nhắn <span className="text-slate-400 font-normal normal-case tracking-normal">(tùy chọn)</span>
+                </label>
+                <textarea value={note} onChange={e => setNote(e.target.value)} rows={3}
+                  placeholder="Muốn nói gì với khán giả? Tặng bài hát cho ai? 🎵"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium resize-none"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-red-500 text-sm bg-red-50 px-4 py-2 rounded-xl font-medium text-center">{error}</p>
             )}
-            <canvas ref={canvasRef} className="hidden" />
-            {/* Hidden file input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-          </div>
 
-          {/* Fields */}
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Tên của bạn *</label>
-              <input
-                type="text"
-                value={singerName}
-                onChange={e => setSingerName(e.target.value)}
-                placeholder="Nguyễn Văn A"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Tên bài hát *</label>
-              <input
-                type="text"
-                value={songTitle}
-                onChange={e => setSongTitle(e.target.value)}
-                placeholder="Ví dụ: Mong ước kỷ niệm xưa"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Tên ca sĩ gốc</label>
-              <input
-                type="text"
-                value={artist}
-                onChange={e => setArtist(e.target.value)}
-                placeholder="Ví dụ: Như Quỳnh"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Lớp</label>
-              <input
-                type="text"
-                value={className}
-                onChange={e => setClassName(e.target.value)}
-                placeholder="Ví dụ: C5 - B12"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
-              />
-            </div>
-          </div>
-
-          {error && (
-            <p className="text-red-500 text-sm bg-red-50 px-4 py-2 rounded-xl font-medium text-center">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 text-white font-black py-3.5 rounded-2xl shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-[1.02] active:scale-95 transition-all text-base disabled:opacity-60 disabled:scale-100 flex items-center justify-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Đang đăng ký...
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-[20px]">mic</span>
-                Đăng ký biểu diễn
-              </>
-            )}
-          </button>
-        </form>
+            <button type="submit" disabled={submitting}
+              className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 text-white font-black py-3.5 rounded-2xl shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-[1.02] active:scale-95 transition-all text-base disabled:opacity-60 disabled:scale-100 flex items-center justify-center gap-2"
+            >
+              {submitting ? (
+                <><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />Đang đăng ký...</>
+              ) : (
+                <><span className="material-symbols-outlined text-[20px]">mic</span>Đăng ký biểu diễn</>
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
