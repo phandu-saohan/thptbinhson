@@ -669,89 +669,22 @@ export default function DangKyPage() {
   const [sponsorAiScanning, setSponsorAiScanning] = useState(false);
   const sponsorFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Audio state for background music "Mong ước kỷ niệm xưa"
+  // Audio state for background music (ĐÃ TẮT)
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMusicTooltip, setShowMusicTooltip] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    // Direct link to "Mong ước kỷ niệm xưa" direct MP3
-    const audio = new Audio("https://cldup.com/8ogyw5uhR6.mp3");
-    audio.loop = true;
-    audio.muted = true; // Bắt đầu ở chế độ MUTED để trình duyệt luôn cho phép tự động chạy (autoplay)
-
-    // Bỏ qua nhạc dạo (Intro), bắt đầu từ giây thứ 18 ngay khi ca sĩ cất lời hát
-    const handleMetadata = () => {
-      audio.currentTime = 18;
-    };
-
-    if (audio.readyState >= 1) {
-      handleMetadata();
-    } else {
-      audio.addEventListener('loadedmetadata', handleMetadata);
-    }
-
-    audioRef.current = audio;
-
-    // Chạy nhạc ngay lập tức (ở chế độ Muted) - 100% Trình duyệt sẽ cho phép chạy!
-    audio.play()
-      .then(() => {
-        setIsPlaying(true);
-        setShowMusicTooltip(true); // Gợi ý người dùng chạm để mở tiếng
-      })
-      .catch((err) => {
-        console.log("Muted autoplay blocked, fallback to interaction trigger.", err);
-      });
-
-    // Khi người dùng thực hiện bất kỳ tương tác nào (cuộn trang, di chuột, chạm màn hình)
-    // Hệ thống sẽ lập tức mở tiếng (UNMUTE) mà họ không cần bấm vào nút nhạc.
-    const handleUnmuteInteraction = () => {
-      if (audio.muted) {
-        audio.muted = false; // Mở tiếng
-        if (audio.paused) {
-          audio.play().catch(e => console.log("Play failed on unmute:", e));
-        }
-        setShowMusicTooltip(false);
-      }
-      removeListeners();
-    };
-
-    const removeListeners = () => {
-      document.removeEventListener('click', handleUnmuteInteraction);
-      document.removeEventListener('touchstart', handleUnmuteInteraction);
-      document.removeEventListener('scroll', handleUnmuteInteraction);
-      document.removeEventListener('mousemove', handleUnmuteInteraction);
-      document.removeEventListener('keydown', handleUnmuteInteraction);
-    };
-
-    document.addEventListener('click', handleUnmuteInteraction);
-    document.addEventListener('touchstart', handleUnmuteInteraction);
-    document.addEventListener('scroll', handleUnmuteInteraction);
-    document.addEventListener('mousemove', handleUnmuteInteraction);
-    document.addEventListener('keydown', handleUnmuteInteraction);
-
-    return () => {
-      audio.pause();
-      audio.removeEventListener('loadedmetadata', handleMetadata);
-      removeListeners();
-    };
-  }, []);
-
+  // Nhạc nền đã bị tắt — xóa useEffect và togglePlay
   const togglePlay = () => {
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.muted = false; // Đảm bảo bỏ tắt tiếng khi người dùng chủ động click play
-      audioRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-          setShowMusicTooltip(false);
-        })
-        .catch((err) => console.error("Play failed:", err));
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
     }
   };
+  void showMusicTooltip; void setShowMusicTooltip; // suppress unused warning
+
 
   // List of registered members for dropdown in Sponsor form
   const [registeredList, setRegisteredList] = useState<{ id: string; name: string; phone: string; class_c?: string; class_b?: string; shirt_size?: string }[]>([]);
@@ -2949,36 +2882,7 @@ export default function DangKyPage() {
         </div>
       )}
 
-      {/* Floating Music Button */}
-      <div className="hidden md:flex fixed bottom-6 right-6 z-[100] flex-col items-end gap-2 pointer-events-none">
-        {showMusicTooltip && (
-          <div 
-            onClick={togglePlay}
-            className="bg-slate-900/90 text-white text-[11px] font-bold py-2 px-4 rounded-2xl shadow-2xl border border-white/10 animate-bounce pointer-events-auto cursor-pointer flex items-center gap-1.5 backdrop-blur-md"
-          >
-            <span className="animate-pulse">🎵</span> Chạm để bật nhạc kỷ niệm!
-          </div>
-        )}
-        <button
-          onClick={togglePlay}
-          className={`w-12 h-12 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 pointer-events-auto border-2 border-white/80 active:scale-95 hover:shadow-primary/30 ${
-            isPlaying 
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white animate-spin-slow shadow-emerald-500/20' 
-              : 'bg-gradient-to-r from-primary to-primary-fixed text-white hover:scale-105 shadow-primary/20'
-          }`}
-          title={isPlaying ? "Tạm dừng nhạc" : "Bật nhạc kỷ niệm xưa"}
-        >
-          {isPlaying ? (
-            <div className="flex gap-0.5 items-end justify-center h-4 w-4">
-              <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate]" />
-              <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.2s] h-3" />
-              <span className="w-0.5 bg-white rounded-full animate-[music-wave_0.8s_ease-in-out_infinite_alternate_0.4s] h-2" />
-            </div>
-          ) : (
-            <span className="material-symbols-outlined text-lg">music_note</span>
-          )}
-        </button>
-      </div>
+      {/* Floating Music Button — đã tắt */}
 
 
       {/* Embedded Style Block for Music Wave & Slowly Spinning Vinyl Animation */}
