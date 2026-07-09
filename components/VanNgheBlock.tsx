@@ -347,6 +347,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   const [activeView, setActiveView] = useState<'queue' | 'ranking'>('queue');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [requeuingId, setRequeuingId] = useState<string | null>(null);
   const NOTE_LIMIT = 60;
 
   // Load danh sách bài hát
@@ -414,6 +415,20 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
       fetchSongs();
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleRequeue = async (song: Song) => {
+    if (requeuingId) return;
+    setRequeuingId(song.id);
+    try {
+      await supabase
+        .from('vannghe_songs')
+        .update({ status: 'waiting' })
+        .eq('id', song.id);
+      fetchSongs();
+    } finally {
+      setRequeuingId(null);
     }
   };
 
@@ -752,13 +767,30 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => setConfirmDeleteId(song.id)}
-                              className="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all border border-red-50/50"
-                              title="Xóa bài hát"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">delete</span>
-                            </button>
+                            <div className="flex items-center gap-1">
+                              {/* Nút quay lại hàng chờ */}
+                              <button
+                                onClick={() => handleRequeue(song)}
+                                disabled={requeuingId === song.id}
+                                className="w-8 h-8 rounded-full bg-purple-50 text-purple-500 hover:bg-purple-100 hover:text-purple-600 flex items-center justify-center transition-all border border-purple-50/50 shrink-0"
+                                title="Hát lại (Chuyển về hàng chờ)"
+                              >
+                                {requeuingId === song.id ? (
+                                  <span className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <span className="material-symbols-outlined text-[16px]">undo</span>
+                                )}
+                              </button>
+
+                              {/* Nút xóa */}
+                              <button
+                                onClick={() => setConfirmDeleteId(song.id)}
+                                className="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all border border-red-50/50 shrink-0"
+                                title="Xóa bài hát"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">delete</span>
+                              </button>
+                            </div>
                           )}
 
                           <div className="flex flex-col items-center">
