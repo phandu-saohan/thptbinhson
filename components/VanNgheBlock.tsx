@@ -27,7 +27,15 @@ function getDeviceId(): string {
 }
 
 // ── RegisterModal ──────────────────────────────────────────────────────────
-function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+function RegisterModal({
+  onClose,
+  onSuccess,
+  existingSongs = [],
+}: {
+  onClose: () => void;
+  onSuccess: () => void;
+  existingSongs?: Song[];
+}) {
   const [singerName, setSingerName] = useState('');
   const [songTitle, setSongTitle] = useState('');
   const [artist, setArtist] = useState('');
@@ -242,12 +250,45 @@ function RegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
                 />
               </div>
+            {/* Tên bài hát */}
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Tên bài hát *</label>
                 <input type="text" value={songTitle} onChange={e => setSongTitle(e.target.value)}
                   placeholder="Ví dụ: Mong ước kỷ niệm xưa" required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm font-medium"
+                  className={`w-full px-4 py-3 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 text-sm font-medium transition-colors ${
+                    songTitle.trim() && existingSongs.some(
+                      s => s.song_title.trim().toLowerCase() === songTitle.trim().toLowerCase()
+                    )
+                      ? 'border-amber-400 focus:ring-amber-400 bg-amber-50'
+                      : 'border-slate-200 focus:ring-purple-400'
+                  }`}
                 />
+                {/* Cảnh báo trùng lặp */}
+                {(() => {
+                  const dupes = existingSongs.filter(
+                    s => s.song_title.trim().toLowerCase() === songTitle.trim().toLowerCase()
+                  );
+                  if (!songTitle.trim() || dupes.length === 0) return null;
+                  return (
+                    <div className="mt-1.5 flex items-start gap-2 bg-amber-50 border border-amber-300 rounded-xl px-3 py-2">
+                      <span className="text-amber-500 text-base mt-0.5">⚠️</span>
+                      <div>
+                        <p className="text-amber-700 text-xs font-black">Bài hát này đã có người đăng ký!</p>
+                        <ul className="mt-0.5 space-y-0.5">
+                          {dupes.map(d => (
+                            <li key={d.id} className="text-[11px] text-amber-600 flex items-center gap-1">
+                              <span>{d.status === 'waiting' ? '⏳' : '✅'}</span>
+                              <span className="font-bold">{d.singer_name}</span>
+                              {d.class_name && <span className="text-amber-500">({d.class_name})</span>}
+                              <span className="text-amber-400">{d.status === 'waiting' ? '— đang chờ' : '— đã hát'}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="text-[10px] text-amber-500 mt-1 italic">Bạn vẫn có thể đăng ký bài này nếu muốn song ca 🎤</p>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Tên ca sĩ gốc</label>
@@ -585,6 +626,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
             setShowModal(false);
             fetchSongs();
           }}
+          existingSongs={songs}
         />
       )}
     </div>
