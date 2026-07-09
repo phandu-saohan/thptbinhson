@@ -31,17 +31,19 @@ function RegisterModal({
   onClose,
   onSuccess,
   existingSongs = [],
+  editingSong,
 }: {
   onClose: () => void;
   onSuccess: () => void;
   existingSongs?: Song[];
+  editingSong?: Song;
 }) {
-  const [singerName, setSingerName] = useState('');
-  const [songTitle, setSongTitle] = useState('');
-  const [artist, setArtist] = useState('');
-  const [className, setClassName] = useState('');
-  const [note, setNote] = useState('');
-  const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
+  const [singerName, setSingerName] = useState(editingSong?.singer_name || '');
+  const [songTitle, setSongTitle] = useState(editingSong?.song_title || '');
+  const [artist, setArtist] = useState(editingSong?.artist || '');
+  const [className, setClassName] = useState(editingSong?.class_name || '');
+  const [note, setNote] = useState(editingSong?.note || '');
+  const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(editingSong?.avatar_url || null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cameraMode, setCameraMode] = useState(false);
@@ -115,9 +117,9 @@ function RegisterModal({
     setSubmitting(true);
     setError(null);
     try {
-      let uploadedUrl = '';
-      // Upload avatar nếu có
-      if (avatarDataUrl) {
+      let uploadedUrl = editingSong?.avatar_url || '';
+      // Upload avatar nếu có ảnh mới (base64)
+      if (avatarDataUrl && avatarDataUrl.startsWith('data:image')) {
         const res = await fetch(avatarDataUrl);
         const blob = await res.blob();
         const fileName = `vannghe-avatar-${Date.now()}.jpg`;
@@ -128,18 +130,36 @@ function RegisterModal({
           const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(`vannghe/${fileName}`);
           uploadedUrl = urlData.publicUrl;
         }
+      } else if (!avatarDataUrl) {
+        uploadedUrl = '';
       }
-      const { error: dbErr } = await supabase.from('vannghe_songs').insert([{
-        singer_name: singerName.trim(),
-        song_title: songTitle.trim(),
-        artist: artist.trim(),
-        class_name: className.trim(),
-        note: note.trim() || null,
-        avatar_url: uploadedUrl || null,
-        status: 'waiting',
-        heart_count: 0,
-      }]);
-      if (dbErr) throw dbErr;
+
+      if (editingSong) {
+        const { error: dbErr } = await supabase
+          .from('vannghe_songs')
+          .update({
+            singer_name: singerName.trim(),
+            song_title: songTitle.trim(),
+            artist: artist.trim(),
+            class_name: className.trim(),
+            note: note.trim() || null,
+            avatar_url: uploadedUrl || null,
+          })
+          .eq('id', editingSong.id);
+        if (dbErr) throw dbErr;
+      } else {
+        const { error: dbErr } = await supabase.from('vannghe_songs').insert([{
+          singer_name: singerName.trim(),
+          song_title: songTitle.trim(),
+          artist: artist.trim(),
+          class_name: className.trim(),
+          note: note.trim() || null,
+          avatar_url: uploadedUrl || null,
+          status: 'waiting',
+          heart_count: 0,
+        }]);
+        if (dbErr) throw dbErr;
+      }
       onSuccess();
     } catch (err: any) {
       setError(err.message || 'Đã xảy ra lỗi, vui lòng thử lại!');
@@ -165,9 +185,9 @@ function RegisterModal({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-black tracking-tight flex items-center gap-2">
-                🎤 Đăng ký biểu diễn
+                🎤 {editingSong ? 'Chỉnh sửa tiết mục' : 'Đăng ký biểu diễn'}
               </h3>
-              <p className="text-white/80 text-xs mt-0.5">Điền thông tin bài hát của bạn</p>
+              <p className="text-white/80 text-xs mt-0.5">{editingSong ? 'Cập nhật thông tin tiết mục của bạn' : 'Điền thông tin bài hát của bạn'}</p>
             </div>
             <button
               onClick={onClose}
@@ -257,7 +277,7 @@ function RegisterModal({
                   placeholder="Ví dụ: Mong ước kỷ niệm xưa" required
                   className={`w-full px-4 py-3 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 text-sm font-medium transition-colors ${
                     songTitle.trim() && existingSongs.some(
-                      s => s.song_title.trim().toLowerCase() === songTitle.trim().toLowerCase()
+                      s => s.id !== editingSong?.id && s.song_title.trim().toLowerCase() === songTitle.trim().toLowerCase()
                     )
                       ? 'border-amber-400 focus:ring-amber-400 bg-amber-50'
                       : 'border-slate-200 focus:ring-purple-400'
@@ -266,7 +286,7 @@ function RegisterModal({
                 {/* Cảnh báo trùng lặp */}
                 {(() => {
                   const dupes = existingSongs.filter(
-                    s => s.song_title.trim().toLowerCase() === songTitle.trim().toLowerCase()
+                    s => s.id !== editingSong?.id && s.song_title.trim().toLowerCase() === songTitle.trim().toLowerCase()
                   );
                   if (!songTitle.trim() || dupes.length === 0) return null;
                   return (
@@ -323,9 +343,17 @@ function RegisterModal({
               className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 text-white font-black py-3.5 rounded-2xl shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-[1.02] active:scale-95 transition-all text-base disabled:opacity-60 disabled:scale-100 flex items-center justify-center gap-2"
             >
               {submitting ? (
-                <><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />Đang đăng ký...</>
+                editingSong ? (
+                  <><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />Đang lưu...</>
+                ) : (
+                  <><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />Đang đăng ký...</>
+                )
               ) : (
-                <><span className="material-symbols-outlined text-[20px]">mic</span>Đăng ký biểu diễn</>
+                editingSong ? (
+                  <><span className="material-symbols-outlined text-[20px]">save</span>Lưu thay đổi</>
+                ) : (
+                  <><span className="material-symbols-outlined text-[20px]">mic</span>Đăng ký biểu diễn</>
+                )
               )}
             </button>
           </form>
@@ -345,6 +373,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   const [markingDoneId, setMarkingDoneId] = useState<string | null>(null);
   const [notePopupSong, setNotePopupSong] = useState<Song | null>(null);
   const [activeView, setActiveView] = useState<'queue' | 'ranking'>('queue');
+  const [editingSong, setEditingSong] = useState<Song | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [requeuingId, setRequeuingId] = useState<string | null>(null);
@@ -602,13 +631,22 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                                 </button>
                               </div>
                             ) : (
-                              <button
-                                onClick={() => setConfirmDeleteId(song.id)}
-                                className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all shrink-0"
-                                title="Xóa đăng ký"
-                              >
-                                <span className="material-symbols-outlined text-[16px]">delete</span>
-                              </button>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => setEditingSong(song)}
+                                  className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center border border-blue-100 hover:bg-blue-100 hover:text-blue-600 transition-all shrink-0"
+                                  title="Chỉnh sửa tiết mục"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">edit</span>
+                                </button>
+                                <button
+                                  onClick={() => setConfirmDeleteId(song.id)}
+                                  className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all shrink-0"
+                                  title="Xóa đăng ký"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -631,13 +669,22 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => setConfirmDeleteId(song.id)}
-                              className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all"
-                              title="Xóa đăng ký"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">delete</span>
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setEditingSong(song)}
+                                className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center border border-blue-100 hover:bg-blue-100 hover:text-blue-600 transition-all"
+                                title="Chỉnh sửa tiết mục"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">edit</span>
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(song.id)}
+                                className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all"
+                                title="Xóa đăng ký"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">delete</span>
+                              </button>
+                            </div>
                           )}
                         </div>
                       )}
@@ -822,11 +869,16 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
       )}
 
       {/* Register Modal */}
-      {showModal && (
+      {(showModal || editingSong) && (
         <RegisterModal
-          onClose={() => setShowModal(false)}
+          editingSong={editingSong || undefined}
+          onClose={() => {
+            setShowModal(false);
+            setEditingSong(null);
+          }}
           onSuccess={() => {
             setShowModal(false);
+            setEditingSong(null);
             fetchSongs();
           }}
           existingSongs={songs}
