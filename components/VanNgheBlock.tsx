@@ -377,6 +377,7 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [requeuingId, setRequeuingId] = useState<string | null>(null);
+  const [skippingId, setSkippingId] = useState<string | null>(null);
   const NOTE_LIMIT = 60;
 
   // Load danh sách bài hát
@@ -458,6 +459,22 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
       fetchSongs();
     } finally {
       setRequeuingId(null);
+    }
+  };
+
+  const handleSkip = async (song: Song) => {
+    if (skippingId) return;
+    setSkippingId(song.id);
+    try {
+      await supabase
+        .from('vannghe_songs')
+        .update({ created_at: new Date().toISOString() })
+        .eq('id', song.id);
+      fetchSongs();
+    } catch (err) {
+      console.error("Skip error:", err);
+    } finally {
+      setSkippingId(null);
     }
   };
 
@@ -613,6 +630,20 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                                 <span className="material-symbols-outlined text-[14px]">check_circle</span>
                               )}
                               Xong
+                            </button>
+
+                            <button
+                              onClick={() => handleSkip(song)}
+                              disabled={skippingId === song.id}
+                              className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-[11px] px-3 py-1.5 rounded-full shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:scale-100 shrink-0"
+                              title="Bỏ qua (Đẩy xuống cuối hàng chờ)"
+                            >
+                              {skippingId === song.id ? (
+                                <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <span className="material-symbols-outlined text-[14px]">skip_next</span>
+                              )}
+                              Qua bài
                             </button>
                             {confirmDeleteId === song.id ? (
                               <div className="flex items-center gap-1">
