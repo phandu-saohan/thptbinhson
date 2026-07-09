@@ -438,6 +438,12 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   };
 
   const handleDelete = async (songId: string) => {
+    const pwd = prompt('Nhập mật khẩu để xác nhận xóa bài hát:');
+    if (pwd === null) return;
+    if (pwd !== '88888888') {
+      alert('Mật khẩu không đúng!');
+      return;
+    }
     setDeletingId(songId);
     try {
       await supabase.from('vannghe_songs').delete().eq('id', songId);
