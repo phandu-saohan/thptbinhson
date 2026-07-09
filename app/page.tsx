@@ -2872,14 +2872,6 @@ export default function DangKyPage() {
             <span className="material-symbols-outlined text-[24px]">volunteer_activism</span>
             <span className="text-[10px] font-bold">Tài trợ</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('vannghe')}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-3 transition-all ${activeTab === 'vannghe' ? 'scale-110' : 'text-on-surface-variant opacity-60'}`}
-            style={activeTab === 'vannghe' ? { color: '#a855f7' } : {}}
-          >
-            <span className="material-symbols-outlined text-[24px]">mic</span>
-            <span className="text-[10px] font-bold">Văn Nghệ</span>
-          </button>
         </div>
       </nav>
       )}
