@@ -524,6 +524,24 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
                         </div>
                       ) : null}
                     </div>
+
+                    {/* Lời nhắn — hiển thị để MC đọc */}
+                    {song.note && (
+                      idx === 0 ? (
+                        <div className="mt-3 flex items-start gap-2 bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200 rounded-xl px-3 py-2.5">
+                          <span className="text-orange-400 text-base shrink-0 mt-0.5">💬</span>
+                          <div>
+                            <p className="text-[10px] font-black text-orange-400 uppercase tracking-wider mb-0.5">Lời nhắn</p>
+                            <p className="text-orange-700 text-sm font-semibold leading-snug italic">"{song.note}"</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-2 flex items-start gap-1.5 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2">
+                          <span className="text-slate-300 text-sm shrink-0 mt-0.5">💬</span>
+                          <p className="text-slate-500 text-xs italic leading-snug">"{song.note}"</p>
+                        </div>
+                      )
+                    )}
                   </div>
                 ))}
               </div>
