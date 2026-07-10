@@ -475,6 +475,12 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   };
 
   const handleSkip = async (song: Song) => {
+    const pwd = prompt('Nhập mật khẩu để chuyển bài hát xuống cuối hàng chờ:');
+    if (pwd === null) return;
+    if (pwd !== '88888888') {
+      alert('Mật khẩu không đúng!');
+      return;
+    }
     if (skippingId) return;
     setSkippingId(song.id);
     try {
