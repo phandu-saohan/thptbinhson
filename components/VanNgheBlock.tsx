@@ -424,6 +424,12 @@ export default function VanNgheBlock({ onNavigateHome }: { onNavigateHome?: () =
   };
 
   const handleMarkDone = async (song: Song) => {
+    const pwd = prompt('Nhập mật khẩu để xác nhận hoàn thành bài hát:');
+    if (pwd === null) return;
+    if (pwd !== '88888888') {
+      alert('Mật khẩu không đúng!');
+      return;
+    }
     if (markingDoneId) return;
     setMarkingDoneId(song.id);
     try {
